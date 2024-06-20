@@ -7,10 +7,10 @@ output "private_endpoints" {
 
 output "resource" {
   description = "The machine learning workspace."
-  value       = azurerm_machine_learning_workspace.this
+  value       = azapi_resource.this
 }
 
 output "resource_id" {
   description = "The ID of the machine learning workspace."
-  value       = azurerm_machine_learning_workspace.this.id
+  value       = azapi_resource.this.id
 }

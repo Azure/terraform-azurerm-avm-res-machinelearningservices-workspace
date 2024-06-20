@@ -5,7 +5,7 @@ module "avm_res_keyvault_vault" {
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   enable_telemetry              = var.enable_telemetry
   name                          = local.key_vault_name
-  resource_group_name           = var.resource_group_name
+  resource_group_name           = var.resource_group.name
   location                      = var.location
   public_network_access_enabled = var.is_private ? false : true
 

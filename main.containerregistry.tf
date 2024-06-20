@@ -1,20 +1,15 @@
-module "avm_res_storage_storageaccount" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+module "avm_res_containerregistry_registry" {
+  source = "Azure/avm-res-containerregistry-registry/azurerm"
+
   version = "~> 0.1"
 
-  enable_telemetry              = var.enable_telemetry
-  name                          = local.storage_account_name
-  resource_group_name           = var.resource_group.name
+  name                          = local.container_registry_name
   location                      = var.location
-  shared_access_key_enabled     = true
+  resource_group_name           = var.resource_group.name
   public_network_access_enabled = var.is_private ? false : true
 
-  managed_identities = {
-    system_assigned = true
-  }
-
   private_endpoints = var.is_private ? {
-    for key, value in var.storage_account.private_dns_zone_resource_map :
+    for key, value in var.container_registry.private_dns_zone_resource_map :
     key => {
       name                            = "pe-${key}-${var.name}"
       subnet_resource_id              = var.shared_subnet_id
@@ -26,5 +21,5 @@ module "avm_res_storage_storageaccount" {
     }
   } : null
 
-  count = var.associated_storage_account == null ? 1 : 0
+  count = var.associated_container_registry == null ? 1 : 0
 }

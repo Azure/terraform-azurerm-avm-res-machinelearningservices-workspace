@@ -61,9 +61,12 @@ module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.machine_learning_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+  location = azurerm_resource_group.this.location
+  name     = module.naming.machine_learning_workspace.name_unique
+  resource_group = {
+    name = azurerm_resource_group.this.name
+    id   = azurerm_resource_group.this.id
+  }
 
   enable_telemetry = var.enable_telemetry
 }

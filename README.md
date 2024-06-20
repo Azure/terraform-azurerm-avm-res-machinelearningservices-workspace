@@ -26,6 +26,8 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 1.9)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.71)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
@@ -33,6 +35,8 @@ The following requirements are needed by this module:
 ## Providers
 
 The following providers are used by this module:
+
+- <a name="provider_azapi"></a> [azapi](#provider\_azapi) (~> 1.9)
 
 - <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.71)
 
@@ -42,8 +46,8 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
-- [azurerm_machine_learning_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/machine_learning_workspace) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
@@ -69,15 +73,39 @@ Description: The name of the this resource.
 
 Type: `string`
 
-### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
+### <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group)
 
-Description: The resource group where the resources will be deployed.
+Description: An object describing the resource group to deploy the resource to. This includes the following properties:
+- `id` - The resource ID of the resource group.
+- `name` - The name of the resource group.
 
-Type: `string`
+Type:
+
+```hcl
+object({
+    id   = string
+    name = string
+  })
+```
 
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_associated_container_registry"></a> [associated\_container\_registry](#input\_associated\_container\_registry)
+
+Description: An object describing the Container Registry to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Container Registry.
+
+Type:
+
+```hcl
+object({
+    resource_id = string
+  })
+```
+
+Default: `null`
 
 ### <a name="input_associated_key_vault"></a> [associated\_key\_vault](#input\_associated\_key\_vault)
 
@@ -104,6 +132,21 @@ Type:
 ```hcl
 object({
     resource_id = string
+  })
+```
+
+Default: `null`
+
+### <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry)
+
+Description: An object describing the Container Registry to create the private endpoint connection to. This includes the following properties:
+- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+
+Type:
+
+```hcl
+object({
+    private_dns_zone_resource_map = optional(map(set(string)), null)
   })
 ```
 
@@ -143,6 +186,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_hbi_workspace"></a> [hbi\_workspace](#input\_hbi\_workspace)
+
+Description: Specifies if the resource is a High Business Impact (HBI) workspace.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_is_private"></a> [is\_private](#input\_is\_private)
 
 Description: Specifies if the resource is private.
@@ -163,6 +214,18 @@ object({
     private_dns_zone_resource_map = optional(map(set(string)), null)
   })
 ```
+
+Default: `null`
+
+### <a name="input_kind"></a> [kind](#input\_kind)
+
+Description: The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.  
+Possible values are:
+- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `hub` - The resource will be created as an AI Hub resource.
+- `project` - The resource will be created as an AI Studio Project resource.
+
+Type: `string`
 
 Default: `null`
 
@@ -322,6 +385,12 @@ Description: The ID of the machine learning workspace.
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
+
+Source: Azure/avm-res-containerregistry-registry/azurerm
+
+Version: ~> 0.1
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 

@@ -10,9 +10,28 @@ variable "name" {
 }
 
 # This is required for most resource modules
-variable "resource_group_name" {
-  type        = string
-  description = "The resource group where the resources will be deployed."
+variable "resource_group" {
+  type = object({
+    id   = string
+    name = string
+  })
+  description = <<DESCRIPTION
+An object describing the resource group to deploy the resource to. This includes the following properties:
+- `id` - The resource ID of the resource group.
+- `name` - The name of the resource group.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "associated_container_registry" {
+  type = object({
+    resource_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Container Registry to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Container Registry.
+DESCRIPTION
 }
 
 variable "associated_key_vault" {
@@ -34,6 +53,17 @@ variable "associated_storage_account" {
   description = <<DESCRIPTION
 An object describing the Storage Account to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Storage Account.
+DESCRIPTION
+}
+
+variable "container_registry" {
+  type = object({
+    private_dns_zone_resource_map = optional(map(set(string)), null)
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Container Registry to create the private endpoint connection to. This includes the following properties:
+- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
 DESCRIPTION
 }
 
@@ -70,6 +100,12 @@ If it is set to false, then no telemetry will be collected.
 DESCRIPTION
 }
 
+variable "hbi_workspace" {
+  type        = bool
+  default     = false
+  description = "Specifies if the resource is a High Business Impact (HBI) workspace."
+}
+
 variable "is_private" {
   type        = bool
   default     = false
@@ -84,6 +120,18 @@ variable "key_vault" {
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+DESCRIPTION
+}
+
+variable "kind" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.
+Possible values are:
+- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `hub` - The resource will be created as an AI Hub resource.
+- `project` - The resource will be created as an AI Studio Project resource.
 DESCRIPTION
 }
 

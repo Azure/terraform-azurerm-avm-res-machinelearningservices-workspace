@@ -7,19 +7,64 @@ variable "location" {
 variable "name" {
   type        = string
   description = "The name of the this resource."
-
-  validation {
-    condition     = can(regex("TODO", var.name))
-    error_message = "The name must be TODO." # TODO remove the example below once complete:
-    #condition     = can(regex("^[a-z0-9]{5,50}$", var.name))
-    #error_message = "The name must be between 5 and 50 characters long and can only contain lowercase letters and numbers."
-  }
 }
 
 # This is required for most resource modules
-variable "resource_group_name" {
-  type        = string
-  description = "The resource group where the resources will be deployed."
+variable "resource_group" {
+  type = object({
+    id   = string
+    name = string
+  })
+  description = <<DESCRIPTION
+An object describing the resource group to deploy the resource to. This includes the following properties:
+- `id` - The resource ID of the resource group.
+- `name` - The name of the resource group.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "associated_container_registry" {
+  type = object({
+    resource_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Container Registry to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Container Registry.
+DESCRIPTION
+}
+
+variable "associated_key_vault" {
+  type = object({
+    resource_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Key Vault to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Key Vault.
+DESCRIPTION
+}
+
+variable "associated_storage_account" {
+  type = object({
+    resource_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Storage Account to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Storage Account.
+DESCRIPTION
+}
+
+variable "container_registry" {
+  type = object({
+    private_dns_zone_resource_map = optional(map(set(string)), null)
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Container Registry to create the private endpoint connection to. This includes the following properties:
+- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+DESCRIPTION
 }
 
 # required AVM interfaces
@@ -45,51 +90,6 @@ A map describing customer-managed keys to associate with the resource. This incl
 DESCRIPTION  
 }
 
-variable "diagnostic_settings" {
-  type = map(object({
-    name                                     = optional(string, null)
-    log_categories                           = optional(set(string), [])
-    log_groups                               = optional(set(string), ["allLogs"])
-    metric_categories                        = optional(set(string), ["AllMetrics"])
-    log_analytics_destination_type           = optional(string, "Dedicated")
-    workspace_resource_id                    = optional(string, null)
-    storage_account_resource_id              = optional(string, null)
-    event_hub_authorization_rule_resource_id = optional(string, null)
-    event_hub_name                           = optional(string, null)
-    marketplace_partner_resource_id          = optional(string, null)
-  }))
-  default     = {}
-  description = <<DESCRIPTION
-A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-
-- `name` - (Optional) The name of the diagnostic setting. One will be generated if not set, however this will not be unique if you want to create multiple diagnostic setting resources.
-- `log_categories` - (Optional) A set of log categories to send to the log analytics workspace. Defaults to `[]`.
-- `log_groups` - (Optional) A set of log groups to send to the log analytics workspace. Defaults to `["allLogs"]`.
-- `metric_categories` - (Optional) A set of metric categories to send to the log analytics workspace. Defaults to `["AllMetrics"]`.
-- `log_analytics_destination_type` - (Optional) The destination type for the diagnostic setting. Possible values are `Dedicated` and `AzureDiagnostics`. Defaults to `Dedicated`.
-- `workspace_resource_id` - (Optional) The resource ID of the log analytics workspace to send logs and metrics to.
-- `storage_account_resource_id` - (Optional) The resource ID of the storage account to send logs and metrics to.
-- `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
-- `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
-- `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic LogsLogs.
-DESCRIPTION  
-  nullable    = false
-
-  validation {
-    condition     = alltrue([for _, v in var.diagnostic_settings : contains(["Dedicated", "AzureDiagnostics"], v.log_analytics_destination_type)])
-    error_message = "Log analytics destination type must be one of: 'Dedicated', 'AzureDiagnostics'."
-  }
-  validation {
-    condition = alltrue(
-      [
-        for _, v in var.diagnostic_settings :
-        v.workspace_resource_id != null || v.storage_account_resource_id != null || v.event_hub_authorization_rule_resource_id != null || v.marketplace_partner_resource_id != null
-      ]
-    )
-    error_message = "At least one of `workspace_resource_id`, `storage_account_resource_id`, `marketplace_partner_resource_id`, or `event_hub_authorization_rule_resource_id`, must be set."
-  }
-}
-
 variable "enable_telemetry" {
   type        = bool
   default     = true
@@ -97,6 +97,41 @@ variable "enable_telemetry" {
 This variable controls whether or not telemetry is enabled for the module.
 For more information see <https://aka.ms/avm/telemetryinfo>.
 If it is set to false, then no telemetry will be collected.
+DESCRIPTION
+}
+
+variable "hbi_workspace" {
+  type        = bool
+  default     = false
+  description = "Specifies if the resource is a High Business Impact (HBI) workspace."
+}
+
+variable "is_private" {
+  type        = bool
+  default     = false
+  description = "Specifies if the resource is private."
+}
+
+variable "key_vault" {
+  type = object({
+    private_dns_zone_resource_map = optional(map(set(string)), null)
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
+- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+DESCRIPTION
+}
+
+variable "kind" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.
+Possible values are:
+- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `hub` - The resource will be created as an AI Hub resource.
+- `project` - The resource will be created as an AI Studio Project resource.
 DESCRIPTION
 }
 
@@ -119,22 +154,6 @@ DESCRIPTION
   }
 }
 
-# tflint-ignore: terraform_unused_declarations
-variable "managed_identities" {
-  type = object({
-    system_assigned            = optional(bool, false)
-    user_assigned_resource_ids = optional(set(string), [])
-  })
-  default     = {}
-  description = <<DESCRIPTION
-Controls the Managed Identity configuration on this resource. The following properties can be specified:
-
-- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
-- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
-DESCRIPTION
-  nullable    = false
-}
-
 variable "private_endpoints" {
   type = map(object({
     name = optional(string, null)
@@ -146,6 +165,7 @@ variable "private_endpoints" {
       condition                              = optional(string, null)
       condition_version                      = optional(string, null)
       delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
     })), {})
     lock = optional(object({
       kind = string
@@ -153,6 +173,7 @@ variable "private_endpoints" {
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
+    subresource_name                        = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -188,17 +209,6 @@ DESCRIPTION
   nullable    = false
 }
 
-# This variable is used to determine if the private_dns_zone_group block should be included,
-# or if it is to be managed externally, e.g. using Azure Policy.
-# https://github.com/Azure/terraform-azurerm-avm-res-keyvault-vault/issues/32
-# Alternatively you can use AzAPI, which does not have this issue.
-variable "private_endpoints_manage_dns_zone_group" {
-  type        = bool
-  default     = true
-  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
-  nullable    = false
-}
-
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string
@@ -208,6 +218,7 @@ variable "role_assignments" {
     condition                              = optional(string, null)
     condition_version                      = optional(string, null)
     delegated_managed_identity_resource_id = optional(string, null)
+    principal_type                         = optional(string, null)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -223,6 +234,23 @@ A map of role assignments to create on this resource. The map key is deliberatel
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
+}
+
+variable "shared_subnet_id" {
+  type        = string
+  default     = null
+  description = "The resource ID of the subnet to associate with the resource."
+}
+
+variable "storage_account" {
+  type = object({
+    private_dns_zone_resource_map = optional(map(set(string)), null)
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Storage Account to create the private endpoint connection to. This includes the following properties:
+- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+DESCRIPTION
 }
 
 # tflint-ignore: terraform_unused_declarations

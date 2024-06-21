@@ -19,7 +19,7 @@ module "avm_res_containerregistry_registry" {
       network_interface_name          = "nic-pe-${key}-${var.name}"
       inherit_lock                    = false
     }
-  } : null
+  } : {}
 
   count = var.associated_container_registry == null ? 1 : 0
 }

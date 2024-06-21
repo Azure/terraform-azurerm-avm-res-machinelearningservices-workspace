@@ -48,7 +48,7 @@ module "naming" {
 
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
-  location = module.regions.regions[random_integer.region_index.result].name
+  location = var.location
   name     = module.naming.resource_group.name_unique
 }
 
@@ -61,7 +61,7 @@ module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location = azurerm_resource_group.this.location
+  location = var.location
   name     = module.naming.machine_learning_workspace.name_unique
   resource_group = {
     name = azurerm_resource_group.this.name
@@ -116,6 +116,14 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The location for the resources.
+
+Type: `string`
+
+Default: `"uksouth"`
 
 ## Outputs
 

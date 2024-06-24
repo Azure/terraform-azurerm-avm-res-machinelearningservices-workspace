@@ -127,12 +127,6 @@ Description: The address space that is used by the Virtual Network
 
 Type: `list(string)`
 
-### <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name)
-
-Description: The name of the Virtual Network
-
-Type: `string`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):

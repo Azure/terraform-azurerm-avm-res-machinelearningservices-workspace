@@ -13,11 +13,6 @@ variable "vnet_address_space" {
   description = "The address space that is used by the Virtual Network"
 }
 
-variable "vnet_name" {
-  type        = string
-  description = "The name of the Virtual Network"
-}
-
 variable "enable_telemetry" {
   type        = bool
   default     = true

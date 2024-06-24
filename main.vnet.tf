@@ -1,15 +1,13 @@
-module "vnet" {
-  source  = "Azure/vnet/azurerm"
-  version = "4.1.0"
+module "avm-res-network-virtualnetwork" {
+  source  = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version = "0.2.3"
 
   resource_group_name = var.resource_group.name
-  vnet_name           = local.vnet_name
-  vnet_location       = var.location
-  use_for_each        = true
+  name                = local.vnet_name
+  location            = var.location
 
-  address_space   = var.vnet_address_space
-  subnet_names    = [for s in var.subnets : s.name]
-  subnet_prefixes = [for s in var.subnets : s.address_prefix]
+  address_space = var.vnet_address_space
+  subnets       = var.subnets
 
   tags = var.tags
 

@@ -8,17 +8,6 @@ variable "subnets" {
   description = "A map of subnet definitions"
 }
 
-variable "associated_vnet" {
-  type = object({
-    resource_id = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
-DESCRIPTION
-}
-
 variable "enable_telemetry" {
   type        = bool
   default     = true

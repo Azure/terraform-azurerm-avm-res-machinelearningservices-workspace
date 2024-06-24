@@ -1,4 +1,4 @@
-module "avm-res-network-virtualnetwork" {
+module "avm_res_network_virtualnetwork" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.2.3"
 

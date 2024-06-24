@@ -276,21 +276,6 @@ map(object({
 
 The following input variables are optional (have default values):
 
-### <a name="input_associated_vnet"></a> [associated\_vnet](#input\_associated\_vnet)
-
-Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
-
-Type:
-
-```hcl
-object({
-    resource_id = string
-  })
-```
-
-Default: `null`
-
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
 Description: This variable controls whether or not telemetry is enabled for the module.  

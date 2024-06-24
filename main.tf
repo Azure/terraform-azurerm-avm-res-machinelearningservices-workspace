@@ -1,3 +1,12 @@
+provider "azurerm" {
+  features {
+    key_vault {
+      purge_soft_delete_on_destroy = false
+    }
+  }
+}
+
+
 resource "azurerm_application_insights" "this" {
   application_type    = "web"
   location            = var.location

@@ -88,6 +88,21 @@ object({
   })
 ```
 
+### <a name="input_subnets"></a> [subnets](#input\_subnets)
+
+Description: A map of subnet definitions
+
+Type:
+
+```hcl
+map(object({
+    name              = string
+    address_prefix    = string
+    service_endpoints = list(string)
+    nsg_id            = string
+  }))
+```
+
 ## Optional Inputs
 
 The following input variables are optional (have default values):
@@ -126,6 +141,21 @@ Default: `null`
 
 Description: An object describing the Storage Account to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Storage Account.
+
+Type:
+
+```hcl
+object({
+    resource_id = string
+  })
+```
+
+Default: `null`
+
+### <a name="input_associated_vnet"></a> [associated\_vnet](#input\_associated\_vnet)
+
+Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
 
 Type:
 
@@ -366,6 +396,20 @@ Type: `map(string)`
 
 Default: `null`
 
+### <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)
+
+Description: The address space that is used by the Virtual Network
+
+Type: `list(string)`
+
+Default:
+
+```json
+[
+  "10.0.0.0/16"
+]
+```
+
 ## Outputs
 
 The following outputs are exported:
@@ -403,6 +447,12 @@ Version: ~> 0.6
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
 Version: ~> 0.1
+
+### <a name="module_vnet"></a> [vnet](#module\_vnet)
+
+Source: Azure/vnet/azurerm
+
+Version: 4.1.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

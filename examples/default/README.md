@@ -68,6 +68,9 @@ module "azureml" {
     id   = azurerm_resource_group.this.id
   }
 
+  subnets            = var.subnets
+  vnet_address_space = var.vnet_address_space
+
   enable_telemetry = var.enable_telemetry
 }
 ```
@@ -101,7 +104,34 @@ The following resources are used by this module:
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 
-No required inputs.
+The following input variables are required:
+
+### <a name="input_subnets"></a> [subnets](#input\_subnets)
+
+Description: A map of subnet definitions
+
+Type:
+
+```hcl
+map(object({
+    name              = string
+    address_prefix    = string
+    service_endpoints = list(string)
+    nsg_id            = string
+  }))
+```
+
+### <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)
+
+Description: The address space that is used by the Virtual Network
+
+Type: `list(string)`
+
+### <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name)
+
+Description: The name of the Virtual Network
+
+Type: `string`
 
 ## Optional Inputs
 

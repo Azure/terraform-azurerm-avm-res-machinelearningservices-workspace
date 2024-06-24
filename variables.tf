@@ -23,6 +23,16 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "subnets" {
+  type = map(object({
+    name              = string
+    address_prefix    = string
+    service_endpoints = list(string)
+    nsg_id            = string
+  }))
+  description = "A map of subnet definitions"
+}
+
 variable "associated_container_registry" {
   type = object({
     resource_id = string
@@ -53,6 +63,17 @@ variable "associated_storage_account" {
   description = <<DESCRIPTION
 An object describing the Storage Account to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Storage Account.
+DESCRIPTION
+}
+
+variable "associated_vnet" {
+  type = object({
+    resource_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
 }
 
@@ -258,4 +279,10 @@ variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) Tags of the resource."
+}
+
+variable "vnet_address_space" {
+  type        = list(string)
+  default     = ["10.0.0.0/16"]
+  description = "The address space that is used by the Virtual Network"
 }

@@ -26,7 +26,7 @@ DESCRIPTION
 variable "subnets" {
   type = map(object({
     name              = string
-    address_prefixes  = string
+    address_prefixes  = list(string)
     service_endpoints = list(string)
     nsg_id            = string
   }))

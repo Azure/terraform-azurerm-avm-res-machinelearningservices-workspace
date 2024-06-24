@@ -266,7 +266,7 @@ Type:
 ```hcl
 map(object({
     name              = string
-    address_prefix    = string
+    address_prefixes  = list(string)
     service_endpoints = list(string)
     nsg_id            = string
   }))

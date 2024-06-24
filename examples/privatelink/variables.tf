@@ -1,3 +1,24 @@
+variable "subnets" {
+  type = map(object({
+    name              = string
+    address_prefix    = string
+    service_endpoints = list(string)
+    nsg_id            = string
+  }))
+  description = "A map of subnet definitions"
+}
+
+variable "associated_vnet" {
+  type = object({
+    resource_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+DESCRIPTION
+}
+
 variable "enable_telemetry" {
   type        = bool
   default     = true
@@ -14,29 +35,8 @@ variable "location" {
   description = "The location for the resources."
 }
 
-variable "subnets" {
-  description = "A map of subnet definitions"
-  type        = map(object({
-    name            = string
-    address_prefix  = string
-    service_endpoints = list(string)
-    nsg_id          = string
-  }))
-}
-
 variable "vnet_address_space" {
-  description = "The address space that is used by the Virtual Network"
   type        = list(string)
   default     = ["10.0.0.0/16"]
-}
-
-variable "associated_vnet" {
-  type = object({
-    resource_id = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
-DESCRIPTION
+  description = "The address space that is used by the Virtual Network"
 }

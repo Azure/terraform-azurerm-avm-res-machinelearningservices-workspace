@@ -184,6 +184,9 @@ module "azureml" {
   shared_subnet_id = azurerm_subnet.shared.id
   is_private       = true
 
+  subnets            = var.subnets
+  vnet_address_space = var.vnet_address_space
+
   private_endpoints = {
     for key, value in local.azureml_dns_zones_map :
     key => {
@@ -252,11 +255,41 @@ The following resources are used by this module:
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 
-No required inputs.
+The following input variables are required:
+
+### <a name="input_subnets"></a> [subnets](#input\_subnets)
+
+Description: A map of subnet definitions
+
+Type:
+
+```hcl
+map(object({
+    name              = string
+    address_prefix    = string
+    service_endpoints = list(string)
+    nsg_id            = string
+  }))
+```
 
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_associated_vnet"></a> [associated\_vnet](#input\_associated\_vnet)
+
+Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+
+Type:
+
+```hcl
+object({
+    resource_id = string
+  })
+```
+
+Default: `null`
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
@@ -275,6 +308,20 @@ Description: The location for the resources.
 Type: `string`
 
 Default: `"uksouth"`
+
+### <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)
+
+Description: The address space that is used by the Virtual Network
+
+Type: `list(string)`
+
+Default:
+
+```json
+[
+  "10.0.0.0/16"
+]
+```
 
 ## Outputs
 

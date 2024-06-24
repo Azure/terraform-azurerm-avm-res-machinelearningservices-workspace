@@ -97,7 +97,7 @@ Type:
 ```hcl
 map(object({
     name              = string
-    address_prefix    = string
+    address_prefixes  = string
     service_endpoints = list(string)
     nsg_id            = string
   }))
@@ -430,6 +430,12 @@ Description: The ID of the machine learning workspace.
 
 The following Modules are called:
 
+### <a name="module_avm-res-network-virtualnetwork"></a> [avm-res-network-virtualnetwork](#module\_avm-res-network-virtualnetwork)
+
+Source: Azure/avm-res-network-virtualnetwork/azurerm
+
+Version: 0.2.3
+
 ### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
@@ -447,12 +453,6 @@ Version: ~> 0.6
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
 Version: ~> 0.1
-
-### <a name="module_vnet"></a> [vnet](#module\_vnet)
-
-Source: Azure/vnet/azurerm
-
-Version: 4.1.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

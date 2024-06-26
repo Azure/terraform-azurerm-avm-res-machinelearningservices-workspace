@@ -1,13 +1,3 @@
-variable "subnets" {
-  type = map(object({
-    name              = string
-    address_prefixes  = list(string)
-    service_endpoints = list(string)
-    nsg_id            = string
-  }))
-  description = "A map of subnet definitions"
-}
-
 variable "enable_telemetry" {
   type        = bool
   default     = true
@@ -22,10 +12,4 @@ variable "location" {
   type        = string
   default     = "uksouth"
   description = "The location for the resources."
-}
-
-variable "vnet_address_space" {
-  type        = list(string)
-  default     = ["10.0.0.0/16"]
-  description = "The address space that is used by the Virtual Network"
 }

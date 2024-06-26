@@ -251,22 +251,7 @@ The following resources are used by this module:
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 
-The following input variables are required:
-
-### <a name="input_subnets"></a> [subnets](#input\_subnets)
-
-Description: A map of subnet definitions
-
-Type:
-
-```hcl
-map(object({
-    name              = string
-    address_prefixes  = list(string)
-    service_endpoints = list(string)
-    nsg_id            = string
-  }))
-```
+No required inputs.
 
 ## Optional Inputs
 
@@ -289,20 +274,6 @@ Description: The location for the resources.
 Type: `string`
 
 Default: `"uksouth"`
-
-### <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)
-
-Description: The address space that is used by the Virtual Network
-
-Type: `list(string)`
-
-Default:
-
-```json
-[
-  "10.0.0.0/16"
-]
-```
 
 ## Outputs
 

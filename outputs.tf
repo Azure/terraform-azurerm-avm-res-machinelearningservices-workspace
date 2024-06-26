@@ -16,5 +16,5 @@ output "resource_id" {
 }
 
 output "subnet_names" {
-  value = [for subnet in module.avm_res_network_virtualnetwork.subnets : subnet.name]
+  value = module.avm_res_network_virtualnetwork[0].subnet_names
 }

@@ -11,14 +11,12 @@ module "avm_res_network_virtualnetwork" {
 
   tags = var.tags
 
-  count = var.vnet == null ? 0 : can(length(var.vnet.resource_id)) && length(var.vnet.resource_id) > 0 ? 1 : 0
+  count = can(length(var.vnet.resource_id)) && length(var.vnet.resource_id) > 0 ? 1 : 0
 }
 
 data "azurerm_subnet" "shared" {
-  count = var.vnet == null ? 1 : 0
-
-  name                 = var.vnet == null ? module.avm_res_network_virtualnetwork[0].subnet_names[0] : var.vnet.subnets[0].name
-  resource_group_name  = var.vnet == null ? var.resource_group.name : var.vnet.resource_group_name
+  name                 = var.vnet.subnets[0].name
+  resource_group_name  = can(length(var.vnet.resource_group_name)) && length(var.vnet.resource_group_name) > 0 ? var.vnet.resource_group_name : var.resource_group.name
   virtual_network_name = local.vnet_name
 }
 

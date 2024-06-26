@@ -372,15 +372,31 @@ object({
     subnets = map(object({
       name              = string
       address_prefixes  = list(string)
-      service_endpoints = list(string)
-      nsg_id            = string
+      service_endpoints = optional(list(string), [])
+      nsg_id            = optional(string, null)
     }))
     address_space       = list(string)
     resource_group_name = optional(string, null)
   })
 ```
 
-Default: `null`
+Default:
+
+```json
+{
+  "address_space": [
+    "10.0.0.0/22"
+  ],
+  "subnets": {
+    "aisubnet": {
+      "address_prefixes": [
+        "10.0.1.0/24"
+      ],
+      "name": "aisubnet"
+    }
+  }
+}
+```
 
 ## Outputs
 

@@ -14,3 +14,7 @@ output "resource_id" {
   description = "The ID of the machine learning workspace."
   value       = azapi_resource.this.id
 }
+
+output "subnet_names" {
+  value = [for subnet in module.avm_res_network_virtualnetwork.subnets : subnet.name]
+}

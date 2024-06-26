@@ -414,10 +414,6 @@ Description: The machine learning workspace.
 
 Description: The ID of the machine learning workspace.
 
-### <a name="output_subnet_names"></a> [subnet\_names](#output\_subnet\_names)
-
-Description: n/a
-
 ## Modules
 
 The following Modules are called:

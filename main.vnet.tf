@@ -16,6 +16,6 @@ module "avm_res_network_virtualnetwork" {
 
 data "azurerm_subnet" "shared" {
   name                 = var.vnet.subnets[0].name
-  resource_group_name  = length(var.vnet.resource_id) == 0 ? var.resource_group.name : var.vnet.resource_group_name
+  resource_group_name  = var.vnet == null || length(var.vnet.resource_id) == 0 ? var.resource_group.name : var.vnet.resource_group_name
   virtual_network_name = local.vnet_name
 }

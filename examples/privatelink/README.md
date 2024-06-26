@@ -181,11 +181,7 @@ module "azureml" {
     id   = azurerm_resource_group.this.id
     name = azurerm_resource_group.this.name
   }
-  shared_subnet_id = azurerm_subnet.shared.id
-  is_private       = true
-
-  subnets            = var.subnets
-  vnet_address_space = var.vnet_address_space
+  is_private = true
 
   private_endpoints = {
     for key, value in local.azureml_dns_zones_map :

@@ -68,9 +68,6 @@ module "azureml" {
     id   = azurerm_resource_group.this.id
   }
 
-  subnets            = var.subnets
-  vnet_address_space = var.vnet_address_space
-
   enable_telemetry = var.enable_telemetry
 }
 ```

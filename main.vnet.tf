@@ -11,7 +11,7 @@ module "avm_res_network_virtualnetwork" {
 
   tags = var.tags
 
-  count = can(length(var.vnet.resource_id)) && length(var.vnet.resource_id) > 0 ? 1 : 0
+  count = var.vnet.resource_id == null ? 0 : 1
 }
 
 data "azurerm_subnet" "shared" {

@@ -23,16 +23,6 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "subnets" {
-  type = map(object({
-    name              = string
-    address_prefixes  = list(string)
-    service_endpoints = list(string)
-    nsg_id            = string
-  }))
-  description = "A map of subnet definitions"
-}
-
 variable "associated_container_registry" {
   type = object({
     resource_id = string
@@ -63,17 +53,6 @@ variable "associated_storage_account" {
   description = <<DESCRIPTION
 An object describing the Storage Account to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Storage Account.
-DESCRIPTION
-}
-
-variable "associated_vnet" {
-  type = object({
-    resource_id = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
 }
 
@@ -257,12 +236,6 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "shared_subnet_id" {
-  type        = string
-  default     = null
-  description = "The resource ID of the subnet to associate with the resource."
-}
-
 variable "storage_account" {
   type = object({
     private_dns_zone_resource_map = optional(map(set(string)), null)
@@ -281,8 +254,21 @@ variable "tags" {
   description = "(Optional) Tags of the resource."
 }
 
-variable "vnet_address_space" {
-  type        = list(string)
-  default     = ["10.0.0.0/16"]
-  description = "The address space that is used by the Virtual Network"
+variable "vnet" {
+  type = object({
+    resource_id = optional(string, null)
+    subnets = map(object({
+      name              = string
+      address_prefixes  = list(string)
+      service_endpoints = list(string)
+      nsg_id            = string
+    }))
+    address_space       = list(string)
+    resource_group_name = optional(string, null)
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+DESCRIPTION
 }

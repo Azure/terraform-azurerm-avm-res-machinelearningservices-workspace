@@ -55,6 +55,7 @@ The following resources are used by this module:
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_subnet.shared](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -86,21 +87,6 @@ object({
     id   = string
     name = string
   })
-```
-
-### <a name="input_subnets"></a> [subnets](#input\_subnets)
-
-Description: A map of subnet definitions
-
-Type:
-
-```hcl
-map(object({
-    name              = string
-    address_prefixes  = list(string)
-    service_endpoints = list(string)
-    nsg_id            = string
-  }))
 ```
 
 ## Optional Inputs
@@ -141,21 +127,6 @@ Default: `null`
 
 Description: An object describing the Storage Account to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Storage Account.
-
-Type:
-
-```hcl
-object({
-    resource_id = string
-  })
-```
-
-Default: `null`
-
-### <a name="input_associated_vnet"></a> [associated\_vnet](#input\_associated\_vnet)
-
-Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
 
 Type:
 
@@ -365,14 +336,6 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_shared_subnet_id"></a> [shared\_subnet\_id](#input\_shared\_subnet\_id)
-
-Description: The resource ID of the subnet to associate with the resource.
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
 Description: An object describing the Storage Account to create the private endpoint connection to. This includes the following properties:
@@ -396,19 +359,28 @@ Type: `map(string)`
 
 Default: `null`
 
-### <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)
+### <a name="input_vnet"></a> [vnet](#input\_vnet)
 
-Description: The address space that is used by the Virtual Network
+Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
 
-Type: `list(string)`
+Type:
 
-Default:
-
-```json
-[
-  "10.0.0.0/16"
-]
+```hcl
+object({
+    resource_id = optional(string, null)
+    subnets = map(object({
+      name              = string
+      address_prefixes  = list(string)
+      service_endpoints = list(string)
+      nsg_id            = string
+    }))
+    address_space       = list(string)
+    resource_group_name = optional(string, null)
+  })
 ```
+
+Default: `null`
 
 ## Outputs
 

@@ -12,7 +12,7 @@ module "avm_res_containerregistry_registry" {
     for key, value in var.container_registry.private_dns_zone_resource_map :
     key => {
       name                            = "pe-${key}-${var.name}"
-      subnet_resource_id              = var.shared_subnet_id
+      subnet_resource_id              = data.azurerm_subnet.shared.id
       subresource_name                = key
       private_dns_zone_resource_ids   = value
       private_service_connection_name = "psc-${key}-${var.name}"

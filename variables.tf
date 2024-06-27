@@ -125,7 +125,7 @@ DESCRIPTION
 
 variable "kind" {
   type        = string
-  default     = null
+  default     = "Default"
   description = <<DESCRIPTION
 The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.
 Possible values are:

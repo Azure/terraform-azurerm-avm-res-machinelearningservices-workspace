@@ -228,7 +228,7 @@ Possible values are:
 
 Type: `string`
 
-Default: `null`
+Default: `"Default"`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 

@@ -26,5 +26,10 @@ module "avm_res_storage_storageaccount" {
     }
   } : null
 
+  network_rules = {
+    bypass         = ["AzureServices"]
+    default_action = var.is_private ? "Deny" : "Allow"
+  }
+
   count = var.associated_storage_account == null ? 1 : 0
 }

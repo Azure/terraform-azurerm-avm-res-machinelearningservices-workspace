@@ -14,7 +14,6 @@ resource "azapi_resource" "this" {
       applicationInsights = azurerm_application_insights.this.id
       containerRegistry   = var.associated_container_registry == null ? module.avm_res_containerregistry_registry[0].resource_id : var.associated_container_registry.resource_id
       hbiWorkspace        = var.hbi_workspace
-      vnet                = var.vnet
       friendlyName        = "AMLManagedVirtualNetwork"
       keyVault            = var.associated_key_vault == null ? module.avm_res_keyvault_vault[0].resource_id : var.associated_key_vault.resource_id
       managedNetwork = {

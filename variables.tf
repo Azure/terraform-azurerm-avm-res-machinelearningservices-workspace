@@ -257,7 +257,7 @@ variable "tags" {
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)
-    subnets = map(object({
+    subnets = list(object({
       name              = string
       address_prefixes  = list(string)
       service_endpoints = optional(list(string), [])

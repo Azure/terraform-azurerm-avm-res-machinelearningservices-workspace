@@ -369,7 +369,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    subnets = list(object({
+    subnets = map(object({
       name              = string
       address_prefixes  = list(string)
       service_endpoints = optional(list(string), [])
@@ -387,14 +387,14 @@ Default:
   "address_space": [
     "10.0.0.0/22"
   ],
-  "subnets": [
-    {
+  "subnets": {
+    "aisubnet": {
       "address_prefixes": [
         "10.0.1.0/24"
       ],
       "name": "aisubnet"
     }
-  ]
+  }
 }
 ```
 

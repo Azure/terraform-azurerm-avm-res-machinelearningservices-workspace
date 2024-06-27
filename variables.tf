@@ -257,7 +257,7 @@ variable "tags" {
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)
-    subnets = list(object({
+    subnets = map(object({
       name              = string
       address_prefixes  = list(string)
       service_endpoints = optional(list(string), [])
@@ -267,11 +267,12 @@ variable "vnet" {
     resource_group_name = optional(string, null)
   })
   default = {
-    subnets = [{
-      name             = "aisubnet"
-      address_prefixes = ["10.0.1.0/24"]
-
-    }]
+    subnets = {
+      "aisubnet" = {
+        name             = "aisubnet"
+        address_prefixes = ["10.0.1.0/24"]
+      }
+    }
     address_space = ["10.0.0.0/22"]
   }
   description = <<DESCRIPTION

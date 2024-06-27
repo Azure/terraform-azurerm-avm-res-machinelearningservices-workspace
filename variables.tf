@@ -267,12 +267,11 @@ variable "vnet" {
     resource_group_name = optional(string, null)
   })
   default = {
-    subnets = {
-      "aisubnet" = {
-        name             = "aisubnet"
-        address_prefixes = ["10.0.1.0/24"]
-      }
-    }
+    subnets = [{
+      name             = "aisubnet"
+      address_prefixes = ["10.0.1.0/24"]
+
+    }]
     address_space = ["10.0.0.0/22"]
   }
   description = <<DESCRIPTION

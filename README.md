@@ -414,6 +414,10 @@ Description: The machine learning workspace.
 
 Description: The ID of the machine learning workspace.
 
+### <a name="output_vnet"></a> [vnet](#output\_vnet)
+
+Description: n/a
+
 ## Modules
 
 The following Modules are called:

@@ -14,3 +14,7 @@ output "resource_id" {
   description = "The ID of the machine learning workspace."
   value       = azapi_resource.this.id
 }
+
+output "vnet" {
+  value = azapi_resource.this.properties.vnet
+}

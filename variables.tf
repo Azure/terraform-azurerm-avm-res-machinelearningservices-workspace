@@ -279,4 +279,5 @@ variable "vnet" {
 An object describing the Virtual Network to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
+  nullable    = false
 }

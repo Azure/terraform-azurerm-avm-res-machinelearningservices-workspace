@@ -125,11 +125,11 @@ DESCRIPTION
 
 variable "kind" {
   type        = string
-  default     = null
+  default     = "Default"
   description = <<DESCRIPTION
 The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.
 Possible values are:
-- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `Default` - The resource will be created as a standard Azure Machine Learning resource.
 - `hub` - The resource will be created as an AI Hub resource.
 - `project` - The resource will be created as an AI Studio Project resource.
 DESCRIPTION
@@ -236,12 +236,6 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "shared_subnet_id" {
-  type        = string
-  default     = null
-  description = "The resource ID of the subnet to associate with the resource."
-}
-
 variable "storage_account" {
   type = object({
     private_dns_zone_resource_map = optional(map(set(string)), null)
@@ -258,4 +252,32 @@ variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) Tags of the resource."
+}
+
+variable "vnet" {
+  type = object({
+    resource_id = optional(string, null)
+    subnets = map(object({
+      name              = string
+      address_prefixes  = list(string)
+      service_endpoints = optional(list(string), [])
+      nsg_id            = optional(string, null)
+    }))
+    address_space       = list(string)
+    resource_group_name = optional(string, null)
+  })
+  default = {
+    subnets = {
+      "aisubnet" = {
+        name             = "aisubnet"
+        address_prefixes = ["10.0.1.0/24"]
+      }
+    }
+    address_space = ["10.0.0.0/22"]
+  }
+  description = <<DESCRIPTION
+An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+DESCRIPTION
+  nullable    = false
 }

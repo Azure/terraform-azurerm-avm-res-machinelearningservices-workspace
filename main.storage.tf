@@ -17,7 +17,7 @@ module "avm_res_storage_storageaccount" {
     for key, value in var.storage_account.private_dns_zone_resource_map :
     key => {
       name                            = "pe-${key}-${var.name}"
-      subnet_resource_id              = var.shared_subnet_id
+      subnet_resource_id              = data.azurerm_subnet.shared.id
       subresource_name                = key
       private_dns_zone_resource_ids   = value
       private_service_connection_name = "psc-${key}-${var.name}"
@@ -25,6 +25,11 @@ module "avm_res_storage_storageaccount" {
       inherit_lock                    = false
     }
   } : null
+
+  network_rules = {
+    bypass         = ["AzureServices"]
+    default_action = var.is_private ? "Deny" : "Allow"
+  }
 
   count = var.associated_storage_account == null ? 1 : 0
 }

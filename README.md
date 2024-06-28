@@ -55,6 +55,7 @@ The following resources are used by this module:
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_subnet.shared](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -221,13 +222,13 @@ Default: `null`
 
 Description: The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.  
 Possible values are:
-- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `Default` - The resource will be created as a standard Azure Machine Learning resource.
 - `hub` - The resource will be created as an AI Hub resource.
 - `project` - The resource will be created as an AI Studio Project resource.
 
 Type: `string`
 
-Default: `null`
+Default: `"Default"`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
@@ -335,14 +336,6 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_shared_subnet_id"></a> [shared\_subnet\_id](#input\_shared\_subnet\_id)
-
-Description: The resource ID of the subnet to associate with the resource.
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
 Description: An object describing the Storage Account to create the private endpoint connection to. This includes the following properties:
@@ -365,6 +358,45 @@ Description: (Optional) Tags of the resource.
 Type: `map(string)`
 
 Default: `null`
+
+### <a name="input_vnet"></a> [vnet](#input\_vnet)
+
+Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+
+Type:
+
+```hcl
+object({
+    resource_id = optional(string, null)
+    subnets = map(object({
+      name              = string
+      address_prefixes  = list(string)
+      service_endpoints = optional(list(string), [])
+      nsg_id            = optional(string, null)
+    }))
+    address_space       = list(string)
+    resource_group_name = optional(string, null)
+  })
+```
+
+Default:
+
+```json
+{
+  "address_space": [
+    "10.0.0.0/22"
+  ],
+  "subnets": {
+    "aisubnet": {
+      "address_prefixes": [
+        "10.0.1.0/24"
+      ],
+      "name": "aisubnet"
+    }
+  }
+}
+```
 
 ## Outputs
 
@@ -397,6 +429,12 @@ Version: ~> 0.1
 Source: Azure/avm-res-keyvault-vault/azurerm
 
 Version: ~> 0.6
+
+### <a name="module_avm_res_network_virtualnetwork"></a> [avm\_res\_network\_virtualnetwork](#module\_avm\_res\_network\_virtualnetwork)
+
+Source: Azure/avm-res-network-virtualnetwork/azurerm
+
+Version: 0.2.3
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 

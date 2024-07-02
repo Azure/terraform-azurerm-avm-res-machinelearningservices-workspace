@@ -11,11 +11,11 @@ resource "azapi_resource" "this" {
   body = jsonencode({
     properties = {
       publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
-      applicationInsights = azurerm_application_insights.this.id
+      applicationInsights = local.application_insights_id
       containerRegistry   = var.container_registry.resource_id == null ? module.avm_res_containerregistry_registry[0].resource_id : var.container_registry.resource_id
       hbiWorkspace        = var.hbi_workspace
       friendlyName        = "AMLManagedVirtualNetwork"
-      keyVault            = var.key_vault.resource_id == null ? module.avm_res_keyvault_vault[0].resource_id : var.key_vault.resource_id
+      keyVault            = local.key_vault_id
       managedNetwork = {
         isolationMode = "AllowInternetOutbound"
         status = {

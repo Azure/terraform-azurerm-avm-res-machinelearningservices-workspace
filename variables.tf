@@ -36,7 +36,7 @@ variable "container_registry" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default = {}
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
@@ -109,7 +109,7 @@ variable "key_vault" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default = {}
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
@@ -250,7 +250,7 @@ variable "storage_account" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default = {}
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:
 - `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.

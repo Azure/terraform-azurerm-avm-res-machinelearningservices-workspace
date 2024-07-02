@@ -191,15 +191,48 @@ module "azureml" {
   }
 
   container_registry = {
-    private_dns_zone_resource_map = local.container_registry_dns_zones_map
+    private_endpoints = {
+      for key, value in local.container_registry_dns_zones_map :
+      key => {
+        name                            = "pe-${key}-${local.name}"
+        subnet_resource_id              = azurerm_subnet.shared.id
+        subresource_name                = key
+        private_dns_zone_resource_ids   = value
+        private_service_connection_name = "psc-${key}-${local.name}"
+        network_interface_name          = "nic-pe-${key}-${local.name}"
+        inherit_lock                    = false
+      }
+    }
   }
 
   key_vault = {
-    private_dns_zone_resource_map = local.key_vault_dnz_zones_map
+    private_endpoints = {
+      for key, value in local.key_vault_dnz_zones_map :
+      key => {
+        name                            = "pe-${key}-${local.name}"
+        subnet_resource_id              = azurerm_subnet.shared.id
+        subresource_name                = key
+        private_dns_zone_resource_ids   = value
+        private_service_connection_name = "psc-${key}-${local.name}"
+        network_interface_name          = "nic-pe-${key}-${local.name}"
+        inherit_lock                    = false
+      }
+    }
   }
 
   storage_account = {
-    private_dns_zone_resource_map = local.storage_account_dnz_zones_map
+    private_endpoints = {
+      for key, value in local.storage_account_dnz_zones_map :
+      key => {
+        name                            = "pe-${key}-${local.name}"
+        subnet_resource_id              = azurerm_subnet.shared.id
+        subresource_name                = key
+        private_dns_zone_resource_ids   = value
+        private_service_connection_name = "psc-${key}-${local.name}"
+        network_interface_name          = "nic-pe-${key}-${local.name}"
+        inherit_lock                    = false
+      }
+    }
   }
 
   enable_telemetry = var.enable_telemetry

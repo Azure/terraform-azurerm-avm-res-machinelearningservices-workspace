@@ -12,7 +12,7 @@ resource "azapi_resource" "this" {
     properties = {
       publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
       applicationInsights = local.application_insights_id
-      containerRegistry   = var.associated_container_registry == null ? module.avm_res_containerregistry_registry[0].resource_id : var.associated_container_registry.resource_id
+      containerRegistry   = var.container_registry.resource_id == null ? module.avm_res_containerregistry_registry[0].resource_id : var.container_registry.resource_id
       hbiWorkspace        = var.hbi_workspace
       friendlyName        = "AMLManagedVirtualNetwork"
       keyVault            = local.key_vault_id
@@ -23,7 +23,7 @@ resource "azapi_resource" "this" {
           status     = "Active"
         }
       }
-      storageAccount = var.associated_storage_account == null ? module.avm_res_storage_storageaccount[0].resource_id : var.associated_storage_account.resource_id
+      storageAccount = var.storage_account.resource_id == null ? module.avm_res_storage_storageaccount[0].resource_id : var.storage_account.resource_id
     }
     kind = var.kind
   })

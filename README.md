@@ -93,65 +93,37 @@ object({
 
 The following input variables are optional (have default values):
 
-### <a name="input_associated_container_registry"></a> [associated\_container\_registry](#input\_associated\_container\_registry)
-
-Description: An object describing the Container Registry to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Container Registry.
-
-Type:
-
-```hcl
-object({
-    resource_id = string
-  })
-```
-
-Default: `null`
-
-### <a name="input_associated_key_vault"></a> [associated\_key\_vault](#input\_associated\_key\_vault)
-
-Description: An object describing the Key Vault to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Key Vault.
-
-Type:
-
-```hcl
-object({
-    resource_id = string
-  })
-```
-
-Default: `null`
-
-### <a name="input_associated_storage_account"></a> [associated\_storage\_account](#input\_associated\_storage\_account)
-
-Description: An object describing the Storage Account to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Storage Account.
-
-Type:
-
-```hcl
-object({
-    resource_id = string
-  })
-```
-
-Default: `null`
-
 ### <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry)
 
-Description: An object describing the Container Registry to create the private endpoint connection to. This includes the following properties:
-- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+Description: An object describing the Container Registry. This includes the following properties:
+- `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
+- `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
+  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+  - `subresource_name` - The name of the subresource.
+  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
+  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
+  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
+  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 
 Type:
 
 ```hcl
 object({
-    private_dns_zone_resource_map = optional(map(set(string)), null)
+    resource_id = optional(string, null)
+    private_endpoints = optional(map(object({
+      name                            = optional(string, null)
+      subnet_resource_id              = optional(string, null)
+      subresource_name                = string
+      private_dns_zone_resource_ids   = optional(set(string), [])
+      private_service_connection_name = optional(string, null)
+      network_interface_name          = optional(string, null)
+      inherit_lock                    = optional(bool, false)
+    })), {})
   })
 ```
 
-Default: `null`
+Default: `{}`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 
@@ -206,17 +178,34 @@ Default: `false`
 ### <a name="input_key_vault"></a> [key\_vault](#input\_key\_vault)
 
 Description: An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
-- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+- `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
+- `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
+  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+  - `subresource_name` - The name of the subresource.
+  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
+  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
+  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
+  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 
 Type:
 
 ```hcl
 object({
-    private_dns_zone_resource_map = optional(map(set(string)), null)
+    resource_id = optional(string, null)
+    private_endpoints = optional(map(object({
+      name                            = optional(string, null)
+      subnet_resource_id              = optional(string, null)
+      subresource_name                = string
+      private_dns_zone_resource_ids   = optional(set(string), [])
+      private_service_connection_name = optional(string, null)
+      network_interface_name          = optional(string, null)
+      inherit_lock                    = optional(bool, false)
+    })), {})
   })
 ```
 
-Default: `null`
+Default: `{}`
 
 ### <a name="input_kind"></a> [kind](#input\_kind)
 
@@ -338,18 +327,35 @@ Default: `{}`
 
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
-Description: An object describing the Storage Account to create the private endpoint connection to. This includes the following properties:
-- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+Description: An object describing the Storage Account. This includes the following properties:
+- `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
+- `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
+  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+  - `subresource_name` - The name of the subresource.
+  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
+  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
+  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
+  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 
 Type:
 
 ```hcl
 object({
-    private_dns_zone_resource_map = optional(map(set(string)), null)
+    resource_id = optional(string, null)
+    private_endpoints = optional(map(object({
+      name                            = optional(string, null)
+      subnet_resource_id              = optional(string, null)
+      subresource_name                = string
+      private_dns_zone_resource_ids   = optional(set(string), [])
+      private_service_connection_name = optional(string, null)
+      network_interface_name          = optional(string, null)
+      inherit_lock                    = optional(bool, false)
+    })), {})
   })
 ```
 
-Default: `null`
+Default: `{}`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 

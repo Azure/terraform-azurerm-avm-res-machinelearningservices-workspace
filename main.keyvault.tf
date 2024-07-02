@@ -10,18 +10,19 @@ module "avm_res_keyvault_vault" {
   public_network_access_enabled = var.is_private ? false : true
 
   private_endpoints = var.is_private ? {
-    for key, value in var.key_vault.private_dns_zone_resource_map :
+    for key, value in var.key_vault.private_endpoints :
     key => {
-      name                            = "pe-${key}-${var.name}"
-      subnet_resource_id              = data.azurerm_subnet.shared.id
-      subresource_name                = key
-      private_dns_zone_resource_ids   = value
-      private_service_connection_name = "psc-${key}-${var.name}"
-      network_interface_name          = "nic-pe-${key}-${var.name}"
-      inherit_lock                    = false
+      name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
+      subnet_resource_id              = value.subnet_resource_id == null ? data.azurerm_subnet.shared.id : value.subnet_resource_id
+      subresource_name                = value.subresource_name
+      private_dns_zone_resource_ids   = value.private_dns_zone_resource_ids
+      private_service_connection_name = value.private_service_connection_name == null ? "psc-${key}-${var.name}" : value.private_service_connection_name
+      network_interface_name          = value.network_interface_name == null ? "nic-pe-${key}-${var.name}" : value.network_interface_name
+      inherit_lock                    = value.inherit_lock
     }
   } : null
 
 
-  count = var.associated_key_vault == null ? 1 : 0
+
+  count = var.key_vault.resource_id == null ? 1 : 0
 }

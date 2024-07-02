@@ -211,7 +211,7 @@ Default: `{}`
 
 Description: The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.  
 Possible values are:
-- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `Default` - The resource will be created as a standard Azure Machine Learning resource.
 - `hub` - The resource will be created as an AI Hub resource.
 - `project` - The resource will be created as an AI Studio Project resource.
 

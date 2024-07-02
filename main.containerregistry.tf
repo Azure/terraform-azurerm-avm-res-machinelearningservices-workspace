@@ -19,7 +19,7 @@ module "avm_res_containerregistry_registry" {
       network_interface_name          = value.network_interface_name == null ? "nic-pe-${key}-${var.name}" : value.network_interface_name
       inherit_lock                    = value.inherit_lock
     }
-  } : null
+  } : {}
 
 
   count = var.container_registry.resource_id == null ? 1 : 0

@@ -24,7 +24,7 @@ module "avm_res_storage_storageaccount" {
       network_interface_name          = value.network_interface_name == null ? "nic-pe-${key}-${var.name}" : value.network_interface_name
       inherit_lock                    = value.inherit_lock
     }
-  } : null
+  } : {}
 
   network_rules = {
     bypass         = ["AzureServices"]

@@ -14,6 +14,12 @@ variable "location" {
   description = "The location for the resources."
 }
 
+variable "tags" {
+  type        = map(string)
+  default     = null
+  description = "(Optional) Tags of the resource."
+}
+
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)

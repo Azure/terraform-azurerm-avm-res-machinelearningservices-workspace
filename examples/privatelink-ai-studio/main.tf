@@ -176,7 +176,7 @@ module "aihub" {
     name = azurerm_resource_group.this.name
   }
   is_private = true
-  kind = "hub"
+  kind       = "hub"
 
   private_endpoints = {
     for key, value in local.azureml_dns_zones_map :

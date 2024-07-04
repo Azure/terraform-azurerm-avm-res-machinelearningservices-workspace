@@ -1,3 +1,3 @@
 # Default example
 
-This deploys the module with a private link.
+This deploys AI Hub (i.e. AI Studio) with a private link.

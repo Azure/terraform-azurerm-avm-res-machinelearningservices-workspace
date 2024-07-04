@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module with a private link.
+This deploys AI Hub (i.e. AI Studio) with a private link.
 
 ```hcl
 terraform {
@@ -171,7 +171,7 @@ locals {
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
-module "azureml" {
+module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
@@ -182,6 +182,7 @@ module "azureml" {
     name = azurerm_resource_group.this.name
   }
   is_private = true
+  kind       = "hub"
 
   private_endpoints = {
     for key, value in local.azureml_dns_zones_map :
@@ -306,7 +307,7 @@ Description: The location for the resources.
 
 Type: `string`
 
-Default: `"uksouth"`
+Default: `"australiaeast"`
 
 ## Outputs
 
@@ -316,7 +317,7 @@ No outputs.
 
 The following Modules are called:
 
-### <a name="module_azureml"></a> [azureml](#module\_azureml)
+### <a name="module_aihub"></a> [aihub](#module\_aihub)
 
 Source: ../../
 

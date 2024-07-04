@@ -23,47 +23,31 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "associated_container_registry" {
-  type = object({
-    resource_id = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Container Registry to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Container Registry.
-DESCRIPTION
-}
-
-variable "associated_key_vault" {
-  type = object({
-    resource_id = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Key Vault to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Key Vault.
-DESCRIPTION
-}
-
-variable "associated_storage_account" {
-  type = object({
-    resource_id = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Storage Account to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Storage Account.
-DESCRIPTION
-}
-
 variable "container_registry" {
   type = object({
-    private_dns_zone_resource_map = optional(map(set(string)), null)
+    resource_id = optional(string, null)
+    private_endpoints = optional(map(object({
+      name                            = optional(string, null)
+      subnet_resource_id              = optional(string, null)
+      subresource_name                = string
+      private_dns_zone_resource_ids   = optional(set(string), [])
+      private_service_connection_name = optional(string, null)
+      network_interface_name          = optional(string, null)
+      inherit_lock                    = optional(bool, false)
+    })), {})
   })
-  default     = null
+  default     = {}
   description = <<DESCRIPTION
-An object describing the Container Registry to create the private endpoint connection to. This includes the following properties:
-- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+An object describing the Container Registry. This includes the following properties:
+- `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
+- `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
+  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+  - `subresource_name` - The name of the subresource.
+  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
+  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
+  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
+  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
 }
 
@@ -114,22 +98,39 @@ variable "is_private" {
 
 variable "key_vault" {
   type = object({
-    private_dns_zone_resource_map = optional(map(set(string)), null)
+    resource_id = optional(string, null)
+    private_endpoints = optional(map(object({
+      name                            = optional(string, null)
+      subnet_resource_id              = optional(string, null)
+      subresource_name                = string
+      private_dns_zone_resource_ids   = optional(set(string), [])
+      private_service_connection_name = optional(string, null)
+      network_interface_name          = optional(string, null)
+      inherit_lock                    = optional(bool, false)
+    })), {})
   })
-  default     = null
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
-- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+- `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
+- `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
+  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+  - `subresource_name` - The name of the subresource.
+  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
+  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
+  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
+  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
 }
 
 variable "kind" {
   type        = string
-  default     = null
+  default     = "Default"
   description = <<DESCRIPTION
 The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.
 Possible values are:
-- `null` - The resource will be created as a standard Azure Machine Learning resource.
+- `Default` - The resource will be created as a standard Azure Machine Learning resource.
 - `hub` - The resource will be created as an AI Hub resource.
 - `project` - The resource will be created as an AI Studio Project resource.
 DESCRIPTION
@@ -236,20 +237,31 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "shared_subnet_id" {
-  type        = string
-  default     = null
-  description = "The resource ID of the subnet to associate with the resource."
-}
-
 variable "storage_account" {
   type = object({
-    private_dns_zone_resource_map = optional(map(set(string)), null)
+    resource_id = optional(string, null)
+    private_endpoints = optional(map(object({
+      name                            = optional(string, null)
+      subnet_resource_id              = optional(string, null)
+      subresource_name                = string
+      private_dns_zone_resource_ids   = optional(set(string), [])
+      private_service_connection_name = optional(string, null)
+      network_interface_name          = optional(string, null)
+      inherit_lock                    = optional(bool, false)
+    })), {})
   })
-  default     = null
+  default     = {}
   description = <<DESCRIPTION
-An object describing the Storage Account to create the private endpoint connection to. This includes the following properties:
-- `private_dns_zone_resource_map` - A map of private DNS zones to associate with the private endpoint.
+An object describing the Storage Account. This includes the following properties:
+- `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
+- `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
+  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
+  - `subresource_name` - The name of the subresource.
+  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
+  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
+  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
+  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
 }
 
@@ -258,4 +270,32 @@ variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) Tags of the resource."
+}
+
+variable "vnet" {
+  type = object({
+    resource_id = optional(string, null)
+    subnets = map(object({
+      name              = string
+      address_prefixes  = list(string)
+      service_endpoints = optional(list(string), [])
+      nsg_id            = optional(string, null)
+    }))
+    address_space       = list(string)
+    resource_group_name = optional(string, null)
+  })
+  default = {
+    subnets = {
+      "aisubnet" = {
+        name             = "aisubnet"
+        address_prefixes = ["10.0.1.0/24"]
+      }
+    }
+    address_space = ["10.0.0.0/22"]
+  }
+  description = <<DESCRIPTION
+An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+DESCRIPTION
+  nullable    = false
 }

@@ -33,12 +33,14 @@ module "naming" {
 resource "azurerm_resource_group" "this" {
   location = var.location
   name     = module.naming.resource_group.name_unique
+  tags     = var.tags
 }
 
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
+
 
 module "azureml" {
   source = "../../"
@@ -50,6 +52,8 @@ module "azureml" {
     name = azurerm_resource_group.this.name
     id   = azurerm_resource_group.this.id
   }
+
+  vnet = var.vnet
 
   enable_telemetry = var.enable_telemetry
 }

@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# BYO Vnet example
 
-This deploys the module in its simplest form.
+This deploys the module with a BYO VNet.
 
 ```hcl
 terraform {
@@ -39,12 +39,14 @@ module "naming" {
 resource "azurerm_resource_group" "this" {
   location = var.location
   name     = module.naming.resource_group.name_unique
+  tags     = var.tags
 }
 
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
+
 
 module "azureml" {
   source = "../../"
@@ -56,6 +58,8 @@ module "azureml" {
     name = azurerm_resource_group.this.name
     id   = azurerm_resource_group.this.id
   }
+
+  vnet = var.vnet
 
   enable_telemetry = var.enable_telemetry
 }
@@ -108,6 +112,53 @@ Description: The location for the resources.
 Type: `string`
 
 Default: `"uksouth"`
+
+### <a name="input_tags"></a> [tags](#input\_tags)
+
+Description: (Optional) Tags of the resource.
+
+Type: `map(string)`
+
+Default: `null`
+
+### <a name="input_vnet"></a> [vnet](#input\_vnet)
+
+Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
+- `resource_id` - The resource ID of the Virtual Network.
+
+Type:
+
+```hcl
+object({
+    resource_id = optional(string, null)
+    subnets = map(object({
+      name              = string
+      address_prefixes  = list(string)
+      service_endpoints = optional(list(string), [])
+      nsg_id            = optional(string, null)
+    }))
+    address_space       = list(string)
+    resource_group_name = optional(string, null)
+  })
+```
+
+Default:
+
+```json
+{
+  "address_space": [
+    "10.0.0.0/22"
+  ],
+  "subnets": {
+    "aisubnet": {
+      "address_prefixes": [
+        "10.0.1.0/24"
+      ],
+      "name": "aisubnet"
+    }
+  }
+}
+```
 
 ## Outputs
 

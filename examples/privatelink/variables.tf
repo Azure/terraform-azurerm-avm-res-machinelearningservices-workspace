@@ -10,6 +10,6 @@ DESCRIPTION
 
 variable "location" {
   type        = string
-  default     = "uksouth"
+  default     = "uswest"
   description = "The location for the resources."
 }

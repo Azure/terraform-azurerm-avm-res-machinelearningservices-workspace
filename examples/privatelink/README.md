@@ -294,7 +294,11 @@ Default: `"uksouth"`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: The machine learning workspace.
 
 ## Modules
 

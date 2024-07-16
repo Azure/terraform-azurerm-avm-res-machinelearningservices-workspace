@@ -408,6 +408,18 @@ Default:
 
 The following outputs are exported:
 
+### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
+
+Description: The ID of the application insights.
+
+### <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry)
+
+Description: The ID of the container registry.
+
+### <a name="output_key_vault"></a> [key\_vault](#output\_key\_vault)
+
+Description: The ID of the key vault.
+
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
 Description:   A map of the private endpoints created.
@@ -419,6 +431,10 @@ Description: The machine learning workspace.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The ID of the machine learning workspace.
+
+### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
+
+Description: The ID of the storage account.
 
 ## Modules
 
@@ -434,7 +450,7 @@ Version: ~> 0.1
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: ~> 0.6
+Version: ~> 0.7
 
 ### <a name="module_avm_res_network_virtualnetwork"></a> [avm\_res\_network\_virtualnetwork](#module\_avm\_res\_network\_virtualnetwork)
 

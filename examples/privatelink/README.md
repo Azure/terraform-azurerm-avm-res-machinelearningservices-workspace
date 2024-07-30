@@ -284,7 +284,7 @@ Description: The location for the resources.
 
 Type: `string`
 
-Default: `"uksouth"`
+Default: `"uswest"`
 
 ## Outputs
 

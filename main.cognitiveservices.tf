@@ -1,5 +1,6 @@
 resource "azapi_resource" "aiservice" {
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
+  count = var.kind == "hub" ? 1 : 0
 
   identity {
     type = "SystemAssigned"

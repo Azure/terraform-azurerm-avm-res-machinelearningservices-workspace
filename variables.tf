@@ -26,6 +26,7 @@ DESCRIPTION
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
+    create_new = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -49,6 +50,15 @@ An object describing the Container Registry. This includes the following propert
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
+  validation {
+    condition     = var.container_registry.create_new == false && var.container_registry.resource_id == null
+    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
+  }
+
+  validation {
+    condition     = var.container_registry.create_new == true && var.container_registry.resource_id != null
+    error_message = "Either `create_new` must be set to false or `resource_id` must be set to null."
+  }
 }
 
 # required AVM interfaces
@@ -99,6 +109,7 @@ variable "is_private" {
 variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -122,6 +133,16 @@ An object describing the Key Vault to create the private endpoint connection to.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
+
+  validation {
+    condition     = var.key_vault.create_new == false && var.key_vault.resource_id == null
+    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
+  }
+
+  validation {
+    condition     = var.key_vault.create_new == true && var.key_vault.resource_id != null
+    error_message = "Either `create_new` must be set to false or `resource_id` must be set to null."
+  }
 }
 
 variable "kind" {
@@ -240,6 +261,7 @@ DESCRIPTION
 variable "storage_account" {
   type = object({
     resource_id = optional(string, null)
+    create_new = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)

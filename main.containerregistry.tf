@@ -22,5 +22,5 @@ module "avm_res_containerregistry_registry" {
   } : {}
 
 
-  count = var.container_registry.resource_id == null ? 1 : 0
+  count = var.container_registry.create_new ? 1 : 0
 }

@@ -5,12 +5,12 @@ output "application_insights" {
 
 output "container_registry" {
   description = "The ID of the container registry."
-  value       = module.avm_res_containerregistry_registry != null ? module.avm_res_containerregistry_registry[0].resource : null
+  value       = length(module.avm_res_containerregistry_registry) == 1 ? module.avm_res_containerregistry_registry[0].resource : null
 }
 
 output "key_vault" {
   description = "The ID of the key vault."
-  value = module.avm_res_keyvault_vault != null ? {
+  value = length(module.avm_res_keyvault_vault) == 1 ? {
     keys_resource_ids    = module.avm_res_keyvault_vault[0].keys_resource_ids
     private_endpoints    = module.avm_res_keyvault_vault[0].private_endpoints
     resource_id          = module.avm_res_keyvault_vault[0].resource_id
@@ -38,5 +38,5 @@ output "resource_id" {
 
 output "storage_account" {
   description = "The ID of the storage account."
-  value       = module.avm_res_storage_storageaccount != null ? module.avm_res_storage_storageaccount[0].resource : null
+  value       = length(module.avm_res_storage_storageaccount) == 1 ? module.avm_res_storage_storageaccount[0].resource : null
 }

@@ -26,7 +26,7 @@ DESCRIPTION
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, false)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)

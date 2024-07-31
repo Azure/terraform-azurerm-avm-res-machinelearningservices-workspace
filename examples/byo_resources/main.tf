@@ -52,25 +52,25 @@ resource "azurerm_resource_group" "this" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_storage_account" "exemple" {
-  resource_group_name      = azurerm_resource_group.this.name
-  name                     = module.naming.storage_account.name_unique
-  location                 = azurerm_resource_group.this.location
-  account_tier             = "Standard"
   account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.this.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.this.name
 }
 
 resource "azurerm_key_vault" "exemple" {
-  resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
   name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.this.name
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
 resource "azurerm_container_registry" "exemple" {
-  resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
   name                = module.naming.container_registry.name_unique
+  resource_group_name = azurerm_resource_group.this.name
   sku                 = "Premium"
 }
 

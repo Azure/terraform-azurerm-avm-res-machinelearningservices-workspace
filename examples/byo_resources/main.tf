@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.74"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
+    }
   }
 }
 
@@ -52,7 +56,7 @@ resource "azurerm_storage_account" "exemple" {
   name                     = module.naming.storage_account.name_unique
   location                 = azurerm_resource_group.this.location
   account_tier             = "Standard"
-  account_replication_type = "LRS"
+  account_replication_type = "ZRS"
 }
 
 resource "azurerm_key_vault" "exemple" {
@@ -83,7 +87,7 @@ module "azureml" {
 
   storage_account = {
     resource_id = azurerm_storage_account.exemple.id
-    create_new = false
+    create_new  = false
   }
 
   key_vault = {

@@ -177,6 +177,15 @@ module "aihub" {
   }
   is_private = true
   kind       = "hub"
+  vnet = {
+    resource_id = azurerm_virtual_network.vnet.id
+    subnets = {
+      "SharedSubnet" = {
+        name             = azurerm_subnet.shared.name
+        address_prefixes = azurerm_subnet.shared.address_prefixes
+      }
+    }
+  }
 
   private_endpoints = {
     for key, value in local.azureml_dns_zones_map :

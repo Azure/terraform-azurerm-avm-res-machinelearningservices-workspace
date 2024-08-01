@@ -73,6 +73,23 @@ object({
 
 The following input variables are optional (have default values):
 
+### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
+
+Description: An object describing the Application Insights resource to create. This includes the following properties:
+- `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
+- `create_new` - A flag indicating if a new resource must be created. If set to 'false', resource\_id must not be 'null'.
+
+Type:
+
+```hcl
+object({
+    resource_id = optional(string, null)
+    create_new  = optional(bool, true)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry)
 
 Description: An object describing the Container Registry. This includes the following properties:
@@ -218,6 +235,23 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace)
+
+Description: An object describing the Log Analytics Workspace to create. This includes the following properties:
+- `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
+- `create_new` - A flag indicating if a new workspace must be created. If set to 'false', resource\_id must not be 'null'.
+
+Type:
+
+```hcl
+object({
+    resource_id = optional(string, null)
+    create_new  = optional(bool, true)
+  })
+```
+
+Default: `{}`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -439,6 +473,12 @@ Version: ~> 0.1
 Source: Azure/avm-res-keyvault-vault/azurerm
 
 Version: ~> 0.7
+
+### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
+
+Source: Azure/avm-res-operationalinsights-workspace/azurerm
+
+Version: 0.3.3
 
 ### <a name="module_avm_res_network_virtualnetwork"></a> [avm\_res\_network\_virtualnetwork](#module\_avm\_res\_network\_virtualnetwork)
 

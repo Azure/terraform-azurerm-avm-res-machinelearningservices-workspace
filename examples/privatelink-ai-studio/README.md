@@ -26,20 +26,6 @@ provider "azurerm" {
   }
 }
 
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
-}
-
-# This allows us to randomize the region for the resource group.
-resource "random_integer" "region_index" {
-  max = length(module.regions.regions) - 1
-  min = 0
-}
-## End of section to provide a random Azure region for the resource group
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -184,6 +170,18 @@ module "aihub" {
   is_private = true
   kind       = "hub"
 
+  vnet = {
+    resource_id   = azurerm_virtual_network.vnet.id
+    create_new    = false
+    address_space = azurerm_virtual_network.vnet.address_space
+    subnets = {
+      "SharedSubnet" = {
+        name             = azurerm_subnet.shared.name
+        address_prefixes = azurerm_subnet.shared.address_prefixes
+      }
+    }
+  }
+
   private_endpoints = {
     for key, value in local.azureml_dns_zones_map :
     key => {
@@ -272,7 +270,6 @@ The following resources are used by this module:
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_subnet.shared](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_virtual_network.vnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
-- [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -318,12 +315,6 @@ Version:
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
-
-Version: ~> 0.3
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/regions/azurerm
 
 Version: ~> 0.3
 

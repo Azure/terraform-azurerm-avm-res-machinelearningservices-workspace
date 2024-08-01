@@ -4,5 +4,8 @@ resource "azurerm_application_insights" "this" {
   name                = "ai-${var.name}"
   resource_group_name = var.resource_group.name
   tags                = var.tags
-  workspace_id        = vars.log_analytics_workspace.resource_id
+  workspace_id        = local.log_analytics_workspace_id
+
+  count = var.application_insights.create_new ? 1 : 0
+
 }

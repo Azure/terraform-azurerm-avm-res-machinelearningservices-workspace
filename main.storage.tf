@@ -31,5 +31,7 @@ module "avm_res_storage_storageaccount" {
     default_action = var.is_private ? "Deny" : "Allow"
   }
 
+  tags = var.tags
+
   count = var.storage_account.create_new ? 1 : 0
 }

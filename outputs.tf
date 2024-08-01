@@ -4,12 +4,12 @@ output "application_insights" {
 }
 
 output "container_registry" {
-  description = "The ID of the container registry."
+  description = "The container registry resource."
   value       = length(module.avm_res_containerregistry_registry) == 1 ? module.avm_res_containerregistry_registry[0].resource : null
 }
 
 output "key_vault" {
-  description = "The ID of the key vault."
+  description = "The key vault resource."
   value = length(module.avm_res_keyvault_vault) == 1 ? {
     keys_resource_ids    = module.avm_res_keyvault_vault[0].keys_resource_ids
     private_endpoints    = module.avm_res_keyvault_vault[0].private_endpoints
@@ -37,6 +37,12 @@ output "resource_id" {
 }
 
 output "storage_account" {
-  description = "The ID of the storage account."
+  description = "The storage account resource."
   value       = length(module.avm_res_storage_storageaccount) == 1 ? module.avm_res_storage_storageaccount[0].resource : null
 }
+
+output "vnet" {
+  description = "The ID of the virtual network."
+  value       = length(module.avm_res_network_virtualnetwork) == 1 ? module.avm_res_network_virtualnetwork[0].resource : null
+}
+

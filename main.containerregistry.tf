@@ -21,6 +21,7 @@ module "avm_res_containerregistry_registry" {
     }
   } : {}
 
+  tags = var.tags
 
   count = var.container_registry.create_new ? 1 : 0
 }

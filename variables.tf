@@ -293,6 +293,7 @@ variable "tags" {
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     subnets = map(object({
       name              = string
       address_prefixes  = list(string)
@@ -316,4 +317,8 @@ An object describing the Virtual Network to associate with the resource. This in
 - `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
   nullable    = false
+  validation {
+    condition     = (var.vnet.create_new == false && var.vnet.resource_id != null) || (var.vnet.create_new == true && var.vnet.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+  }
 }

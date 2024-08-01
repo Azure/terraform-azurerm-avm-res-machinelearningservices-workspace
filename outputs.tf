@@ -45,4 +45,3 @@ output "vnet" {
   description = "The ID of the virtual network."
   value       = length(module.avm_res_network_virtualnetwork) == 1 ? module.avm_res_network_virtualnetwork[0].resource : null
 }
-

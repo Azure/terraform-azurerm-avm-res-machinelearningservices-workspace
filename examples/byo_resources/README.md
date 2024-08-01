@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# BYO Resources
 
-This deploys the module in its simplest form.
+This directory contains examples of how to bring your own resources to the deployment of Azure Machine Learning Workspaces.
 
 ```hcl
 terraform {
@@ -10,6 +10,10 @@ terraform {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.74"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
     }
   }
 }
@@ -35,9 +39,14 @@ module "naming" {
   version = "~> 0.3"
 }
 
+resource "random_integer" "region_index" {
+  max = length(module.regions.regions) - 1
+  min = 0
+}
+
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
-  location = var.location
+  location = module.regions.regions[random_integer.region_index.result].name
   name     = module.naming.resource_group.name_unique
 }
 
@@ -46,18 +55,58 @@ resource "azurerm_resource_group" "this" {
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
 
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_storage_account" "exemple" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.this.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.this.name
+}
+
+resource "azurerm_key_vault" "exemple" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  sku_name            = "standard"
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+}
+
+resource "azurerm_container_registry" "exemple" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.container_registry.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Premium"
+}
+
 module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location = var.location
+  location = azurerm_resource_group.this.location
   name     = module.naming.machine_learning_workspace.name_unique
   resource_group = {
     name = azurerm_resource_group.this.name
     id   = azurerm_resource_group.this.id
   }
 
-  enable_telemetry = var.enable_telemetry
+  storage_account = {
+    resource_id = azurerm_storage_account.exemple.id
+    create_new  = false
+  }
+
+  key_vault = {
+    resource_id = azurerm_key_vault.exemple.id
+    create_new  = false
+  }
+
+  container_registry = {
+    resource_id = azurerm_container_registry.exemple.id
+    create_new  = false
+  }
+
+  enable_telemetry = false
 }
 ```
 
@@ -70,11 +119,18 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.74)
 
+- <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.1)
+
 ## Resources
 
 The following resources are used by this module:
 
+- [azurerm_container_registry.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry) (resource)
+- [azurerm_key_vault.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_storage_account.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -83,25 +139,7 @@ No required inputs.
 
 ## Optional Inputs
 
-The following input variables are optional (have default values):
-
-### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
-
-Description: This variable controls whether or not telemetry is enabled for the module.  
-For more information see <https://aka.ms/avm/telemetryinfo>.  
-If it is set to false, then no telemetry will be collected.
-
-Type: `bool`
-
-Default: `true`
-
-### <a name="input_location"></a> [location](#input\_location)
-
-Description: The location for the resources.
-
-Type: `string`
-
-Default: `"uksouth"`
+No optional inputs.
 
 ## Outputs
 

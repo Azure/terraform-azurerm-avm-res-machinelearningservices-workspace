@@ -1,3 +1,3 @@
-# Default example
+# BYO Resources
 
-This deploys the module in its simplest form.
+This directory contains examples of how to bring your own resources to the deployment of Azure Machine Learning Workspaces.

@@ -1,7 +1,7 @@
 resource "azurerm_application_insights" "this" {
   application_type    = "web"
   location            = var.location
-  name                = "ai-${var.name}"
+  name                = local.application_insights_name
   resource_group_name = var.resource_group.name
   tags                = var.tags
   workspace_id        = local.log_analytics_workspace_id

@@ -83,9 +83,9 @@ resource "azurerm_application_insights" "example" {
 }
 
 resource "azurerm_log_analytics_workspace" "example" {
-    location            = azurerm_resource_group.this.location
-    name                = module.naming.log_analytics_workspace.name_unique
-    resource_group_name = azurerm_resource_group.this.name  
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
 }
 
 module "azureml" {
@@ -118,7 +118,7 @@ module "azureml" {
     resource_id = azurerm_log_analytics_workspace.example.id
     create_new  = false
   }
-  
+
   application_insights = {
     resource_id = azurerm_application_insights.example.id
     create_new  = false

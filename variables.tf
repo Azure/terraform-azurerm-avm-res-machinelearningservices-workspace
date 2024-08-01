@@ -26,6 +26,7 @@ DESCRIPTION
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -49,6 +50,11 @@ An object describing the Container Registry. This includes the following propert
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
+
+  validation {
+    condition     = (var.container_registry.create_new == false && var.container_registry.resource_id != null) || (var.container_registry.create_new == true && var.container_registry.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+  }
 }
 
 # required AVM interfaces
@@ -99,6 +105,7 @@ variable "is_private" {
 variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -122,6 +129,11 @@ An object describing the Key Vault to create the private endpoint connection to.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
+
+  validation {
+    condition     = (var.key_vault.create_new == false && var.key_vault.resource_id != null) || (var.key_vault.create_new == true && var.key_vault.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+  }
 }
 
 variable "kind" {
@@ -240,6 +252,7 @@ DESCRIPTION
 variable "storage_account" {
   type = object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -263,6 +276,11 @@ An object describing the Storage Account. This includes the following properties
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 DESCRIPTION
+
+  validation {
+    condition     = (var.storage_account.create_new == false && var.storage_account.resource_id != null) || (var.storage_account.create_new == true && var.storage_account.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+  }
 }
 
 # tflint-ignore: terraform_unused_declarations
@@ -275,6 +293,7 @@ variable "tags" {
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     subnets = map(object({
       name              = string
       address_prefixes  = list(string)
@@ -298,4 +317,9 @@ An object describing the Virtual Network to associate with the resource. This in
 - `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
   nullable    = false
+
+  validation {
+    condition     = (var.vnet.create_new == false && var.vnet.resource_id != null) || (var.vnet.create_new == true && var.vnet.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+  }
 }

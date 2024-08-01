@@ -5,23 +5,6 @@ Use this module to create a Machine Learning Workspace in Azure.
 
 This module can create Azure Machine learning workspaces but also Azure AI Studio to change this mode you must change the kind parameter to `hub` or `project` ( there might be extra configuration needed in case you chose to go with AI Studio).
 
-## Usage
-
-```hcl
-module "machine_learning_workspace" {
-  source = "Azure/avm-res-machinelearning-workspace/azurerm"
-
-  name           = "mlworkspace"
-  resource_group = {
-    id   = azurerm_resource_group.example.id
-    name = azurerm_resource_group.example.name
-  }
-  location       = azurerm_resource_group.example.location
-  tags           = { environment = "dev" }
-}
-```
-
-
 <!-- markdownlint-disable MD033 -->
 ## Requirements
 
@@ -108,6 +91,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -190,6 +174,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -340,6 +325,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -372,6 +358,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
+    create_new  = optional(bool, true)
     subnets = map(object({
       name              = string
       address_prefixes  = list(string)
@@ -411,11 +398,11 @@ Description: The ID of the application insights.
 
 ### <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry)
 
-Description: The ID of the container registry.
+Description: The container registry resource.
 
 ### <a name="output_key_vault"></a> [key\_vault](#output\_key\_vault)
 
-Description: The ID of the key vault.
+Description: The key vault resource.
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
@@ -431,7 +418,11 @@ Description: The ID of the machine learning workspace.
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
-Description: The ID of the storage account.
+Description: The storage account resource.
+
+### <a name="output_vnet"></a> [vnet](#output\_vnet)
+
+Description: The ID of the virtual network.
 
 ## Modules
 

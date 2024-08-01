@@ -166,6 +166,7 @@ module "aihub" {
 
   vnet = {
     resource_id   = azurerm_virtual_network.vnet.id
+    create_new  = false
     address_space = azurerm_virtual_network.vnet.address_space
     subnets = {
       "SharedSubnet" = {

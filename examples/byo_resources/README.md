@@ -9,11 +9,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1"
+      version = "3.112.0"
     }
   }
 }
@@ -26,27 +22,15 @@ provider "azurerm" {
   }
 }
 
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
-}
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "~> 0.3"
 }
 
-resource "random_integer" "region_index" {
-  max = length(module.regions.regions) - 1
-  min = 0
-}
-
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
-  location = module.regions.regions[random_integer.region_index.result].name
+  location = var.location
   name     = module.naming.resource_group.name_unique
 }
 
@@ -97,7 +81,7 @@ module "azureml" {
   }
 
   key_vault = {
-    resource_id = azurerm_key_vault.exemple.id
+    resource_id = replace(azurerm_key_vault.exemple.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
     create_new  = false
   }
 
@@ -105,7 +89,7 @@ module "azureml" {
     resource_id = azurerm_container_registry.exemple.id
     create_new  = false
   }
-
+  tags             = {}
   enable_telemetry = false
 }
 ```
@@ -117,20 +101,17 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.74)
-
-- <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.1)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.112.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_container_registry.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry) (resource)
-- [azurerm_key_vault.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_storage_account.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
-- [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_container_registry.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/container_registry) (resource)
+- [azurerm_key_vault.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/key_vault) (resource)
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/resource_group) (resource)
+- [azurerm_storage_account.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/storage_account) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -139,7 +120,15 @@ No required inputs.
 
 ## Optional Inputs
 
-No optional inputs.
+The following input variables are optional (have default values):
+
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The location for the resources.
+
+Type: `string`
+
+Default: `"uksouth"`
 
 ## Outputs
 
@@ -162,12 +151,6 @@ Version:
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
-
-Version: ~> 0.3
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/regions/azurerm
 
 Version: ~> 0.3
 

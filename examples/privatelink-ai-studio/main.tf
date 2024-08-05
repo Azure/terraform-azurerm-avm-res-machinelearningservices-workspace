@@ -35,7 +35,7 @@ resource "azurerm_resource_group" "this" {
 locals {
   azureml_dns_zones = toset([
     "privatelink.api.azureml.ms",
-    "privatelink.notebooks.azure.net",
+    # "privatelink.notebooks.azure.net",
   ])
   container_registry_endpoints = toset([
     "azurecr",

@@ -1,3 +1,3 @@
-# Default example
+# Azure AI Hub
 
-This deploys AI Hub (i.e. AI Studio) with a private link.
+This example deploys AI Hub (i.e. AI Studio) with private link.

@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# Azure AI Hub
 
-This deploys AI Hub (i.e. AI Studio) with a private link.
+This example deploys AI Hub (i.e. AI Studio) with private link.
 
 ```hcl
 terraform {
@@ -9,11 +9,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.5"
+      version = "~> 3.112.0"
     }
   }
 }
@@ -41,7 +37,7 @@ resource "azurerm_resource_group" "this" {
 locals {
   azureml_dns_zones = toset([
     "privatelink.api.azureml.ms",
-    "privatelink.notebooks.azure.net",
+    # "privatelink.notebooks.azure.net",
   ])
   container_registry_endpoints = toset([
     "azurecr",
@@ -251,9 +247,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.74)
-
-- <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.112.0)
 
 ## Resources
 

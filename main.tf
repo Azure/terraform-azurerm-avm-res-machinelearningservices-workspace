@@ -37,6 +37,50 @@ resource "azapi_resource" "this" {
   }
 }
 
+# Azure AI Project
+resource "azapi_resource" "aiproject" {
+  count = var.kind == "hub" ? 1 : 0
+
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01-preview"
+  body = jsonencode({
+    properties = {
+      description   = "Azure AI PROJECT"
+      friendlyName  = "AI Project"
+      hubResourceId = azapi_resource.this.id
+    }
+    kind = "project"
+  })
+  location  = var.location
+  name      = "aihubproject-${var.name}"
+  parent_id = var.resource_group.id
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# AzAPI AI Services Connection
+resource "azapi_resource" "aiserviceconnection" {
+  count = var.kind == "hub" ? 1 : 0
+
+  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01-preview"
+  body = jsonencode({
+    properties = {
+      category      = "AIServices",
+      target        = jsondecode(azapi_resource.aiservice[count.index].output).properties.endpoint,
+      authType      = "AAD",
+      isSharedToAll = true,
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = azapi_resource.aiservice[count.index].id
+      }
+    }
+  })
+  name                   = "aiserviceconnection${var.name}"
+  parent_id              = azapi_resource.this.id
+  response_export_values = ["*"]
+}
+
 resource "azurerm_management_lock" "this" {
   count = var.lock != null ? 1 : 0
 

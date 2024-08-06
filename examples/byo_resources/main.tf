@@ -3,11 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1"
+      version = "3.112.0"
     }
   }
 }
@@ -20,27 +16,15 @@ provider "azurerm" {
   }
 }
 
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
-}
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
   version = "~> 0.3"
 }
 
-resource "random_integer" "region_index" {
-  max = length(module.regions.regions) - 1
-  min = 0
-}
-
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
-  location = module.regions.regions[random_integer.region_index.result].name
+  location = var.location
   name     = module.naming.resource_group.name_unique
 }
 
@@ -105,7 +89,7 @@ module "azureml" {
   }
 
   key_vault = {
-    resource_id = azurerm_key_vault.example.id
+    resource_id = replace(azurerm_key_vault.exemple.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
     create_new  = false
   }
 
@@ -123,7 +107,7 @@ module "azureml" {
     resource_id = azurerm_application_insights.example.id
     create_new  = false
   }
-
+  tags             = {}
   enable_telemetry = false
 
 }

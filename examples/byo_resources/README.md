@@ -41,7 +41,7 @@ resource "azurerm_resource_group" "this" {
 
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_storage_account" "exemple" {
+resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
   account_tier             = "Standard"
   location                 = azurerm_resource_group.this.location
@@ -49,7 +49,7 @@ resource "azurerm_storage_account" "exemple" {
   resource_group_name      = azurerm_resource_group.this.name
 }
 
-resource "azurerm_key_vault" "exemple" {
+resource "azurerm_key_vault" "example" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.key_vault.name_unique
   resource_group_name = azurerm_resource_group.this.name
@@ -57,11 +57,25 @@ resource "azurerm_key_vault" "exemple" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
-resource "azurerm_container_registry" "exemple" {
+resource "azurerm_container_registry" "example" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.container_registry.name_unique
   resource_group_name = azurerm_resource_group.this.name
   sku                 = "Premium"
+}
+
+resource "azurerm_application_insights" "example" {
+  application_type    = "web"
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.application_insights.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  workspace_id        = azurerm_log_analytics_workspace.example.id
+}
+
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
 }
 
 module "azureml" {
@@ -76,21 +90,33 @@ module "azureml" {
   }
 
   storage_account = {
-    resource_id = azurerm_storage_account.exemple.id
+    resource_id = azurerm_storage_account.example.id
     create_new  = false
   }
 
   key_vault = {
-    resource_id = replace(azurerm_key_vault.exemple.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
     create_new  = false
   }
 
   container_registry = {
-    resource_id = azurerm_container_registry.exemple.id
+    resource_id = azurerm_container_registry.example.id
     create_new  = false
   }
+
+  log_analytics_workspace = {
+    resource_id = azurerm_log_analytics_workspace.example.id
+    create_new  = false
+  }
+
+  application_insights = {
+    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
+    create_new  = false
+  }
+
   tags             = {}
   enable_telemetry = false
+
 }
 ```
 
@@ -107,10 +133,12 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_container_registry.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/container_registry) (resource)
-- [azurerm_key_vault.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/key_vault) (resource)
+- [azurerm_application_insights.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/application_insights) (resource)
+- [azurerm_container_registry.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/container_registry) (resource)
+- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/key_vault) (resource)
+- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/log_analytics_workspace) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/resource_group) (resource)
-- [azurerm_storage_account.exemple](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/storage_account) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/storage_account) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->

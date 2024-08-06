@@ -23,6 +23,24 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "application_insights" {
+  type = object({
+    resource_id = optional(string, null)
+    create_new  = optional(bool, true)
+  })
+  default     = {}
+  description = <<DESCRIPTION
+An object describing the Application Insights resource to create. This includes the following properties:
+- `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
+- `create_new` - A flag indicating if a new resource must be created. If set to 'false', resource_id must not be 'null'.
+DESCRIPTION
+
+  validation {
+    condition     = (var.application_insights.create_new == false && var.application_insights.resource_id != null) || (var.application_insights.create_new == true && var.application_insights.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+  }
+}
+
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
@@ -164,6 +182,24 @@ DESCRIPTION
   validation {
     condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
     error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
+  }
+}
+
+variable "log_analytics_workspace" {
+  type = object({
+    resource_id = optional(string, null)
+    create_new  = optional(bool, true)
+  })
+  default     = {}
+  description = <<DESCRIPTION
+An object describing the Log Analytics Workspace to create. This includes the following properties:
+- `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
+- `create_new` - A flag indicating if a new workspace must be created. If set to 'false', resource_id must not be 'null'.
+DESCRIPTION
+
+  validation {
+    condition     = (var.log_analytics_workspace.create_new == false && var.log_analytics_workspace.resource_id != null) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
 

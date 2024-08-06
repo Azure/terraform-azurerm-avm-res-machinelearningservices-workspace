@@ -107,6 +107,7 @@ module "azureml" {
     resource_id = azurerm_application_insights.example.id
     create_new  = false
   }
+
   tags             = {}
   enable_telemetry = false
 

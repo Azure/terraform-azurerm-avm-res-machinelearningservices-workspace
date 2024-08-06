@@ -89,7 +89,7 @@ module "azureml" {
   }
 
   key_vault = {
-    resource_id = replace(azurerm_key_vault.exemple.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
     create_new  = false
   }
 

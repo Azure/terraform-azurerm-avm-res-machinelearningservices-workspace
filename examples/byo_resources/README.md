@@ -110,7 +110,7 @@ module "azureml" {
   }
 
   application_insights = {
-    resource_id = azurerm_application_insights.example.id
+    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
     create_new  = false
   }
 

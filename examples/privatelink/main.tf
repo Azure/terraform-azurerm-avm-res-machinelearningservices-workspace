@@ -1,10 +1,6 @@
 terraform {
   required_version = "~> 1.5"
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 1.14.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.74"
@@ -229,26 +225,4 @@ module "azureml" {
   }
 
   enable_telemetry = var.enable_telemetry
-}
-
-resource "azapi_resource" "computeinstance" {
-  type      = "Microsoft.MachineLearningServices/workspaces/computes@2024-04-01"
-  name      = module.naming.dev_test_linux_virtual_machine.name_unique
-  parent_id = module.azureml.resource_id
-  location  = module.azureml.resource.location
-  identity {
-    type = "SystemAssigned"
-  }
-  body = jsonencode({
-    properties = {
-      # resourceId = "string"
-      computeType = "ComputeInstance"
-      properties = {
-        enableNodePublicIp = false
-        # enableSSO = bool
-        # idleTimeBeforeShutdown = "string"
-        vmSize = "STANDARD_DS2_V2"
-      }
-    }
-  })
 }

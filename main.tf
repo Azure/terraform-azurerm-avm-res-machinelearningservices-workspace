@@ -74,6 +74,31 @@ resource "azapi_resource" "aiserviceconnection" {
   response_export_values = ["*"]
 }
 
+# Azure Machine Learning Compute Instance
+resource "azapi_resource" "computeinstance" {
+  count = var.create_compute_instance ? 1 : 0
+
+  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-04-01"
+  body = jsonencode({
+    properties = {
+      computeType = "ComputeInstance"
+      properties = {
+        enableNodePublicIp = false
+        # enableSSO = bool
+        # idleTimeBeforeShutdown = "string"
+        vmSize = "STANDARD_DS2_V2"
+      }
+    }
+  })
+  location  = azapi_resource.this.location
+  name      = "ci-${var.name}"
+  parent_id = azapi_resource.this.id
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
 resource "azurerm_management_lock" "this" {
   count = var.lock != null ? 1 : 0
 

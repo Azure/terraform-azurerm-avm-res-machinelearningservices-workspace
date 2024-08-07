@@ -75,6 +75,12 @@ DESCRIPTION
   }
 }
 
+variable "create_compute_instance" {
+  type        = bool
+  default     = true
+  description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet."
+}
+
 # required AVM interfaces
 # remove only if not supported by the resource
 # tflint-ignore: terraform_unused_declarations

@@ -1,6 +1,6 @@
 
 resource "azapi_resource" "this" {
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
       publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
@@ -34,7 +34,7 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "aiproject" {
   count = var.kind == "hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
       description   = "Azure AI PROJECT"
@@ -56,7 +56,7 @@ resource "azapi_resource" "aiproject" {
 resource "azapi_resource" "aiserviceconnection" {
   count = var.kind == "hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
   body = jsonencode({
     properties = {
       category      = "AIServices",

@@ -77,7 +77,7 @@ DESCRIPTION
 
 variable "create_compute_instance" {
   type        = bool
-  default     = true
+  default     = false
   description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet."
 }
 

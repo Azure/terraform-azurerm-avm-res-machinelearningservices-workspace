@@ -84,9 +84,7 @@ resource "azapi_resource" "computeinstance" {
       computeType = "ComputeInstance"
       properties = {
         enableNodePublicIp = false
-        # enableSSO = bool
-        # idleTimeBeforeShutdown = "string"
-        vmSize = "STANDARD_DS2_V2"
+        vmSize             = "STANDARD_DS2_V2"
       }
     }
   })

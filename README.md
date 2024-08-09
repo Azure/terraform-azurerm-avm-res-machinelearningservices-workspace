@@ -133,7 +133,7 @@ Description: Specifies whether a compute instance should be created for the work
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 

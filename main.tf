@@ -1,6 +1,6 @@
 
 resource "azapi_resource" "this" {
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
       publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
@@ -34,7 +34,7 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "aiproject" {
   count = var.kind == "hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
       description   = "Azure AI PROJECT"
@@ -56,7 +56,7 @@ resource "azapi_resource" "aiproject" {
 resource "azapi_resource" "aiserviceconnection" {
   count = var.kind == "hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
   body = jsonencode({
     properties = {
       category      = "AIServices",
@@ -72,6 +72,29 @@ resource "azapi_resource" "aiserviceconnection" {
   name                   = "aiserviceconnection${var.name}"
   parent_id              = azapi_resource.this.id
   response_export_values = ["*"]
+}
+
+# Azure Machine Learning Compute Instance
+resource "azapi_resource" "computeinstance" {
+  count = var.create_compute_instance ? 1 : 0
+
+  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-04-01"
+  body = jsonencode({
+    properties = {
+      computeType = "ComputeInstance"
+      properties = {
+        enableNodePublicIp = false
+        vmSize             = "STANDARD_DS2_V2"
+      }
+    }
+  })
+  location  = azapi_resource.this.location
+  name      = "ci-${var.name}"
+  parent_id = azapi_resource.this.id
+
+  identity {
+    type = "SystemAssigned"
+  }
 }
 
 resource "azurerm_management_lock" "this" {

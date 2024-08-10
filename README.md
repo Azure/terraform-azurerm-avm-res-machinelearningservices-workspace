@@ -27,6 +27,7 @@ The following resources are used by this module:
 - [azapi_resource.aiproject](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/application_insights) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/management_lock) (resource)
@@ -125,6 +126,14 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
+
+Description: Specifies whether a compute instance should be created for the workspace to provision the managed vnet.
+
+Type: `bool`
+
+Default: `false`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 

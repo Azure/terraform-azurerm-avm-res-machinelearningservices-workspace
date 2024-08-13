@@ -1,7 +1,12 @@
 <!-- BEGIN_TF_DOCS -->
-# BYO Vnet example
+# BYO Vnet with private endpoints
 
-This deploys the module with a BYO VNet.
+This deploys a VNet and the module with private endpoints:
+
+- AML Workspace (public access) with private endpoints integrated with Vnet
+- Storage Account
+- Key Vault
+- App Insights and Log Analytics workspace
 
 ```hcl
 terraform {

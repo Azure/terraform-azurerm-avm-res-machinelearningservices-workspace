@@ -319,7 +319,7 @@ DESCRIPTION
 
   validation {
     condition     = var.storage_account.create_new || var.storage_account.resource_id != null
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
   }
 }
 

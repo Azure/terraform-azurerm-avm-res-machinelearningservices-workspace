@@ -95,21 +95,6 @@ resource "azurerm_container_registry" "example" {
   sku                 = "Premium"
 }
 
-module "private_dns_keyvault" {
-  source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "~> 0.1.1"
-  domain_name         = "privatelink.vaultcore.azure.net"
-  resource_group_name = azurerm_resource_group.this.name
-  virtual_network_links = {
-    dnslink = {
-      vnetlinkname = "vaultcore-vnet-link"
-      vnetid       = module.virtual_network.resource.id
-    }
-  }
-  tags             = var.tags
-  enable_telemetry = var.enable_telemetry
-}
-
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -238,12 +223,6 @@ Version: 0.1.2
 Source: Azure/avm-res-network-privatednszone/azurerm
 
 Version: 0.1.2
-
-### <a name="module_private_dns_keyvault"></a> [private\_dns\_keyvault](#module\_private\_dns\_keyvault)
-
-Source: Azure/avm-res-network-privatednszone/azurerm
-
-Version: ~> 0.1.1
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 

@@ -57,7 +57,7 @@ module "private_dns_aml_notebooks" {
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
     dnslink = {
-      vnetlinkname = "privatelink.api.azureml.ms"
+      vnetlinkname = "privatelink.notebooks.azureml.ms"
       vnetid       = module.virtual_network.resource.id
     }
   }
@@ -108,22 +108,16 @@ module "azureml" {
 
   private_endpoints = {
     api = {
-      name                            = "pe-api-aml"
-      subnet_resource_id              = module.virtual_network.subnets["private_endpoints"].resource_id
-      subresource_name                = "privatelink.api.azureml.ms"
-      private_dns_zone_resource_ids   = [module.private_dns_aml_api.resource_id]
-      private_service_connection_name = "psc-api-aml"
-      network_interface_name          = "nic-pe-api-aml"
-      inherit_lock                    = false
+      name                          = "pe-api-aml"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id]
+      inherit_lock                  = false
     }
     notebooks = {
-      name                            = "pe-notebooks-aml"
-      subnet_resource_id              = module.virtual_network.subnets["private_endpoints"].resource_id
-      subresource_name                = "privatelink.notebooks.azure.net"
-      private_dns_zone_resource_ids   = [module.private_dns_aml_notebooks.resource_id]
-      private_service_connection_name = "psc-notebooks-aml"
-      network_interface_name          = "nic-pe-notebooks-aml"
-      inherit_lock                    = false
+      name                          = "pe-notebooks-aml"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_notebooks.resource_id]
+      inherit_lock                  = false
     }
   }
 

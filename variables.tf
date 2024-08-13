@@ -33,9 +33,7 @@ variable "application_insights" {
     resource_id = optional(string, null)
     create_new  = optional(bool, true)
   })
-  default = {
-    create_new = true
-  }
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
@@ -43,8 +41,8 @@ An object describing the Application Insights resource to create. This includes 
 DESCRIPTION
 
   validation {
-    condition     = (var.application_insights.create_new == false && var.application_insights.resource_id != null) || (var.application_insights.create_new == true && var.application_insights.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = var.application_insights.resource_id != null || var.application_insights.create_new
+    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
   }
 }
 
@@ -55,7 +53,6 @@ variable "container_registry" {
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -69,7 +66,6 @@ An object describing the Container Registry. This includes the following propert
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -77,8 +73,8 @@ An object describing the Container Registry. This includes the following propert
 DESCRIPTION
 
   validation {
-    condition     = !(var.is_private) && var.container_registry.create_new == false || (var.container_registry.create_new == true && var.container_registry.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = !(var.is_private) || var.is_private && (var.container_registry.create_new || var.container_registry.resource_id != null)
+    error_message = "If attempting to create a private resource, either `create_new` must be set to true or `resource_id` must be set to a valid resource ID. If public, container registry is only created if create_new is true."
   }
 }
 
@@ -140,23 +136,19 @@ variable "key_vault" {
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default = {
-    create_new = true
-  }
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -164,8 +156,8 @@ An object describing the Key Vault to create the private endpoint connection to.
 DESCRIPTION
 
   validation {
-    condition     = (var.key_vault.create_new == false && var.key_vault.resource_id != null) || (var.key_vault.create_new == true && var.key_vault.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = var.key_vault.create_new || var.key_vault.resource_id != null
+    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
   }
 }
 
@@ -205,9 +197,7 @@ variable "log_analytics_workspace" {
     resource_id = optional(string, null)
     create_new  = optional(bool, true)
   })
-  default = {
-    create_new = true
-  }
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Log Analytics Workspace to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
@@ -215,8 +205,8 @@ An object describing the Log Analytics Workspace to create. This includes the fo
 DESCRIPTION
 
   validation {
-    condition     = (var.log_analytics_workspace.create_new == false) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = var.log_analytics_workspace.create_new || var.log_analytics_workspace.resource_id != null
+    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
   }
 }
 
@@ -239,7 +229,6 @@ variable "private_endpoints" {
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    subresource_name                        = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -309,23 +298,19 @@ variable "storage_account" {
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default = {
-    create_new = true
-  }
+  default     = {}
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:
 - `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -333,7 +318,7 @@ An object describing the Storage Account. This includes the following properties
 DESCRIPTION
 
   validation {
-    condition     = (var.storage_account.create_new == false && var.storage_account.resource_id != null) || (var.storage_account.create_new == true && var.storage_account.resource_id == null)
+    condition     = var.storage_account.create_new || var.storage_account.resource_id != null
     error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }

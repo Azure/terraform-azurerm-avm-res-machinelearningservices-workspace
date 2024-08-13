@@ -190,7 +190,6 @@ module "azureml" {
     key => {
       name                            = "pe-${key}-${local.name}"
       subnet_resource_id              = azurerm_subnet.shared.id
-      subresource_name                = key
       private_dns_zone_resource_ids   = value
       private_service_connection_name = "psc-${key}-${local.name}"
       network_interface_name          = "nic-pe-${key}-${local.name}"
@@ -204,7 +203,6 @@ module "azureml" {
       key => {
         name                            = "pe-${key}-${local.name}"
         subnet_resource_id              = azurerm_subnet.shared.id
-        subresource_name                = key
         private_dns_zone_resource_ids   = value
         private_service_connection_name = "psc-${key}-${local.name}"
         network_interface_name          = "nic-pe-${key}-${local.name}"
@@ -219,7 +217,6 @@ module "azureml" {
       key => {
         name                            = "pe-${key}-${local.name}"
         subnet_resource_id              = azurerm_subnet.shared.id
-        subresource_name                = key
         private_dns_zone_resource_ids   = value
         private_service_connection_name = "psc-${key}-${local.name}"
         network_interface_name          = "nic-pe-${key}-${local.name}"
@@ -234,7 +231,6 @@ module "azureml" {
       key => {
         name                            = "pe-${key}-${local.name}"
         subnet_resource_id              = azurerm_subnet.shared.id
-        subresource_name                = key
         private_dns_zone_resource_ids   = value
         private_service_connection_name = "psc-${key}-${local.name}"
         network_interface_name          = "nic-pe-${key}-${local.name}"

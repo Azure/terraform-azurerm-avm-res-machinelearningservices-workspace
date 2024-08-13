@@ -3,7 +3,15 @@ resource "azapi_resource" "public" {
 
   type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
-    properties = {
+    properties = local.container_registry_id != null ? {
+      publicNetworkAccess = "Enabled"
+      applicationInsights = local.application_insights_id
+      hbiWorkspace        = var.hbi_workspace
+      friendlyName        = "AMLPublic"
+      keyVault            = local.key_vault_id
+      storageAccount      = local.storage_account_id
+      containerRegistry   = local.container_registry_id
+      } : {
       publicNetworkAccess = "Enabled"
       applicationInsights = local.application_insights_id
       hbiWorkspace        = var.hbi_workspace
@@ -11,6 +19,7 @@ resource "azapi_resource" "public" {
       keyVault            = local.key_vault_id
       storageAccount      = local.storage_account_id
     }
+
     kind = var.kind
   })
   location  = var.location

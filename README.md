@@ -116,13 +116,7 @@ object({
   })
 ```
 
-Default:
-
-```json
-{
-  "create_new": true
-}
-```
+Default: `{}`
 
 ### <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry)
 
@@ -131,7 +125,6 @@ Description: An object describing the Container Registry. This includes the foll
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -146,7 +139,6 @@ object({
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -222,7 +214,6 @@ Description: An object describing the Key Vault to create the private endpoint c
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -237,7 +228,6 @@ object({
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -246,13 +236,7 @@ object({
   })
 ```
 
-Default:
-
-```json
-{
-  "create_new": true
-}
-```
+Default: `{}`
 
 ### <a name="input_kind"></a> [kind](#input\_kind)
 
@@ -299,13 +283,7 @@ object({
   })
 ```
 
-Default:
-
-```json
-{
-  "create_new": true
-}
-```
+Default: `{}`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -348,7 +326,6 @@ map(object({
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    subresource_name                        = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -402,7 +379,6 @@ Description: An object describing the Storage Account. This includes the followi
 - `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -417,7 +393,6 @@ object({
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -426,13 +401,7 @@ object({
   })
 ```
 
-Default:
-
-```json
-{
-  "create_new": true
-}
-```
+Default: `{}`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 

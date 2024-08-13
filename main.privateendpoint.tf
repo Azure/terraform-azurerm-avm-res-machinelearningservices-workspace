@@ -4,14 +4,14 @@ resource "azurerm_private_endpoint" "this" {
   location                      = each.value.location != null ? each.value.location : var.location
   name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
   resource_group_name           = var.resource_group.name
-  subnet_id                     = each.value.subnet_resource_id == null ? data.azurerm_subnet.shared.id : each.value.subnet_resource_id
+  subnet_id                     = each.value.subnet_resource_id
   custom_network_interface_name = each.value.network_interface_name
   tags                          = each.value.tags
 
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azapi_resource.this.id
+    private_connection_resource_id = local.aml_resource.id
     subresource_names              = ["amlworkspace"]
   }
   dynamic "ip_configuration" {

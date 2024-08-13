@@ -17,7 +17,7 @@ module "avm_res_storage_storageaccount" {
     for key, value in var.storage_account.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
-      subnet_resource_id              = value.subnet_resource_id == null ? data.azurerm_subnet.shared.id : value.subnet_resource_id
+      subnet_resource_id              = value.subnet_resource_id
       subresource_name                = value.subresource_name
       private_dns_zone_resource_ids   = value.private_dns_zone_resource_ids
       private_service_connection_name = value.private_service_connection_name == null ? "psc-${key}-${var.name}" : value.private_service_connection_name

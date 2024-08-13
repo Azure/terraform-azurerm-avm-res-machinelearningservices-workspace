@@ -1,4 +1,5 @@
 locals {
+  aml_resource = var.is_private ? azapi_resource.this[0] : azapi_resource.public[0]
   # application_insights_id = replace(azurerm_application_insights.this.id, "Microsoft.Insights", "Microsoft.insights")
   # Private endpoint application security group associations.
   # We merge the nested maps from private endpoints and application security group associations into a single map.

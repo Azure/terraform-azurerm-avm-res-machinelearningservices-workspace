@@ -7,6 +7,11 @@ variable "location" {
 variable "name" {
   type        = string
   description = "The name of the this resource."
+
+  validation {
+    condition     = can(regex("^[0-9A-Za-z-]+$", var.name))
+    error_message = "`name` must only contain -, a-z, A-Z, or 0-9."
+  }
 }
 
 # This is required for most resource modules
@@ -28,7 +33,9 @@ variable "application_insights" {
     resource_id = optional(string, null)
     create_new  = optional(bool, true)
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
@@ -44,7 +51,7 @@ DESCRIPTION
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -70,7 +77,7 @@ An object describing the Container Registry. This includes the following propert
 DESCRIPTION
 
   validation {
-    condition     = (var.container_registry.create_new == false && var.container_registry.resource_id != null) || (var.container_registry.create_new == true && var.container_registry.resource_id == null)
+    condition     = !(var.is_private) && var.container_registry.create_new == false || (var.container_registry.create_new == true && var.container_registry.resource_id == null)
     error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
@@ -140,7 +147,9 @@ variable "key_vault" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
@@ -196,7 +205,9 @@ variable "log_analytics_workspace" {
     resource_id = optional(string, null)
     create_new  = optional(bool, true)
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Log Analytics Workspace to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
@@ -204,7 +215,7 @@ An object describing the Log Analytics Workspace to create. This includes the fo
 DESCRIPTION
 
   validation {
-    condition     = (var.log_analytics_workspace.create_new == false && var.log_analytics_workspace.resource_id != null) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
+    condition     = (var.log_analytics_workspace.create_new == false) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
     error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
@@ -305,7 +316,9 @@ variable "storage_account" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:
 - `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
@@ -335,33 +348,19 @@ variable "tags" {
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = optional(bool, false)
     subnets = map(object({
       name              = string
-      address_prefixes  = list(string)
+      address_prefixes  = optional(list(string))
       service_endpoints = optional(list(string), [])
       nsg_id            = optional(string, null)
     }))
-    address_space       = list(string)
+    address_space       = optional(list(string))
     resource_group_name = optional(string, null)
   })
-  default = {
-    subnets = {
-      "aisubnet" = {
-        name             = "aisubnet"
-        address_prefixes = ["10.0.1.0/24"]
-      }
-    }
-    address_space = ["10.0.0.0/22"]
-  }
+  default     = null
   description = <<DESCRIPTION
 An object describing the Virtual Network to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
-  nullable    = false
-
-  validation {
-    condition     = (var.vnet.create_new == false && var.vnet.resource_id != null) || (var.vnet.create_new == true && var.vnet.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
-  }
 }

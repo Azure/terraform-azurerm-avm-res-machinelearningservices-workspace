@@ -9,7 +9,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.112.0"
+      version = "3.115.0"
     }
   }
 }
@@ -127,19 +127,19 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.112.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.115.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_application_insights.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/application_insights) (resource)
-- [azurerm_container_registry.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/container_registry) (resource)
-- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/key_vault) (resource)
-- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/resource_group) (resource)
-- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/storage_account) (resource)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/data-sources/client_config) (data source)
+- [azurerm_application_insights.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/application_insights) (resource)
+- [azurerm_container_registry.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/container_registry) (resource)
+- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/key_vault) (resource)
+- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/log_analytics_workspace) (resource)
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/resource_group) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/storage_account) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

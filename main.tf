@@ -1,9 +1,35 @@
+resource "azapi_resource" "public" {
+  count = var.is_private ? 0 : 1
 
-resource "azapi_resource" "this" {
   type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
-      publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
+      publicNetworkAccess = "Enabled"
+      applicationInsights = local.application_insights_id
+      hbiWorkspace        = var.hbi_workspace
+      friendlyName        = "AMLPublic"
+      keyVault            = local.key_vault_id
+      storageAccount      = local.storage_account_id
+    }
+    kind = var.kind
+  })
+  location  = var.location
+  name      = "aml-${var.name}"
+  parent_id = var.resource_group.id
+  tags      = var.tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+resource "azapi_resource" "this" {
+  count = var.is_private ? 1 : 0
+
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
+  body = jsonencode({
+    properties = {
+      publicNetworkAccess = "Disabled"
       applicationInsights = local.application_insights_id
       containerRegistry   = local.container_registry_id
       hbiWorkspace        = var.hbi_workspace
@@ -39,7 +65,7 @@ resource "azapi_resource" "aiproject" {
     properties = {
       description   = "Azure AI PROJECT"
       friendlyName  = "AI Project"
-      hubResourceId = azapi_resource.this.id
+      hubResourceId = local.aml_resource.id
     }
     kind = "project"
   })
@@ -70,7 +96,7 @@ resource "azapi_resource" "aiserviceconnection" {
     }
   })
   name                   = "aiserviceconnection${var.name}"
-  parent_id              = azapi_resource.this.id
+  parent_id              = local.aml_resource.id
   response_export_values = ["*"]
 }
 
@@ -102,7 +128,7 @@ resource "azurerm_management_lock" "this" {
 
   lock_level = var.lock.kind
   name       = coalesce(var.lock.name, "lock-${var.lock.kind}")
-  scope      = azapi_resource.this.id
+  scope      = local.aml_resource.id
   notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
 }
 

@@ -28,12 +28,12 @@ output "private_endpoints" {
 
 output "resource" {
   description = "The machine learning workspace."
-  value       = azapi_resource.this
+  value       = local.aml_resource
 }
 
 output "resource_id" {
   description = "The ID of the machine learning workspace."
-  value       = azapi_resource.this.id
+  value       = local.aml_resource.id
 }
 
 output "storage_account" {

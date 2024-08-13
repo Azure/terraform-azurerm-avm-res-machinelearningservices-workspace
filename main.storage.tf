@@ -18,6 +18,7 @@ module "avm_res_storage_storageaccount" {
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
       subnet_resource_id              = value.subnet_resource_id
+      subresource_name                = value.subresource_name
       private_dns_zone_resource_ids   = value.private_dns_zone_resource_ids
       private_service_connection_name = value.private_service_connection_name == null ? "psc-${key}-${var.name}" : value.private_service_connection_name
       network_interface_name          = value.network_interface_name == null ? "nic-pe-${key}-${var.name}" : value.network_interface_name
@@ -32,5 +33,5 @@ module "avm_res_storage_storageaccount" {
 
   tags = var.tags
 
-  count = var.storage_account.create_new && var.storage_account.resource_id == null ? 1 : 0
+  count = var.storage_account.create_new ? 1 : 0
 }

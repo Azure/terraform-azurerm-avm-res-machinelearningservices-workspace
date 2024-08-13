@@ -112,11 +112,17 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry)
 
@@ -135,7 +141,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, false)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -147,7 +153,13 @@ object({
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": false
+}
+```
 
 ### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
 
@@ -224,7 +236,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -236,7 +248,13 @@ object({
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_kind"></a> [kind](#input\_kind)
 
@@ -279,11 +297,17 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -389,10 +413,11 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
+      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -401,7 +426,13 @@ object({
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 

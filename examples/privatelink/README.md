@@ -198,6 +198,7 @@ module "azureml" {
   }
 
   container_registry = {
+    create_new = true
     private_endpoints = {
       for key, value in local.container_registry_dns_zones_map :
       key => {
@@ -212,6 +213,7 @@ module "azureml" {
   }
 
   key_vault = {
+    create_new = true
     private_endpoints = {
       for key, value in local.key_vault_dnz_zones_map :
       key => {
@@ -226,11 +228,13 @@ module "azureml" {
   }
 
   storage_account = {
+    create_new = true
     private_endpoints = {
       for key, value in local.storage_account_dnz_zones_map :
       key => {
         name                            = "pe-${key}-${local.name}"
         subnet_resource_id              = azurerm_subnet.shared.id
+        subresource_name                = key
         private_dns_zone_resource_ids   = value
         private_service_connection_name = "psc-${key}-${local.name}"
         network_interface_name          = "nic-pe-${key}-${local.name}"

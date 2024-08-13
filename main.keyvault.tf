@@ -23,5 +23,5 @@ module "avm_res_keyvault_vault" {
   tags = var.tags
 
 
-  count = var.key_vault.create_new && var.key_vault.resource_id == null ? 1 : 0
+  count = var.key_vault.create_new ? 1 : 0
 }

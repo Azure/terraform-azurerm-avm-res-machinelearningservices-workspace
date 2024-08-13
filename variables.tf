@@ -9,7 +9,7 @@ variable "name" {
   description = "The name of the this resource."
 
   validation {
-    condition     = can(regex("^[0-9A-Za-z-]+$", var.name))
+    condition     = can(regex("^[0-9A-Za-z-]{5,}$", var.name))
     error_message = "`name` must only contain -, a-z, A-Z, or 0-9."
   }
 }
@@ -31,9 +31,11 @@ DESCRIPTION
 variable "application_insights" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
@@ -41,15 +43,15 @@ An object describing the Application Insights resource to create. This includes 
 DESCRIPTION
 
   validation {
-    condition     = var.application_insights.resource_id != null || var.application_insights.create_new
-    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
+    condition     = (var.application_insights.create_new == false && var.application_insights.resource_id != null) || (var.application_insights.create_new == true && var.application_insights.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
 
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, false)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -59,7 +61,9 @@ variable "container_registry" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = false
+  }
   description = <<DESCRIPTION
 An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
@@ -132,7 +136,7 @@ variable "is_private" {
 variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -142,7 +146,9 @@ variable "key_vault" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
@@ -156,8 +162,8 @@ An object describing the Key Vault to create the private endpoint connection to.
 DESCRIPTION
 
   validation {
-    condition     = var.key_vault.create_new || var.key_vault.resource_id != null
-    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
+    condition     = (var.key_vault.create_new == false && var.key_vault.resource_id != null) || (var.key_vault.create_new == true && var.key_vault.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
 
@@ -195,9 +201,11 @@ DESCRIPTION
 variable "log_analytics_workspace" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Log Analytics Workspace to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
@@ -205,8 +213,8 @@ An object describing the Log Analytics Workspace to create. This includes the fo
 DESCRIPTION
 
   validation {
-    condition     = var.log_analytics_workspace.create_new || var.log_analytics_workspace.resource_id != null
-    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
+    condition     = (var.log_analytics_workspace.create_new == false && var.log_analytics_workspace.resource_id != null) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
 
@@ -294,17 +302,20 @@ DESCRIPTION
 variable "storage_account" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
+      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:
 - `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
@@ -318,8 +329,8 @@ An object describing the Storage Account. This includes the following properties
 DESCRIPTION
 
   validation {
-    condition     = var.storage_account.create_new || var.storage_account.resource_id != null
-    error_message = "Either `create_new` must be set to true or `resource_id` must be set to a valid resource ID."
+    condition     = (var.storage_account.create_new == false && var.storage_account.resource_id != null) || (var.storage_account.create_new == true && var.storage_account.resource_id == null)
+    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
 

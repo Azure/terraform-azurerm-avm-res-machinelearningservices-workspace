@@ -19,5 +19,5 @@ module "avm_res_log_analytics_workspace" {
     type = "SystemAssigned"
   }
 
-  count = var.log_analytics_workspace.create_new && var.log_analytics_workspace.resource_id == null ? 1 : 0
+  count = var.log_analytics_workspace.create_new ? 1 : 0
 }

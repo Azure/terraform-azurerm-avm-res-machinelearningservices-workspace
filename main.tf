@@ -114,9 +114,9 @@ resource "azapi_resource" "computeinstance" {
       }
     }
   })
-  location  = azapi_resource.this.location
+  location  = local.aml_resource.location
   name      = "ci-${var.name}"
-  parent_id = azapi_resource.this.id
+  parent_id = local.aml_resource.id
 
   identity {
     type = "SystemAssigned"

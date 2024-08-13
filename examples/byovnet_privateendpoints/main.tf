@@ -64,6 +64,7 @@ module "private_dns_aml_notebooks" {
   tags             = var.tags
   enable_telemetry = var.enable_telemetry
 }
+
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
   version             = "~> 0.2.0"
@@ -80,13 +81,6 @@ module "virtual_network" {
   location      = var.location
   name          = module.naming.virtual_network.name_unique
   tags          = var.tags
-}
-
-resource "azurerm_container_registry" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.container_registry.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  sku                 = "Premium"
 }
 
 # This is the module call

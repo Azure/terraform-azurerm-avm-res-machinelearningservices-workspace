@@ -15,7 +15,7 @@ resource "azapi_resource" "aiservice" {
     kind = "AIServices"
   })
   location               = var.location
-  name                   = local.cognitive_services_name
+  name                   = "ai-svc-${var.name}"
   parent_id              = var.resource_group.id
   response_export_values = ["*"]
 

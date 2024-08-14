@@ -3,7 +3,7 @@ module "avm_res_containerregistry_registry" {
 
   version = "~> 0.1"
 
-  name                          = local.container_registry_name
+  name                          = replace("acr${var.name}", "-", "")
   location                      = var.location
   resource_group_name           = var.resource_group.name
   public_network_access_enabled = var.is_private ? false : true
@@ -12,8 +12,7 @@ module "avm_res_containerregistry_registry" {
     for key, value in var.container_registry.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
-      subnet_resource_id              = value.subnet_resource_id == null ? data.azurerm_subnet.shared.id : value.subnet_resource_id
-      subresource_name                = value.subresource_name
+      subnet_resource_id              = value.subnet_resource_id
       private_dns_zone_resource_ids   = value.private_dns_zone_resource_ids
       private_service_connection_name = value.private_service_connection_name == null ? "psc-${key}-${var.name}" : value.private_service_connection_name
       network_interface_name          = value.network_interface_name == null ? "nic-pe-${key}-${var.name}" : value.network_interface_name

@@ -36,9 +36,9 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 1.14.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.14.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.112.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.115)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (0.3.2)
 
@@ -48,21 +48,21 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiproject](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/application_insights) (resource)
-- [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/management_lock) (resource)
-- [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/private_endpoint) (resource)
-- [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/private_endpoint_application_security_group_association) (resource)
-- [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/resources/role_assignment) (resource)
+- [azapi_resource.aiproject](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.public](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
+- [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
+- [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint) (resource)
+- [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint_application_security_group_association) (resource)
+- [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/data-sources/client_config) (data source)
-- [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/data-sources/client_config) (data source)
-- [azurerm_subnet.shared](https://registry.terraform.io/providers/hashicorp/azurerm/3.112.0/docs/data-sources/subnet) (data source)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
+- [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
@@ -112,11 +112,17 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry)
 
@@ -125,7 +131,6 @@ Description: An object describing the Container Registry. This includes the foll
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -136,11 +141,10 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -149,7 +153,13 @@ object({
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": false
+}
+```
 
 ### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
 
@@ -216,7 +226,6 @@ Description: An object describing the Key Vault to create the private endpoint c
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -227,11 +236,10 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
@@ -240,7 +248,13 @@ object({
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_kind"></a> [kind](#input\_kind)
 
@@ -283,11 +297,17 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -330,7 +350,6 @@ map(object({
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    subresource_name                        = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -384,7 +403,6 @@ Description: An object describing the Storage Account. This includes the followi
 - `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -395,7 +413,7 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -408,7 +426,13 @@ object({
   })
 ```
 
-Default: `{}`
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
@@ -428,35 +452,19 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = optional(bool, false)
     subnets = map(object({
       name              = string
-      address_prefixes  = list(string)
+      address_prefixes  = optional(list(string))
       service_endpoints = optional(list(string), [])
       nsg_id            = optional(string, null)
     }))
-    address_space       = list(string)
+    address_space       = optional(list(string))
     resource_group_name = optional(string, null)
   })
 ```
 
-Default:
-
-```json
-{
-  "address_space": [
-    "10.0.0.0/22"
-  ],
-  "subnets": {
-    "aisubnet": {
-      "address_prefixes": [
-        "10.0.1.0/24"
-      ],
-      "name": "aisubnet"
-    }
-  }
-}
-```
+Default: `null`
 
 ## Outputs
 

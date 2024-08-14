@@ -13,12 +13,11 @@ module "avm_res_log_analytics_workspace" {
   enable_telemetry    = var.enable_telemetry
   location            = var.location
   resource_group_name = var.resource_group.name
-  name                = local.log_analytics_workspace_name
+  name                = "la-${var.name}"
 
   log_analytics_workspace_identity = {
     type = "SystemAssigned"
   }
 
   count = var.log_analytics_workspace.create_new ? 1 : 0
-
 }

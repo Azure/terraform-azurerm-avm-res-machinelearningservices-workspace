@@ -1,7 +1,12 @@
 <!-- BEGIN_TF_DOCS -->
-# BYO Vnet example
+# BYO Vnet with private endpoints
 
-This deploys the module with a BYO VNet.
+This deploys a VNet and the module with private endpoints:
+
+- AML Workspace (public access) with private endpoints integrated with Vnet
+- Storage Account
+- Key Vault
+- App Insights and Log Analytics workspace
 
 ```hcl
 terraform {
@@ -9,7 +14,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
+      version = "3.115"
     }
   }
 }
@@ -42,6 +47,53 @@ resource "azurerm_resource_group" "this" {
   tags     = var.tags
 }
 
+module "private_dns_aml_api" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.api.azureml.ms"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.api.azureml.ms"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+module "private_dns_aml_notebooks" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.notebooks.azure.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.notebooks.azureml.ms"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "virtual_network" {
+  source              = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version             = "~> 0.2.0"
+  resource_group_name = azurerm_resource_group.this.name
+  subnets = {
+    private_endpoints = {
+      name                              = "private_endpoints"
+      address_prefixes                  = ["10.1.1.0/24"]
+      private_endpoint_network_policies = "Enabled"
+      service_endpoints                 = null
+    }
+  }
+  address_space = ["10.1.0.0/16"]
+  location      = var.location
+  name          = module.naming.virtual_network.name_unique
+  tags          = var.tags
+}
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -59,7 +111,20 @@ module "azureml" {
     id   = azurerm_resource_group.this.id
   }
 
-  vnet = var.vnet
+  private_endpoints = {
+    api = {
+      name                          = "pe-api-aml"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id]
+      inherit_lock                  = false
+    }
+    notebooks = {
+      name                          = "pe-notebooks-aml"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_notebooks.resource_id]
+      inherit_lock                  = false
+    }
+  }
 
   enable_telemetry = var.enable_telemetry
 }
@@ -72,13 +137,13 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.74)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.115)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/resource_group) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -115,45 +180,6 @@ Type: `map(string)`
 
 Default: `null`
 
-### <a name="input_vnet"></a> [vnet](#input\_vnet)
-
-Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
-
-Type:
-
-```hcl
-object({
-    resource_id = optional(string, null)
-    subnets = map(object({
-      name              = string
-      address_prefixes  = list(string)
-      service_endpoints = optional(list(string), [])
-      nsg_id            = optional(string, null)
-    }))
-    address_space       = list(string)
-    resource_group_name = optional(string, null)
-  })
-```
-
-Default:
-
-```json
-{
-  "address_space": [
-    "10.0.0.0/22"
-  ],
-  "subnets": {
-    "aisubnet": {
-      "address_prefixes": [
-        "10.0.1.0/24"
-      ],
-      "name": "aisubnet"
-    }
-  }
-}
-```
-
 ## Outputs
 
 The following outputs are exported:
@@ -178,11 +204,29 @@ Source: Azure/naming/azurerm
 
 Version: ~> 0.3
 
+### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
+### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
 Source: Azure/regions/azurerm
 
 Version: ~> 0.3
+
+### <a name="module_virtual_network"></a> [virtual\_network](#module\_virtual\_network)
+
+Source: Azure/avm-res-network-virtualnetwork/azurerm
+
+Version: ~> 0.2.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

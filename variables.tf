@@ -7,6 +7,11 @@ variable "location" {
 variable "name" {
   type        = string
   description = "The name of the this resource."
+
+  validation {
+    condition     = can(regex("^[0-9A-Za-z-]{5,}$", var.name))
+    error_message = "`name` must only contain -, a-z, A-Z, or 0-9."
+  }
 }
 
 # This is required for most resource modules
@@ -26,9 +31,11 @@ DESCRIPTION
 variable "application_insights" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
@@ -44,25 +51,25 @@ DESCRIPTION
 variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = false
+  }
   description = <<DESCRIPTION
 An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -70,8 +77,8 @@ An object describing the Container Registry. This includes the following propert
 DESCRIPTION
 
   validation {
-    condition     = (var.container_registry.create_new == false && var.container_registry.resource_id != null) || (var.container_registry.create_new == true && var.container_registry.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = !(var.is_private) || var.is_private && (var.container_registry.create_new || var.container_registry.resource_id != null)
+    error_message = "If attempting to create a private resource, either `create_new` must be set to true or `resource_id` must be set to a valid resource ID. If public, container registry is only created if create_new is true."
   }
 }
 
@@ -129,25 +136,25 @@ variable "is_private" {
 variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
-      subresource_name                = string
       private_dns_zone_resource_ids   = optional(set(string), [])
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -194,9 +201,11 @@ DESCRIPTION
 variable "log_analytics_workspace" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Log Analytics Workspace to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
@@ -228,7 +237,6 @@ variable "private_endpoints" {
     }), null)
     tags                                    = optional(map(string), null)
     subnet_resource_id                      = string
-    subresource_name                        = string
     private_dns_zone_group_name             = optional(string, "default")
     private_dns_zone_resource_ids           = optional(set(string), [])
     application_security_group_associations = optional(map(string), {})
@@ -294,7 +302,7 @@ DESCRIPTION
 variable "storage_account" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = bool
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -305,14 +313,15 @@ variable "storage_account" {
       inherit_lock                    = optional(bool, false)
     })), {})
   })
-  default     = {}
+  default = {
+    create_new = true
+  }
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:
 - `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `subresource_name` - The name of the subresource.
   - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
@@ -335,33 +344,19 @@ variable "tags" {
 variable "vnet" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = optional(bool, true)
+    create_new  = optional(bool, false)
     subnets = map(object({
       name              = string
-      address_prefixes  = list(string)
+      address_prefixes  = optional(list(string))
       service_endpoints = optional(list(string), [])
       nsg_id            = optional(string, null)
     }))
-    address_space       = list(string)
+    address_space       = optional(list(string))
     resource_group_name = optional(string, null)
   })
-  default = {
-    subnets = {
-      "aisubnet" = {
-        name             = "aisubnet"
-        address_prefixes = ["10.0.1.0/24"]
-      }
-    }
-    address_space = ["10.0.0.0/22"]
-  }
+  default     = null
   description = <<DESCRIPTION
 An object describing the Virtual Network to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
-  nullable    = false
-
-  validation {
-    condition     = (var.vnet.create_new == false && var.vnet.resource_id != null) || (var.vnet.create_new == true && var.vnet.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
-  }
 }

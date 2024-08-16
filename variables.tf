@@ -28,10 +28,37 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "aiservices" {
+  type = object({
+    include               = optional(bool, false)
+    create_new            = optional(bool, false)
+    analysis_services_sku = optional(string, "S0")
+    name                  = optional(string, null)
+    resource_group_id     = optional(string, null)
+  })
+  default = {
+    include = false
+  }
+  description = <<DESCRIPTION
+An object describing the Application Insights resource to create or reference. This includes the following properties:
+- `include`: A flag indicating whether AI Services should be considered
+- `create_new`: A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
+- `analysis_services_sku`: When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
+- `name`: If providing an existing resource, the name of the AI Services to reference
+- `resource_group_id`: If providing an existing resource, the id of the resource group where the AI Services resource resides
+DESCRIPTION
+
+  validation {
+    condition     = (var.aiservices.include == false) || (var.aiservices.create_new == true) || (var.aiservices.create_new == false && var.aiservices.name != null && var.aiservices.resource_group_id != null)
+    error_message = "If including AI Services, either `create_new` must be true or `name` and `resource_group_name` must be provided"
+  }
+}
+
 variable "application_insights" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
+    include     = optional(bool, false)
   })
   default = {
     create_new = true
@@ -43,7 +70,7 @@ An object describing the Application Insights resource to create. This includes 
 DESCRIPTION
 
   validation {
-    condition     = (var.application_insights.create_new == false && var.application_insights.resource_id != null) || (var.application_insights.create_new == true && var.application_insights.resource_id == null)
+    condition     = (var.application_insights.include == false) || (var.application_insights.create_new == false && var.application_insights.resource_id != null) || (var.application_insights.create_new == true && var.application_insights.resource_id == null)
     error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
@@ -130,7 +157,7 @@ variable "hbi_workspace" {
 variable "is_private" {
   type        = bool
   default     = false
-  description = "Specifies if the resource is private."
+  description = "Specifies if every provisioned resource should be private and inaccessible from the Internet."
 }
 
 variable "key_vault" {
@@ -202,6 +229,7 @@ variable "log_analytics_workspace" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
+    include     = optional(bool, false)
   })
   default = {
     create_new = true
@@ -213,7 +241,7 @@ An object describing the Log Analytics Workspace to create. This includes the fo
 DESCRIPTION
 
   validation {
-    condition     = (var.log_analytics_workspace.create_new == false && var.log_analytics_workspace.resource_id != null) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
+    condition     = (var.log_analytics_workspace.include == false) || (var.log_analytics_workspace.create_new == false && var.log_analytics_workspace.resource_id != null) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
     error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
   }
 }
@@ -270,6 +298,26 @@ A map of private endpoints to create on this resource. The map key is deliberate
   - `private_ip_address` - The private IP address of the IP configuration.
 DESCRIPTION
   nullable    = false
+}
+
+variable "project_for_hub" {
+  type = object({
+    create_new   = bool,
+    project_name = optional(string, null)
+  })
+  default = {
+    create_new = false
+  }
+  description = <<DESCRIPTION
+When `kind`=`hub`, this covers associated project creation.
+- `create_new`: whether to create project as a part of hub creation
+- `project_name`: the name of the project to create
+DESCRIPTION
+
+  validation {
+    condition     = (var.kind != "hub") || (var.project_for_hub.create_new == false) || (var.project_for_hub.create_new == true && var.project_for_hub.project_name != null)
+    error_message = "If `create_new` == true, `project_name` cannot be null. "
+  }
 }
 
 variable "role_assignments" {
@@ -358,5 +406,27 @@ variable "vnet" {
   description = <<DESCRIPTION
 An object describing the Virtual Network to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Virtual Network.
+DESCRIPTION
+}
+
+variable "workspace_managed_network" {
+  type = object({
+    isolation_mode = string
+    spark_ready    = optional(bool, true)
+  })
+  default = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
+  }
+  description = <<DESCRIPTION
+Specifies properties of the workspace's managed virtual network.
+
+Possible values for `isolation_mode` are:
+- `Disabled`: Inbound and outbound traffic is unrestricted _or_ BYO VNet to protect resources.
+- `AllowInternetOutbound`: Allow all internet outbound traffic.
+- `AllowOnlyApprovedOutbound`: Outbound traffic is allowed by specifying service tags.
+While is possible to update the workspace to enable network isolation (`AllowInternetOutbound` or `AllowOnlyApprovedOutbound`), it is not possible to disable it on a workspace with it enabled.
+
+`spark_ready` determines whether spark jobs will be run on the network. This value can be updated in the future.
 DESCRIPTION
 }

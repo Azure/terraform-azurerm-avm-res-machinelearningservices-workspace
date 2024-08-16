@@ -1,16 +1,16 @@
 resource "azapi_resource" "aiservice" {
-  count = var.kind == "hub" ? 1 : 0
+  count = var.aiservices.include && var.aiservices.create_new ? 1 : 0
 
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   body = jsonencode({
     properties = {
-      publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
+      publicNetworkAccess = (var.is_private && var.kind != "hub") ? "Disabled" : "Enabled" # Can't have private AI Services with private AI Studio hubs
       apiProperties = {
         statisticsEnabled = false
       }
     }
     sku = {
-      "name" : "S0",
+      "name" : var.aiservices.analysis_services_sku,
     }
     kind = "AIServices"
   })
@@ -22,4 +22,11 @@ resource "azapi_resource" "aiservice" {
   identity {
     type = "SystemAssigned"
   }
+}
+
+data "azapi_resource" "existing_aiservices" {
+  count     = var.aiservices.include && var.aiservices.create_new == false ? 1 : 0
+  type      = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
+  name      = var.aiservices.name
+  parent_id = var.aiservices.resource_group_id
 }

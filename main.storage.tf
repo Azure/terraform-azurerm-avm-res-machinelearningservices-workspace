@@ -13,7 +13,7 @@ module "avm_res_storage_storageaccount" {
     system_assigned = true
   }
 
-  private_endpoints = var.is_private ? {
+  private_endpoints = var.is_private && var.vnet != null ? {
     for key, value in var.storage_account.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name

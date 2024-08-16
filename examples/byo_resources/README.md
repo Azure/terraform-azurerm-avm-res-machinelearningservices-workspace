@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # BYO Resources
 
-This directory contains examples of how to bring your own resources to the deployment of Azure Machine Learning Workspaces.
+This deploys a public Azure Machine Learning Workspace using existing resource. The resource group, storage account, key vault, container registry, application insights and log analytics workspace are all provided to the module.
 
 ```hcl
 terraform {
@@ -18,6 +18,9 @@ provider "azurerm" {
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
+    }
+    resource_group {
+      prevent_deletion_if_contains_resources = false
     }
   }
 }

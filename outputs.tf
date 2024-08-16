@@ -1,3 +1,8 @@
+output "aiservices" {
+  description = "value"
+  value       = length(local.ai_services) == 1 ? local.ai_services : null
+}
+
 output "application_insights" {
   description = "The ID of the application insights."
   value       = azurerm_application_insights.this

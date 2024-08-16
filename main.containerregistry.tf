@@ -8,7 +8,7 @@ module "avm_res_containerregistry_registry" {
   resource_group_name           = var.resource_group.name
   public_network_access_enabled = var.is_private ? false : true
 
-  private_endpoints = var.is_private ? {
+  private_endpoints = var.is_private && var.vnet != null ? {
     for key, value in var.container_registry.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name

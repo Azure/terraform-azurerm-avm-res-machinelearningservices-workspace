@@ -52,7 +52,7 @@ The following resources are used by this module:
 - [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.public](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
@@ -61,6 +61,7 @@ The following resources are used by this module:
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
+- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/data-sources/resource) (data source)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/data-sources/module_source) (data source)
@@ -100,6 +101,35 @@ object({
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
+
+Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
+- `include`: A flag indicating whether AI Services should be considered
+- `create_new`: A flag indicating if a new resource must be created. If set to 'false', resource\_id must not be 'null'.
+- `analysis_services_sku`: When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
+- `name`: If providing an existing resource, the name of the AI Services to reference
+- `resource_group_id`: If providing an existing resource, the id of the resource group where the AI Services resource resides
+
+Type:
+
+```hcl
+object({
+    include               = optional(bool, false)
+    create_new            = optional(bool, false)
+    analysis_services_sku = optional(string, "S0")
+    name                  = optional(string, null)
+    resource_group_id     = optional(string, null)
+  })
+```
+
+Default:
+
+```json
+{
+  "include": false
+}
+```
 
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
@@ -213,7 +243,7 @@ Default: `false`
 
 ### <a name="input_is_private"></a> [is\_private](#input\_is\_private)
 
-Description: Specifies if the resource is private.
+Description: Specifies if every provisioned resource should be private and inaccessible from the Internet.
 
 Type: `bool`
 
@@ -366,6 +396,34 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_projects_for_hub"></a> [projects\_for\_hub](#input\_projects\_for\_hub)
+
+Description: When `kind`=`hub`, this covers associated project creation.
+- `create_new`: whether to create project(s) as a part of hub creation
+- `projects`: the details of project(s) to create
+  - name: the project name (all lowercase, no spaces)
+  - friendlyName: an optional friendly name
+
+Type:
+
+```hcl
+object({
+    create_new = bool,
+    projects = optional(list(object({
+      name         = string
+      friendlyName = optional(string, null)
+    })), null)
+  })
+```
+
+Default:
+
+```json
+{
+  "create_new": false
+}
+```
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description: A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -466,9 +524,43 @@ object({
 
 Default: `null`
 
+### <a name="input_workspace_managed_network"></a> [workspace\_managed\_network](#input\_workspace\_managed\_network)
+
+Description: Specifies properties of the workspace's managed virtual network.
+
+Possible values for `isolation_mode` are:
+- `Disabled`: Inbound and outbound traffic is unrestricted _or_ BYO VNet to protect resources.
+- `AllowInternetOutbound`: Allow all internet outbound traffic.
+- `AllowOnlyApprovedOutbound`: Outbound traffic is allowed by specifying service tags.  
+While is possible to update the workspace to enable network isolation (`AllowInternetOutbound` or `AllowOnlyApprovedOutbound`), it is not possible to disable it on a workspace with it enabled.
+
+`spark_ready` determines whether spark jobs will be run on the network. This value can be updated in the future.
+
+Type:
+
+```hcl
+object({
+    isolation_mode = string
+    spark_ready    = optional(bool, true)
+  })
+```
+
+Default:
+
+```json
+{
+  "isolation_mode": "Disabled",
+  "spark_ready": true
+}
+```
+
 ## Outputs
 
 The following outputs are exported:
+
+### <a name="output_aiservices"></a> [aiservices](#output\_aiservices)
+
+Description: value
 
 ### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
 

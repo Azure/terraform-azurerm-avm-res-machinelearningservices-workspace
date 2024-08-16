@@ -1,9 +1,13 @@
 terraform {
   required_version = "~> 1.5"
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "1.14.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.115.0"
+      version = "~> 3.115.0"
     }
   }
 }
@@ -31,13 +35,6 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
-
-data "azurerm_client_config" "current" {}
-
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
   account_tier             = "Standard"
@@ -54,38 +51,56 @@ resource "azurerm_key_vault" "example" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
-resource "azurerm_container_registry" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.container_registry.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  sku                 = "Premium"
+resource "azapi_resource" "aiservice" {
+  type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
+  body = jsonencode({
+    properties = {
+      publicNetworkAccess = "Enabled" # Can't have private AI Services with private AI Studio hubs
+      apiProperties = {
+        statisticsEnabled = false
+      }
+    }
+    sku = {
+      "name" : "S0"
+    }
+    kind = "AIServices"
+  })
+  location               = azurerm_resource_group.this.location
+  name                   = "ai-svc-${module.naming.storage_account.name_unique}"
+  parent_id              = azurerm_resource_group.this.id
+  response_export_values = ["*"]
+
+  identity {
+    type = "SystemAssigned"
+  }
 }
 
-resource "azurerm_application_insights" "example" {
-  application_type    = "web"
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.application_insights.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  workspace_id        = azurerm_log_analytics_workspace.example.id
+# This is the module call
+# Do not specify location here due to the randomization above.
+# Leaving location as `null` will cause the module to use the resource group location
+# with a data source.
+
+data "azurerm_client_config" "current" {}
+
+locals {
+  name = module.naming.machine_learning_workspace.name_unique
 }
 
-resource "azurerm_log_analytics_workspace" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-}
-
-module "azureml" {
+# This is the module call
+# Do not specify location here due to the randomization above.
+# Leaving location as `null` will cause the module to use the resource group location
+# with a data source.
+module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
   location = azurerm_resource_group.this.location
-  name     = module.naming.machine_learning_workspace.name_unique
+  name     = local.name
   resource_group = {
-    name = azurerm_resource_group.this.name
     id   = azurerm_resource_group.this.id
+    name = azurerm_resource_group.this.name
   }
-
+  kind = "hub"
   storage_account = {
     resource_id = azurerm_storage_account.example.id
     create_new  = false
@@ -96,22 +111,22 @@ module "azureml" {
     create_new  = false
   }
 
-  container_registry = {
-    resource_id = azurerm_container_registry.example.id
-    create_new  = false
+  aiservices = {
+    name              = azapi_resource.aiservice.name
+    resource_group_id = azurerm_resource_group.this.id
+    create_new        = false
+    include           = true
   }
 
-  log_analytics_workspace = {
-    resource_id = azurerm_log_analytics_workspace.example.id
-    create_new  = false
+  project_for_hub = {
+    create_new = false
   }
 
   application_insights = {
-    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
-    create_new  = false
+    create_new = false
   }
 
-  tags             = {}
-  enable_telemetry = false
-
+  log_analytics_workspace = {
+    create_new = false
+  }
 }

@@ -93,12 +93,12 @@ resource "azapi_resource" "aiserviceconnection" {
   body = jsonencode({
     properties = {
       category      = "AIServices",
-      target        = local.ai_services.properties.endpoint,
+      target        = jsondecode(local.ai_services).properties.endpoint,
       authType      = "AAD",
       isSharedToAll = true,
       metadata = {
         ApiType    = "Azure",
-        ResourceId = local.ai_services.id
+        ResourceId = local.ai_services_id
       }
     }
   })

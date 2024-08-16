@@ -1,3 +1,9 @@
 # Azure AI Hub
 
-This example deploys AI Hub (i.e. AI Studio) with private link.
+This deploys a hub workspace:
+
+- Azure AI Services (previously known as Cognitive Services)
+- AI Studio hub workspace (public access)
+  - Connection to the Azure AI Services instance 
+- Storage Account
+- Key Vault

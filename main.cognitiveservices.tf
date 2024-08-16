@@ -25,8 +25,10 @@ resource "azapi_resource" "aiservice" {
 }
 
 data "azapi_resource" "existing_aiservices" {
-  count     = var.aiservices.include && var.aiservices.create_new == false ? 1 : 0
-  type      = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  name      = var.aiservices.name
-  parent_id = var.aiservices.resource_group_id
+  count = (var.aiservices.include == true && var.aiservices.create_new == false) ? 1 : 0
+
+  type                   = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
+  name                   = var.aiservices.name
+  parent_id              = var.aiservices.resource_group_id
+  response_export_values = ["*"]
 }

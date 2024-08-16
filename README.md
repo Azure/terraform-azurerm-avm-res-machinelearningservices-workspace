@@ -106,7 +106,7 @@ The following input variables are optional (have default values):
 
 Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
 - `include`: A flag indicating whether AI Services should be considered
-- `create_new`: A flag indicating if a new resource must be created. If set to 'false', resource\_id must not be 'null'.
+- `create_new`: A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: If providing an existing resource, the name of the AI Services to reference
 - `resource_group_id`: If providing an existing resource, the id of the resource group where the AI Services resource resides
@@ -143,6 +143,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
+    include     = optional(bool, false)
   })
 ```
 
@@ -328,6 +329,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
+    include     = optional(bool, false)
   })
 ```
 
@@ -396,23 +398,18 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_projects_for_hub"></a> [projects\_for\_hub](#input\_projects\_for\_hub)
+### <a name="input_project_for_hub"></a> [project\_for\_hub](#input\_project\_for\_hub)
 
 Description: When `kind`=`hub`, this covers associated project creation.
-- `create_new`: whether to create project(s) as a part of hub creation
-- `projects`: the details of project(s) to create
-  - name: the project name (all lowercase, no spaces)
-  - friendlyName: an optional friendly name
+- `create_new`: whether to create project as a part of hub creation
+- `project_name`: the name of the project to create
 
 Type:
 
 ```hcl
 object({
-    create_new = bool,
-    projects = optional(list(object({
-      name         = string
-      friendlyName = optional(string, null)
-    })), null)
+    create_new   = bool,
+    project_name = optional(string, null)
   })
 ```
 

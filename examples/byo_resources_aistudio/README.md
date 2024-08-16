@@ -1,10 +1,16 @@
 <!-- BEGIN_TF_DOCS -->
+# BYO Resources - AI Studio Hub
 
+This deploys a public AI Studio Hub using existing resource. The resource group, storage account, key vault and Azure AI Services are all provided to the module.
 
 ```hcl
 terraform {
   required_version = "~> 1.5"
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "1.14.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.115.0"
@@ -118,11 +124,17 @@ module "aihub" {
     include           = true
   }
 
-  projects_for_hub = {
+  project_for_hub = {
     create_new = false
   }
 
-  enable_telemetry = false
+  application_insights = {
+    create_new = false
+  }
+
+  log_analytics_workspace = {
+    create_new = false
+  }
 }
 ```
 
@@ -133,13 +145,15 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.14.0)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.115.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/hashicorp/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
@@ -164,7 +178,11 @@ Default: `"uksouth"`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: The AI Studio hub.
 
 ## Modules
 

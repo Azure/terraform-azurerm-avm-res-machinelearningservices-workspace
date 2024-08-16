@@ -1,5 +1,6 @@
 locals {
-  ai_services                = var.aiservices.include == false ? null : var.aiservices.create_new ? azapi_resource.aiservice[0] : data.azapi_resource.existing_aiservices[0]
+  ai_services                = var.aiservices.include == false ? null : var.aiservices.create_new ? azapi_resource.aiservice[0] : data.azapi_resource.existing_aiservices[0].output
+  ai_services_id             = var.aiservices.include == false ? null : var.aiservices.create_new ? azapi_resource.aiservice[0].id : jsondecode(data.azapi_resource.existing_aiservices[0].output).id
   aml_resource               = var.kind == "Default" ? azapi_resource.this[0] : azapi_resource.hub[0]
   application_insights_id    = (var.kind == "Default" || var.application_insights.create_new) && (var.application_insights.resource_id == null) ? replace(azurerm_application_insights.this[0].id, "Microsoft.Insights", "Microsoft.insights") : var.application_insights.resource_id
   container_registry_id      = ((var.is_private && var.kind == "Default") || var.container_registry.create_new) && (var.container_registry.resource_id == null) ? module.avm_res_containerregistry_registry[0].resource_id : var.container_registry.resource_id

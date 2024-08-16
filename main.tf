@@ -24,7 +24,7 @@ resource "azapi_resource" "public" {
   })
   location  = var.location
   name      = "aml-${var.name}"
-  parent_id = var.resource_group.id
+  parent_id = local.resource_group_id
   tags      = var.tags
 
   identity {
@@ -57,7 +57,7 @@ resource "azapi_resource" "this" {
   })
   location  = var.location
   name      = "aml-${var.name}"
-  parent_id = var.resource_group.id
+  parent_id = local.resource_group_id
   tags      = var.tags
 
   identity {
@@ -80,7 +80,7 @@ resource "azapi_resource" "aiproject" {
   })
   location  = var.location
   name      = "aihubproject-${var.name}"
-  parent_id = var.resource_group.id
+  parent_id = local.resource_group_id
 
   identity {
     type = "SystemAssigned"
@@ -145,7 +145,7 @@ resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments
 
   principal_id                           = each.value.principal_id
-  scope                                  = var.resource_group.name
+  scope                                  = var.resource_group_name
   condition                              = each.value.condition
   condition_version                      = each.value.condition_version
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id

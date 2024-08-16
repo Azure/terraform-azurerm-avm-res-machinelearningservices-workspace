@@ -16,6 +16,7 @@ locals {
       }
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
+  resource_group_id                  = data.azurerm_resource_group.current.id
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
   # Resources that may or may not be created from this module
   storage_account_id = var.storage_account.resource_id == null ? module.avm_res_storage_storageaccount[0].resource_id : var.storage_account.resource_id

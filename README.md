@@ -63,6 +63,7 @@ The following resources are used by this module:
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
+- [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/resource_group) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
@@ -82,20 +83,11 @@ Description: The name of the this resource.
 
 Type: `string`
 
-### <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group)
+### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
-Description: An object describing the resource group to deploy the resource to. This includes the following properties:
-- `id` - The resource ID of the resource group.
-- `name` - The name of the resource group.
+Description: The resource group where the resources will be deployed.
 
-Type:
-
-```hcl
-object({
-    id   = string
-    name = string
-  })
-```
+Type: `string`
 
 ## Optional Inputs
 

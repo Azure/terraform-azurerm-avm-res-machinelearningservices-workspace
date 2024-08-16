@@ -5,7 +5,7 @@ module "avm_res_containerregistry_registry" {
 
   name                          = replace("acr${var.name}", "-", "")
   location                      = var.location
-  resource_group_name           = var.resource_group.name
+  resource_group_name           = var.resource_group_name
   public_network_access_enabled = var.is_private ? false : true
 
   private_endpoints = var.is_private ? {

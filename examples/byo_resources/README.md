@@ -19,9 +19,11 @@ provider "azurerm" {
     key_vault {
       purge_soft_delete_on_destroy = false
     }
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
   }
 }
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -82,12 +84,9 @@ module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location = azurerm_resource_group.this.location
-  name     = module.naming.machine_learning_workspace.name_unique
-  resource_group = {
-    name = azurerm_resource_group.this.name
-    id   = azurerm_resource_group.this.id
-  }
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.machine_learning_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
 
   storage_account = {
     resource_id = azurerm_storage_account.example.id

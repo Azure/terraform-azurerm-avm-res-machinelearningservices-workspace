@@ -13,6 +13,9 @@ provider "azurerm" {
     key_vault {
       purge_soft_delete_on_destroy = false
     }
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
   }
 }
 
@@ -158,12 +161,9 @@ module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location = azurerm_resource_group.this.location
-  name     = local.name
-  resource_group = {
-    id   = azurerm_resource_group.this.id
-    name = azurerm_resource_group.this.name
-  }
+  location                = azurerm_resource_group.this.location
+  name                    = local.name
+  resource_group_name     = azurerm_resource_group.this.name
   is_private              = true
   create_compute_instance = true
 

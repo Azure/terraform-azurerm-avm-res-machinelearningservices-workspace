@@ -15,17 +15,9 @@ variable "name" {
 }
 
 # This is required for most resource modules
-variable "resource_group" {
-  type = object({
-    id   = string
-    name = string
-  })
-  description = <<DESCRIPTION
-An object describing the resource group to deploy the resource to. This includes the following properties:
-- `id` - The resource ID of the resource group.
-- `name` - The name of the resource group.
-DESCRIPTION
-  nullable    = false
+variable "resource_group_name" {
+  type        = string
+  description = "The resource group where the resources will be deployed."
 }
 
 variable "application_insights" {

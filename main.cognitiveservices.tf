@@ -18,6 +18,7 @@ resource "azapi_resource" "aiservice" {
   name                   = "ai-svc-${var.name}"
   parent_id              = var.resource_group.id
   response_export_values = ["*"]
+  tags                   = var.aiservices.tags
 
   identity {
     type = "SystemAssigned"

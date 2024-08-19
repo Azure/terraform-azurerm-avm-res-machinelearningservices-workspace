@@ -93,6 +93,10 @@ module "azureml" {
 
   storage_account = {
     create_new = true
+    network_rules = {
+      bypass         = ["AzureServices", "Logging", "Metrics"]
+      default_action = "Deny"
+    }
   }
 
   enable_telemetry = var.enable_telemetry

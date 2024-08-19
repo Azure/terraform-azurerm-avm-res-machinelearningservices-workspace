@@ -35,6 +35,7 @@ variable "aiservices" {
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
     resource_group_id     = optional(string, null)
+    tags                  = optional(map(string), null)
   })
   default = {
     include = false
@@ -69,7 +70,8 @@ variable "application_insights" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, false)
+    include     = optional(bool, true)
+    tags        = optional(map(string), null)
   })
   default = {
     create_new = true
@@ -90,6 +92,7 @@ variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
+    include     = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -98,6 +101,7 @@ variable "container_registry" {
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    tags = optional(map(string), null)
   })
   default = {
     create_new = false
@@ -115,7 +119,7 @@ An object describing the Container Registry. This includes the following propert
 DESCRIPTION
 
   validation {
-    condition     = !(var.is_private) || var.is_private && (var.container_registry.create_new || var.container_registry.resource_id != null)
+    condition     = !(var.is_private && var.kind == "Default") || ((var.is_private && var.kind == "Default") && (var.container_registry.create_new || var.container_registry.resource_id != null))
     error_message = "If attempting to create a private resource, either `create_new` must be set to true or `resource_id` must be set to a valid resource ID. If public, container registry is only created if create_new is true."
   }
 }
@@ -183,6 +187,7 @@ variable "key_vault" {
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    tags = optional(map(string), null)
   })
   default = {
     create_new = true
@@ -240,10 +245,12 @@ variable "log_analytics_workspace" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, false)
+    include     = optional(bool, true)
+    tags        = optional(map(string), null)
   })
   default = {
     create_new = true
+    tags       = null
   }
   description = <<DESCRIPTION
 An object describing the Log Analytics Workspace to create. This includes the following properties:
@@ -370,10 +377,16 @@ variable "storage_account" {
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
-    })), {})
+    })))
+    network_rules = optional(object({
+      bypass         = optional(set(string), [])
+      default_action = optional(string, "Deny")
+    }))
+    tags = optional(map(string), null)
   })
   default = {
     create_new = true
+    tags       = null
   }
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:

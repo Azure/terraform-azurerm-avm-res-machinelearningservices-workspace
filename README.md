@@ -121,6 +121,7 @@ object({
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
     resource_group_id     = optional(string, null)
+    tags                  = optional(map(string), null)
   })
 ```
 
@@ -152,7 +153,8 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, false)
+    include     = optional(bool, true)
+    tags        = optional(map(string), null)
   })
 ```
 
@@ -182,6 +184,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
+    include     = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -190,6 +193,7 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    tags = optional(map(string), null)
   })
 ```
 
@@ -285,6 +289,7 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    tags = optional(map(string), null)
   })
 ```
 
@@ -338,7 +343,8 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, false)
+    include     = optional(bool, true)
+    tags        = optional(map(string), null)
   })
 ```
 
@@ -346,7 +352,8 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "create_new": true,
+  "tags": null
 }
 ```
 
@@ -486,7 +493,12 @@ object({
       private_service_connection_name = optional(string, null)
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
-    })), {})
+    })))
+    network_rules = optional(object({
+      bypass         = optional(set(string), [])
+      default_action = optional(string, "Deny")
+    }))
+    tags = optional(map(string), null)
   })
 ```
 
@@ -494,7 +506,8 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "create_new": true,
+  "tags": null
 }
 ```
 
@@ -566,7 +579,7 @@ The following outputs are exported:
 
 ### <a name="output_aiservices"></a> [aiservices](#output\_aiservices)
 
-Description: value
+Description: The new AI Services resource
 
 ### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
 
@@ -596,10 +609,6 @@ Description: The ID of the machine learning workspace.
 
 Description: The storage account resource.
 
-### <a name="output_vnet"></a> [vnet](#output\_vnet)
-
-Description: The ID of the virtual network.
-
 ## Modules
 
 The following Modules are called:
@@ -621,12 +630,6 @@ Version: ~> 0.7
 Source: Azure/avm-res-operationalinsights-workspace/azurerm
 
 Version: 0.3.3
-
-### <a name="module_avm_res_network_virtualnetwork"></a> [avm\_res\_network\_virtualnetwork](#module\_avm\_res\_network\_virtualnetwork)
-
-Source: Azure/avm-res-network-virtualnetwork/azurerm
-
-Version: 0.2.3
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 

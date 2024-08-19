@@ -54,8 +54,7 @@ module "aihub" {
     id   = azurerm_resource_group.this.id
     name = azurerm_resource_group.this.name
   }
-  is_private = true
-  kind       = "hub"
+  kind = "Hub"
 
   key_vault = {
     create_new = true
@@ -67,6 +66,16 @@ module "aihub" {
 
   aiservices = {
     create_new = true
+  }
+
+  log_analytics_workspace = {
+    include    = false
+    create_new = false
+  }
+
+  application_insights = {
+    include    = false
+    create_new = false
   }
 
   enable_telemetry = false

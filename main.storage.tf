@@ -26,12 +26,61 @@ module "avm_res_storage_storageaccount" {
     }
   } : {}
 
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = var.is_private ? "Deny" : "Allow"
+  network_rules = var.storage_account.network_rules
+
+  blob_properties = {
+    cors_rule = [{
+      allowed_headers = ["*", ]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+        "PATCH",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers = [
+        "*",
+      ]
+      max_age_in_seconds = 1800
+    }]
   }
 
-  tags = var.tags
+  share_properties = {
+    cors_rule = [{
+      allowed_headers = ["*", ]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+        "PATCH",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers = [
+        "*",
+      ]
+      max_age_in_seconds = 1800
+    }]
+  }
+
+  tags = var.storage_account.tags
 
   count = var.storage_account.create_new ? 1 : 0
 }

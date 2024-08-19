@@ -20,8 +20,8 @@ module "avm_res_keyvault_vault" {
       inherit_lock                    = value.inherit_lock
     }
   } : {}
-  tags = var.tags
 
+  tags = var.key_vault.tags
 
   count = var.key_vault.create_new ? 1 : 0
 }

@@ -132,9 +132,11 @@ module "aihub" {
 
   application_insights = {
     create_new = false
+    include    = false
   }
 
   log_analytics_workspace = {
     create_new = false
+    include    = false
   }
 }

@@ -54,6 +54,17 @@ DESCRIPTION
   }
 }
 
+variable "aistudio_hub_id" {
+  type        = string
+  default     = null
+  description = "The Id for the AI Studio Hub for the Project to be created"
+
+  validation {
+    condition     = (var.kind != "Project") || (var.aistudio_hub_id != null)
+    error_message = "Hub Id is required when creating a Project"
+  }
+}
+
 variable "application_insights" {
   type = object({
     resource_id = optional(string, null)
@@ -201,8 +212,8 @@ variable "kind" {
 The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.
 Possible values are:
 - `Default` - The resource will be created as a standard Azure Machine Learning resource.
-- `hub` - The resource will be created as an AI Hub resource.
-- `project` - The resource will be created as an AI Studio Project resource.
+- `Hub` - The resource will be created as an AI Hub resource.
+- `Project` - The resource will be created as an AI Studio Project resource.
 DESCRIPTION
 }
 
@@ -309,13 +320,13 @@ variable "project_for_hub" {
     create_new = false
   }
   description = <<DESCRIPTION
-When `kind`=`hub`, this covers associated project creation.
+When `kind`=`Hub`, this covers associated project creation.
 - `create_new`: whether to create project as a part of hub creation
 - `project_name`: the name of the project to create
 DESCRIPTION
 
   validation {
-    condition     = (var.kind != "hub") || (var.project_for_hub.create_new == false) || (var.project_for_hub.create_new == true && var.project_for_hub.project_name != null)
+    condition     = (var.kind != "Hub") || (var.project_for_hub.create_new == false) || (var.project_for_hub.create_new == true && var.project_for_hub.project_name != null)
     error_message = "If `create_new` == true, `project_name` cannot be null. "
   }
 }

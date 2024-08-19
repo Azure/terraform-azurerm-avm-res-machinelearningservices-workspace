@@ -22,6 +22,14 @@ resource "azapi_resource" "aiservice" {
   identity {
     type = "SystemAssigned"
   }
+
+  lifecycle {
+    ignore_changes = [
+      # When the service connection to the AI Studio Hub is created, 
+      # tags are added to this resource
+      tags,
+    ]
+  }
 }
 
 data "azapi_resource" "existing_aiservices" {

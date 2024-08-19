@@ -31,7 +31,7 @@ resource "azapi_resource" "this" {
 }
 
 resource "azapi_resource" "hub" {
-  count = var.kind == "hub" ? 1 : 0
+  count = var.kind == "Hub" ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
@@ -60,12 +60,41 @@ resource "azapi_resource" "hub" {
   identity {
     type = "SystemAssigned"
   }
+
+  lifecycle {
+    ignore_changes = [
+      # When the service connections for CognitiveServices are created, 
+      # tags are added to this resource
+      tags,
+    ]
+  }
 }
 
-
 # Azure AI Project
-resource "azapi_resource" "aiproject" {
-  count = var.kind == "hub" && var.project_for_hub.create_new ? 1 : 0
+resource "azapi_resource" "project" {
+  count = var.kind == "Project" ? 1 : 0
+
+  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
+  body = jsonencode({
+    properties = {
+      description   = "Azure AI PROJECT"
+      friendlyName  = "AIStudioProject"
+      hubResourceId = var.aistudio_hub_id
+    }
+    kind = var.kind
+  })
+  location  = var.location
+  name      = "project-${var.name}"
+  parent_id = var.resource_group.id
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# Azure AI Project for Hub
+resource "azapi_resource" "hubproject" {
+  count = var.kind == "Hub" && var.project_for_hub.create_new ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
@@ -74,7 +103,7 @@ resource "azapi_resource" "aiproject" {
       friendlyName  = var.project_for_hub.project_name
       hubResourceId = local.aml_resource.id
     }
-    kind = "project"
+    kind = "Project"
   })
   location  = var.location
   name      = "aihubproject-${var.name}"

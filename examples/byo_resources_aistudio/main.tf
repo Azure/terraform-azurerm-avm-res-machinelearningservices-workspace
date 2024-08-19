@@ -73,6 +73,14 @@ resource "azapi_resource" "aiservice" {
   identity {
     type = "SystemAssigned"
   }
+
+  lifecycle {
+    ignore_changes = [
+      # When the service connection to the AI Studio Hub is created, 
+      # tags are added to this resource
+      tags,
+    ]
+  }
 }
 
 # This is the module call
@@ -100,7 +108,7 @@ module "aihub" {
     id   = azurerm_resource_group.this.id
     name = azurerm_resource_group.this.name
   }
-  kind = "hub"
+  kind = "Hub"
   storage_account = {
     resource_id = azurerm_storage_account.example.id
     create_new  = false

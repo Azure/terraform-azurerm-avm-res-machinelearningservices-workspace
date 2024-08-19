@@ -48,11 +48,12 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiproject](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.hubproject](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
@@ -130,6 +131,14 @@ Default:
   "include": false
 }
 ```
+
+### <a name="input_aistudio_hub_id"></a> [aistudio\_hub\_id](#input\_aistudio\_hub\_id)
+
+Description: The Id for the AI Studio Hub for the Project to be created
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
@@ -292,8 +301,8 @@ Default:
 Description: The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.  
 Possible values are:
 - `Default` - The resource will be created as a standard Azure Machine Learning resource.
-- `hub` - The resource will be created as an AI Hub resource.
-- `project` - The resource will be created as an AI Studio Project resource.
+- `Hub` - The resource will be created as an AI Hub resource.
+- `Project` - The resource will be created as an AI Studio Project resource.
 
 Type: `string`
 
@@ -400,7 +409,7 @@ Default: `{}`
 
 ### <a name="input_project_for_hub"></a> [project\_for\_hub](#input\_project\_for\_hub)
 
-Description: When `kind`=`hub`, this covers associated project creation.
+Description: When `kind`=`Hub`, this covers associated project creation.
 - `create_new`: whether to create project as a part of hub creation
 - `project_name`: the name of the project to create
 

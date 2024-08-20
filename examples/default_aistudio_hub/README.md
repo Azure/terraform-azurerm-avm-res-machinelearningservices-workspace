@@ -90,6 +90,11 @@ module "aihub" {
     create_new = false
   }
 
+  container_registry = {
+    create_new = false
+    ignore     = true
+  }
+
   enable_telemetry = false
 }
 ```

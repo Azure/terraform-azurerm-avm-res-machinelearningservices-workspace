@@ -145,6 +145,11 @@ module "aihub" {
     create_new = false
     ignore     = true
   }
+
+  container_registry = {
+    create_new = false
+    ignore     = true
+  }
 }
 ```
 

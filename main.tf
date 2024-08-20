@@ -44,6 +44,7 @@ resource "azapi_resource" "this" {
       hbiWorkspace        = var.hbi_workspace
       friendlyName        = "AMLManagedVirtualNetwork"
       keyVault            = local.key_vault_id
+      imageBuildCompute   = var.image_builder_compute_cluster_name
       managedNetwork = {
         isolationMode = "AllowInternetOutbound"
         status = {
@@ -131,6 +132,28 @@ resource "azapi_resource" "computeinstance" {
     type = "SystemAssigned"
   }
 }
+
+# Compute cluster for image building required since the workspace is behind a vnet.
+# For more details, see https://docs.microsoft.com/en-us/azure/machine-learning/tutorial-create-secure-workspace#configure-image-builds.
+resource "azurerm_machine_learning_compute_cluster" "image-builder" {
+  count = var.is_private ? 1 : 0
+
+  location                      = var.location
+  machine_learning_workspace_id = local.aml_resource.id
+  name                          = var.image_builder_compute_cluster_name
+  vm_priority                   = "LowPriority"
+  vm_size                       = "Standard_DS2_v2"
+
+  scale_settings {
+    max_node_count                       = 3
+    min_node_count                       = 0
+    scale_down_nodes_after_idle_duration = "PT15M" # 15 minutes
+  }
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
 
 resource "azurerm_management_lock" "this" {
   count = var.lock != null ? 1 : 0

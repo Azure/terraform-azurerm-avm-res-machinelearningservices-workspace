@@ -127,6 +127,12 @@ variable "hbi_workspace" {
   description = "Specifies if the resource is a High Business Impact (HBI) workspace."
 }
 
+variable "image_builder_compute_cluster_name" {
+  type        = string
+  default     = "acrcluster"
+  description = "The name of the compute cluster to use for image building."
+}
+
 variable "is_private" {
   type        = bool
   default     = false

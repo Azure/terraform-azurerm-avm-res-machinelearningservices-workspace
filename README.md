@@ -116,7 +116,7 @@ Type:
 
 ```hcl
 object({
-    ignore                = optional(bool, false)
+    ignore                = optional(bool, true)
     create_new            = optional(bool, true)
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
@@ -129,7 +129,7 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "ignore": true
 }
 ```
 

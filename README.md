@@ -48,11 +48,11 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiproject](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.public](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
+- [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
@@ -61,6 +61,7 @@ The following resources are used by this module:
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
+- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/data-sources/resource) (data source)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/resource_group) (data source)
@@ -93,6 +94,45 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_ai_studio_hub_id"></a> [ai\_studio\_hub\_id](#input\_ai\_studio\_hub\_id)
+
+Description: The AI Studio Hub ID for which to create a Project
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
+
+Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
+- `ignore`: (Optional) A flag indicating whether AI Services should be considered. If set to 'false', either `create_new` must be 'true' or `name` and `resource_group_id` must be provided.
+- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
+- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
+- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
+- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
+- `tags` - (Optional) Tags for the AI Services resource.
+
+Type:
+
+```hcl
+object({
+    ignore                = optional(bool, false)
+    create_new            = optional(bool, true)
+    analysis_services_sku = optional(string, "S0")
+    name                  = optional(string, null)
+    resource_group_id     = optional(string, null)
+    tags                  = optional(map(string), null)
+  })
+```
+
+Default:
+
+```json
+{
+  "create_new": true
+}
+```
+
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
 Description: An object describing the Application Insights resource to create. This includes the following properties:
@@ -105,6 +145,8 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
+    ignore      = optional(bool, false)
+    tags        = optional(map(string), null)
   })
 ```
 
@@ -134,6 +176,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
+    ignore      = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -142,6 +185,7 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    tags = optional(map(string), null)
   })
 ```
 
@@ -205,7 +249,7 @@ Default: `false`
 
 ### <a name="input_is_private"></a> [is\_private](#input\_is\_private)
 
-Description: Specifies if the resource is private.
+Description: Specifies if every provisioned resource should be private and inaccessible from the Internet.
 
 Type: `bool`
 
@@ -222,6 +266,7 @@ Description: An object describing the Key Vault to create the private endpoint c
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `tags` - (Optional) Tags for the Key Vault resource.
 
 Type:
 
@@ -237,6 +282,7 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    tags = optional(map(string), null)
   })
 ```
 
@@ -253,8 +299,8 @@ Default:
 Description: The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.  
 Possible values are:
 - `Default` - The resource will be created as a standard Azure Machine Learning resource.
-- `hub` - The resource will be created as an AI Hub resource.
-- `project` - The resource will be created as an AI Studio Project resource.
+- `Hub` - The resource will be created as an AI Hub resource.
+- `Project` - The resource will be created as an AI Studio Project resource.
 
 Type: `string`
 
@@ -283,6 +329,8 @@ Default: `null`
 Description: An object describing the Log Analytics Workspace to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
 - `create_new` - A flag indicating if a new workspace must be created. If set to 'false', resource\_id must not be 'null'.
+- `ignore` - (Optional) A flag whether to consider the resource all together. If set to 'true', no resource will be created nor will an existing resource be associated with the workspace.
+- `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 
 Type:
 
@@ -290,6 +338,8 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
+    ignore      = optional(bool, false)
+    tags        = optional(map(string), null)
   })
 ```
 
@@ -399,6 +449,10 @@ Description: An object describing the Storage Account. This includes the followi
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `network_rules` - (Optional) An object to configure the Storage Account's network rules
+  - `bypass` - (Optional) Specifies whether traffic is bypassed for Logging/Metrics/AzureServices. Valid options are any combination of 'Logging', 'Metrics', 'AzureServices', or `None`.
+  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
+- `tags` - (Optional) Tags for the Storage Account resource.
 
 Type:
 
@@ -415,6 +469,11 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
+    network_rules = optional(object({
+      bypass         = optional(set(string), [])
+      default_action = optional(string, "Deny")
+    }))
+    tags = optional(map(string), null)
   })
 ```
 
@@ -458,6 +517,36 @@ object({
 
 Default: `null`
 
+### <a name="input_workspace_managed_network"></a> [workspace\_managed\_network](#input\_workspace\_managed\_network)
+
+Description: Specifies properties of the workspace's managed virtual network.
+
+Possible values for `isolation_mode` are:
+- 'Disabled': Inbound and outbound traffic is unrestricted _or_ BYO VNet to protect resources.
+- 'AllowInternetOutbound': Allow all internet outbound traffic.
+- 'AllowOnlyApprovedOutbound': Outbound traffic is allowed by specifying service tags.  
+While is possible to update the workspace to enable network isolation ('AllowInternetOutbound' or 'AllowOnlyApprovedOutbound'), it is not possible to disable it on a workspace with it enabled.
+
+`spark_ready` determines whether spark jobs will be run on the network. This value can be updated in the future.
+
+Type:
+
+```hcl
+object({
+    isolation_mode = string
+    spark_ready    = optional(bool, true)
+  })
+```
+
+Default:
+
+```json
+{
+  "isolation_mode": "Disabled",
+  "spark_ready": true
+}
+```
+
 ## Outputs
 
 The following outputs are exported:
@@ -490,10 +579,6 @@ Description: The ID of the machine learning workspace.
 
 Description: The storage account resource.
 
-### <a name="output_vnet"></a> [vnet](#output\_vnet)
-
-Description: The ID of the virtual network.
-
 ## Modules
 
 The following Modules are called:
@@ -515,12 +600,6 @@ Version: ~> 0.7
 Source: Azure/avm-res-operationalinsights-workspace/azurerm
 
 Version: 0.3.3
-
-### <a name="module_avm_res_network_virtualnetwork"></a> [avm\_res\_network\_virtualnetwork](#module\_avm\_res\_network\_virtualnetwork)
-
-Source: Azure/avm-res-network-virtualnetwork/azurerm
-
-Version: 0.2.3
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 

@@ -9,7 +9,7 @@ module "avm_res_keyvault_vault" {
   location                      = var.location
   public_network_access_enabled = var.is_private ? false : true
 
-  private_endpoints = var.is_private ? {
+  private_endpoints = var.is_private && var.vnet != null ? {
     for key, value in var.key_vault.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
@@ -20,7 +20,7 @@ module "avm_res_keyvault_vault" {
       inherit_lock                    = value.inherit_lock
     }
   } : {}
-  tags = var.tags
+  tags = var.key_vault.tags == null ? var.tags : var.key_vault.tags == {} ? {} : var.key_vault.tags
 
 
   count = var.key_vault.create_new ? 1 : 0

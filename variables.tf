@@ -33,7 +33,7 @@ variable "ai_studio_hub_id" {
 
 variable "aiservices" {
   type = object({
-    ignore                = optional(bool, false)
+    ignore                = optional(bool, true)
     create_new            = optional(bool, true)
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
@@ -41,7 +41,7 @@ variable "aiservices" {
     tags                  = optional(map(string), null)
   })
   default = {
-    create_new = true
+    ignore = true
   }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create or reference. This includes the following properties:

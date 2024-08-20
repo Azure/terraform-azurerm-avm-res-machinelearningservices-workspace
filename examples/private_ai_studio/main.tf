@@ -63,6 +63,7 @@ module "aihub" {
 
   aiservices = {
     create_new = true
+    ignore = false
   }
 
   application_insights = {

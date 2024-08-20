@@ -55,6 +55,7 @@ The following resources are used by this module:
 - [azapi_resource.public](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
 - [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
+- [azurerm_machine_learning_compute_cluster.image-builder](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/machine_learning_compute_cluster) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint_application_security_group_association) (resource)
@@ -210,6 +211,14 @@ Description: Specifies if the resource is a High Business Impact (HBI) workspace
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_image_builder_compute_cluster_name"></a> [image\_builder\_compute\_cluster\_name](#input\_image\_builder\_compute\_cluster\_name)
+
+Description: The name of the compute cluster to use for image building.
+
+Type: `string`
+
+Default: `"acrcluster"`
 
 ### <a name="input_is_private"></a> [is\_private](#input\_is\_private)
 

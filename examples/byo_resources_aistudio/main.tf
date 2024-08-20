@@ -123,7 +123,7 @@ module "aihub" {
     name              = azapi_resource.aiservice.name
     resource_group_id = azurerm_resource_group.this.id
     create_new        = false
-    include           = true
+    ignore            = false
   }
 
   project_for_hub = {
@@ -132,11 +132,11 @@ module "aihub" {
 
   application_insights = {
     create_new = false
-    include    = false
+    ignore     = true
   }
 
   log_analytics_workspace = {
     create_new = false
-    include    = false
+    ignore     = true
   }
 }

@@ -21,7 +21,7 @@ module "avm_res_keyvault_vault" {
     }
   } : {}
 
-  tags = var.key_vault.tags
+  tags = var.key_vault.tags == null ? var.tags : var.key_vault.tags == {} ? {} : var.key_vault.tags
 
   count = var.key_vault.create_new ? 1 : 0
 }

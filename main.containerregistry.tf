@@ -20,7 +20,7 @@ module "avm_res_containerregistry_registry" {
     }
   } : {}
 
-  tags = var.container_registry.tags
+  tags = var.container_registry.tags == null ? var.tags : var.container_registry.tags == {} ? {} : var.container_registry.tags
 
-  count = var.container_registry.create_new ? 1 : 0
+  count = !var.container_registry.ignore && var.container_registry.create_new ? 1 : 0
 }

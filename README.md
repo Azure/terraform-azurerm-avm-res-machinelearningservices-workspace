@@ -106,17 +106,18 @@ The following input variables are optional (have default values):
 ### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
 
 Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
-- `include`: A flag indicating whether AI Services should be considered
-- `create_new`: A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
-- `analysis_services_sku`: When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
-- `name`: If providing an existing resource, the name of the AI Services to reference
-- `resource_group_id`: If providing an existing resource, the id of the resource group where the AI Services resource resides
+- `ignore`: (Optional) A flag indicating whether AI Services should be considered. If set to 'false', either `create_new` must be 'true' or `name` and `resource_group_id` must be provided.
+- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
+- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
+- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
+- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
+- `tags` - (Optional) Tags for the AI Services resource.
 
 Type:
 
 ```hcl
 object({
-    include               = optional(bool, false)
+    ignore                = optional(bool, true)
     create_new            = optional(bool, false)
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
@@ -129,7 +130,7 @@ Default:
 
 ```json
 {
-  "include": false
+  "ignore": true
 }
 ```
 
@@ -144,8 +145,10 @@ Default: `null`
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
 Description: An object describing the Application Insights resource to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
+- `resource_id` - The resource ID of an existing Application Insights resource. If null, `create_new` must be 'false'.
 - `create_new` - A flag indicating if a new resource must be created. If set to 'false', resource\_id must not be 'null'.
+- `ignore` - (Optional) A flag whether to consider the resource all together. If set to 'true', no resource will be created nor will an existing resource be associated with the workspace.
+- `tags` - (Optional) Tags for the app. insights resource.
 
 Type:
 
@@ -153,7 +156,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, true)
+    ignore      = optional(bool, false)
     tags        = optional(map(string), null)
   })
 ```
@@ -170,6 +173,8 @@ Default:
 
 Description: An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
+- `create_new` - Whether or not to provision a new Container Registry
+- `ignore` - (Optional) A flag whether to consider the resource all together. If set to 'true', no resource will be created nor will an existing resource be associated with the workspace.
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -177,6 +182,7 @@ Description: An object describing the Container Registry. This includes the foll
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `tags` - (Optional) Tags for the Container Registry resource.
 
 Type:
 
@@ -184,7 +190,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, false)
+    ignore      = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -274,6 +280,7 @@ Description: An object describing the Key Vault to create the private endpoint c
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `tags` - (Optional) Tags for the Key Vault resource.
 
 Type:
 
@@ -305,9 +312,9 @@ Default:
 
 Description: The kind of the resource. This is used to determine the type of the resource. If not specified, the resource will be created as a standard resource.  
 Possible values are:
-- `Default` - The resource will be created as a standard Azure Machine Learning resource.
-- `Hub` - The resource will be created as an AI Hub resource.
-- `Project` - The resource will be created as an AI Studio Project resource.
+- 'Default' - The resource will be created as a standard Azure Machine Learning resource.
+- 'Hub' - The resource will be created as an AI Hub resource.
+- 'Project' - The resource will be created as an AI Studio Project resource.
 
 Type: `string`
 
@@ -336,6 +343,8 @@ Default: `null`
 Description: An object describing the Log Analytics Workspace to create. This includes the following properties:
 - `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
 - `create_new` - A flag indicating if a new workspace must be created. If set to 'false', resource\_id must not be 'null'.
+- `ignore` - (Optional) A flag whether to consider the resource all together. If set to 'true', no resource will be created nor will an existing resource be associated with the workspace.
+- `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 
 Type:
 
@@ -343,7 +352,7 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    include     = optional(bool, true)
+    ignore      = optional(bool, false)
     tags        = optional(map(string), null)
   })
 ```
@@ -352,8 +361,7 @@ Default:
 
 ```json
 {
-  "create_new": true,
-  "tags": null
+  "create_new": true
 }
 ```
 
@@ -417,15 +425,17 @@ Default: `{}`
 ### <a name="input_project_for_hub"></a> [project\_for\_hub](#input\_project\_for\_hub)
 
 Description: When `kind`=`Hub`, this covers associated project creation.
-- `create_new`: whether to create project as a part of hub creation
-- `project_name`: the name of the project to create
+- `create_new`: Whether to create project as a part of hub creation.
+- `project_name`: The name of the project to create.
+- `tags` - (Optional) Tags for the Project.
 
 Type:
 
 ```hcl
 object({
-    create_new   = bool,
+    create_new   = bool
     project_name = optional(string, null)
+    tags         = optional(map(string), null)
   })
 ```
 
@@ -478,6 +488,7 @@ Description: An object describing the Storage Account. This includes the followi
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `tags` - (Optional) Tags for the Storage Account resource.
 
 Type:
 
@@ -506,8 +517,7 @@ Default:
 
 ```json
 {
-  "create_new": true,
-  "tags": null
+  "create_new": true
 }
 ```
 

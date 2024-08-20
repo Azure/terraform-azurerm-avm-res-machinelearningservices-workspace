@@ -81,12 +81,12 @@ module "aihub" {
   }
 
   log_analytics_workspace = {
-    include    = false
+    ignore     = true
     create_new = false
   }
 
   application_insights = {
-    include    = false
+    ignore     = true
     create_new = false
   }
 

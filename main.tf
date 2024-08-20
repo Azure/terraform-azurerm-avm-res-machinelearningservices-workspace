@@ -108,6 +108,7 @@ resource "azapi_resource" "hubproject" {
   location  = var.location
   name      = "aihubproject-${var.name}"
   parent_id = var.resource_group.id
+  tags      = var.project_for_hub.tags == null ? var.tags : var.project_for_hub.tags == {} ? {} : var.project_for_hub.tags
 
   identity {
     type = "SystemAssigned"
@@ -116,7 +117,7 @@ resource "azapi_resource" "hubproject" {
 
 # AzAPI AI Services Connection
 resource "azapi_resource" "aiserviceconnection" {
-  count = var.aiservices.include ? 1 : 0
+  count = !var.aiservices.ignore ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
   body = jsonencode({

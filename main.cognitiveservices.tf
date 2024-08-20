@@ -1,5 +1,5 @@
 resource "azapi_resource" "aiservice" {
-  count = var.aiservices.include && var.aiservices.create_new ? 1 : 0
+  count = !var.aiservices.ignore && var.aiservices.create_new ? 1 : 0
 
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   body = jsonencode({
@@ -18,7 +18,7 @@ resource "azapi_resource" "aiservice" {
   name                   = "ai-svc-${var.name}"
   parent_id              = var.resource_group.id
   response_export_values = ["*"]
-  tags                   = var.aiservices.tags
+  tags                   = var.aiservices.tags == null ? var.tags : var.aiservices.tags == {} ? {} : var.aiservices.tags
 
   identity {
     type = "SystemAssigned"
@@ -34,7 +34,7 @@ resource "azapi_resource" "aiservice" {
 }
 
 data "azapi_resource" "existing_aiservices" {
-  count = (var.aiservices.include == true && var.aiservices.create_new == false) ? 1 : 0
+  count = (!var.aiservices.ignore && !var.aiservices.create_new) ? 1 : 0
 
   type                   = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   name                   = var.aiservices.name

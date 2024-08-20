@@ -80,7 +80,6 @@ module "avm_res_storage_storageaccount" {
     }]
   }
 
-  tags = var.storage_account.tags
-
+  tags  = var.storage_account.tags == null ? var.tags : var.storage_account.tags == {} ? {} : var.storage_account.tags
   count = var.storage_account.create_new ? 1 : 0
 }

@@ -50,5 +50,11 @@ module "azureml" {
   location            = var.location
   name                = module.naming.machine_learning_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
+  application_insights = {
+    create_new = true
+  }
+  log_analytics_workspace = {
+    create_new = true
+  }
+  enable_telemetry = var.enable_telemetry
 }

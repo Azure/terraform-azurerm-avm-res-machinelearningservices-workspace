@@ -94,7 +94,7 @@ resource "azapi_resource" "project" {
 
 # AzAPI AI Services Connection
 resource "azapi_resource" "aiserviceconnection" {
-  count = !var.aiservices.ignore ? 1 : 0
+  count = var.aiservices.create_new || (var.aiservices.name != null && var.aiservices.resource_group_id != null) ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
   body = jsonencode({

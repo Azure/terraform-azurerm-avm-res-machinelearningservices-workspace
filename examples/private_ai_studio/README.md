@@ -71,9 +71,14 @@ module "aihub" {
   resource_group_name = azurerm_resource_group.this.name
   is_private          = true
   kind                = "Hub"
+  workspace_managed_network = {
+    isolation_mode = "AllowInternetOutbound"
+    spark_ready    = true
+  }
 
   container_registry = {
-    create_new = true
+    create_new     = true
+    zone_redundant = false
   }
 
   key_vault = {
@@ -86,7 +91,6 @@ module "aihub" {
 
   aiservices = {
     create_new = true
-    ignore     = false
   }
 
   application_insights = {

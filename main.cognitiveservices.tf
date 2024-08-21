@@ -1,5 +1,5 @@
 resource "azapi_resource" "aiservice" {
-  count = !var.aiservices.ignore && var.aiservices.create_new ? 1 : 0
+  count = var.aiservices.create_new ? 1 : 0
 
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   body = jsonencode({
@@ -34,7 +34,7 @@ resource "azapi_resource" "aiservice" {
 }
 
 data "azapi_resource" "existing_aiservices" {
-  count = (!var.aiservices.ignore && !var.aiservices.create_new) ? 1 : 0
+  count = (var.aiservices.name != null && var.aiservices.resource_group_id != null) ? 1 : 0
 
   type                   = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   name                   = var.aiservices.name

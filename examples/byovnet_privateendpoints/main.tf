@@ -113,6 +113,11 @@ module "azureml" {
       inherit_lock                  = false
     }
   }
-
+  application_insights = {
+    create_new = true
+  }
+  log_analytics_workspace = {
+    create_new = true
+  }
   enable_telemetry = var.enable_telemetry
 }

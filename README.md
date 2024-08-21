@@ -105,7 +105,6 @@ Default: `null`
 ### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
 
 Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
-- `ignore`: (Optional) A flag indicating whether AI Services should be considered. If set to 'false', either `create_new` must be 'true' or `name` and `resource_group_id` must be provided.
 - `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
@@ -116,8 +115,7 @@ Type:
 
 ```hcl
 object({
-    ignore                = optional(bool, true)
-    create_new            = optional(bool, true)
+    create_new            = optional(bool, false)
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
     resource_group_id     = optional(string, null)
@@ -129,15 +127,16 @@ Default:
 
 ```json
 {
-  "ignore": true
+  "create_new": false
 }
 ```
 
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
-Description: An object describing the Application Insights resource to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
-- `create_new` - A flag indicating if a new resource must be created. If set to 'false', resource\_id must not be 'null'.
+Description: An object describing the Application Insights resource to create or use. This includes the following properties:
+- `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
+- `create_new` - A flag indicating if a new resource must be created.
+- `tags` - (Optional) Tags for a new Application Insights resource.
 
 Type:
 
@@ -145,7 +144,6 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    ignore      = optional(bool, false)
     tags        = optional(map(string), null)
   })
 ```
@@ -154,7 +152,7 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "create_new": false
 }
 ```
 
@@ -162,6 +160,7 @@ Default:
 
 Description: An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
+- `create_new` -  A flag indicating if a new resource must be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -169,6 +168,8 @@ Description: An object describing the Container Registry. This includes the foll
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `tags` - (Optional) Tags for new Container Registry resource.
+- `zone_redundant` - (Optional) A flag indicating whether to enable zone redundancy.
 
 Type:
 
@@ -176,7 +177,6 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    ignore      = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -185,7 +185,8 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
-    tags = optional(map(string), null)
+    tags           = optional(map(string), null)
+    zone_redundant = optional(bool, false)
   })
 ```
 
@@ -258,7 +259,8 @@ Default: `false`
 ### <a name="input_key_vault"></a> [key\_vault](#input\_key\_vault)
 
 Description: An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
-- `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
+- `resource_id` - The resource ID of an existing Key Vault.
+- `create_new` -  A flag indicating if a new resource must be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -327,9 +329,8 @@ Default: `null`
 ### <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace)
 
 Description: An object describing the Log Analytics Workspace to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
-- `create_new` - A flag indicating if a new workspace must be created. If set to 'false', resource\_id must not be 'null'.
-- `ignore` - (Optional) A flag whether to consider the resource all together. If set to 'true', no resource will be created nor will an existing resource be associated with the workspace.
+- `resource_id` - The resource ID of an existing Log Analytics Workspace.
+- `create_new` - A flag indicating if a new workspace must be created.
 - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 
 Type:
@@ -338,7 +339,6 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    ignore      = optional(bool, false)
     tags        = optional(map(string), null)
   })
 ```
@@ -347,7 +347,7 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "create_new": false
 }
 ```
 

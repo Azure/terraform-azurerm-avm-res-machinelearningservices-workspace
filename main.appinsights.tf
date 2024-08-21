@@ -1,5 +1,5 @@
 resource "azurerm_application_insights" "this" {
-  count = !var.application_insights.ignore && var.application_insights.create_new ? 1 : 0
+  count = var.application_insights.create_new ? 1 : 0
 
   application_type    = "web"
   location            = var.location

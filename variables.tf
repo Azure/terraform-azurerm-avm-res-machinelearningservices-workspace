@@ -33,19 +33,17 @@ variable "ai_studio_hub_id" {
 
 variable "aiservices" {
   type = object({
-    ignore                = optional(bool, true)
-    create_new            = optional(bool, true)
+    create_new            = optional(bool, false)
     analysis_services_sku = optional(string, "S0")
     name                  = optional(string, null)
     resource_group_id     = optional(string, null)
     tags                  = optional(map(string), null)
   })
   default = {
-    ignore = true
+    create_new = false
   }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create or reference. This includes the following properties:
-- `ignore`: (Optional) A flag indicating whether AI Services should be considered. If set to 'false', either `create_new` must be 'true' or `name` and `resource_group_id` must be provided.
 - `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
@@ -54,8 +52,8 @@ An object describing the Application Insights resource to create or reference. T
 DESCRIPTION
 
   validation {
-    condition     = (var.aiservices.ignore == true) || (var.aiservices.create_new == true) || (var.aiservices.create_new == false && var.aiservices.name != null && var.aiservices.resource_group_id != null)
-    error_message = "If including AI Services, either `create_new` must be true or `name` and `resource_group_name` must be provided"
+    condition     = !(var.aiservices.create_new && var.aiservices.resource_group_id != null && var.aiservices.name != null)
+    error_message = "When creating new AI Services resource, `name` and `resource_group_id` must be null."
   }
 }
 
@@ -63,21 +61,21 @@ variable "application_insights" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
-    ignore      = optional(bool, false)
     tags        = optional(map(string), null)
   })
   default = {
-    create_new = true
+    create_new = false
   }
   description = <<DESCRIPTION
-An object describing the Application Insights resource to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Application Insights resource, set to null if a new one should be created.
-- `create_new` - A flag indicating if a new resource must be created. If set to 'false', resource_id must not be 'null'.
+An object describing the Application Insights resource to create or use. This includes the following properties:
+- `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
+- `create_new` - A flag indicating if a new resource must be created.
+- `tags` - (Optional) Tags for a new Application Insights resource.
 DESCRIPTION
 
   validation {
-    condition     = (var.application_insights.ignore == true) || (var.application_insights.create_new == false && var.application_insights.resource_id != null) || (var.application_insights.create_new == true && var.application_insights.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = !(var.application_insights.create_new && var.application_insights.resource_id != null)
+    error_message = "When creating new Application Insights, `resource_id` must be null."
   }
 }
 
@@ -85,7 +83,6 @@ variable "container_registry" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
-    ignore      = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -94,7 +91,8 @@ variable "container_registry" {
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
-    tags = optional(map(string), null)
+    tags           = optional(map(string), null)
+    zone_redundant = optional(bool, false)
   })
   default = {
     create_new = false
@@ -102,6 +100,7 @@ variable "container_registry" {
   description = <<DESCRIPTION
 An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
+- `create_new` -  A flag indicating if a new resource must be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -109,10 +108,12 @@ An object describing the Container Registry. This includes the following propert
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
+- `tags` - (Optional) Tags for new Container Registry resource.
+- `zone_redundant` - (Optional) A flag indicating whether to enable zone redundancy.
 DESCRIPTION
 
   validation {
-    condition     = (var.container_registry.ignore == true) || (var.kind == "Default" && ((var.is_private == false) || (var.container_registry.create_new == true || var.container_registry.resource_id != null))) || (var.kind == "Hub" && (var.container_registry.create_new == true || var.container_registry.resource_id != null)) || var.kind == "Project"
+    condition     = (var.kind == "Project") || (var.kind == "Hub" && !(var.container_registry.create_new && var.container_registry.resource_id != null)) || (var.kind == "Default" && ((var.is_private && !(var.container_registry.create_new || var.container_registry.resource_id != null)) || (!var.is_private && !(var.container_registry.create_new && var.container_registry.resource_id != null))))
     error_message = "For Default workspaces: when creating a private resource, either `create_new` must be set to true or `resource_id` must be set to a valid resource ID. These are optional for public workspaces. For Hub workspaces: it is optional to either create a new registry or associate an existing registry with the new Hub. For Project workspaces: no registry is ever created or associated with the new Project."
   }
 }
@@ -187,7 +188,8 @@ variable "key_vault" {
   }
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
-- `resource_id` - The resource ID of an existing Key Vault, set to null if a new Key Vault should be created.
+- `resource_id` - The resource ID of an existing Key Vault.
+- `create_new` -  A flag indicating if a new resource must be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -199,8 +201,8 @@ An object describing the Key Vault to create the private endpoint connection to.
 DESCRIPTION
 
   validation {
-    condition     = (var.key_vault.create_new == false && var.key_vault.resource_id != null) || (var.key_vault.create_new == true && var.key_vault.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = !(var.key_vault.create_new && var.key_vault.resource_id != null)
+    error_message = "When creating a new Key Vault, `resource_id` must be null."
   }
 }
 
@@ -216,7 +218,7 @@ Possible values are:
 DESCRIPTION
 
   validation {
-    condition     = var.kind == "Default" || var.kind == "Hub" || var.kind == "Project"
+    condition     = contains(["Default", "Hub", "Project"], var.kind)
     error_message = "The only valid values are 'Default', 'Hub' or 'Project'"
   }
 }
@@ -244,23 +246,21 @@ variable "log_analytics_workspace" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
-    ignore      = optional(bool, false)
     tags        = optional(map(string), null)
   })
   default = {
-    create_new = true
+    create_new = false
   }
   description = <<DESCRIPTION
 An object describing the Log Analytics Workspace to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Log Analytics Workspace, set to null if a new one should be created.
-- `create_new` - A flag indicating if a new workspace must be created. If set to 'false', resource_id must not be 'null'.
-- `ignore` - (Optional) A flag whether to consider the resource all together. If set to 'true', no resource will be created nor will an existing resource be associated with the workspace.
+- `resource_id` - The resource ID of an existing Log Analytics Workspace.
+- `create_new` - A flag indicating if a new workspace must be created.
 - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 DESCRIPTION
 
   validation {
-    condition     = (var.log_analytics_workspace.ignore == true) || (var.log_analytics_workspace.create_new == false && var.log_analytics_workspace.resource_id != null) || (var.log_analytics_workspace.create_new == true && var.log_analytics_workspace.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null, or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = !(var.log_analytics_workspace.create_new && var.log_analytics_workspace.resource_id != null)
+    error_message = "When creating a new Log Analytics Workspace, `resource_id` must be null."
   }
 }
 

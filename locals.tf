@@ -1,5 +1,5 @@
 locals {
-  ai_services                = var.aiservices.ignore ? null : var.aiservices.create_new ? azapi_resource.aiservice[0] : data.azapi_resource.existing_aiservices[0].output
+  ai_services                = var.aiservices.ignore ? null : var.aiservices.create_new ? azapi_resource.aiservice[0].output : data.azapi_resource.existing_aiservices[0].output
   ai_services_id             = var.aiservices.ignore ? null : var.aiservices.create_new ? azapi_resource.aiservice[0].id : jsondecode(data.azapi_resource.existing_aiservices[0].output).id
   aml_resource               = var.kind == "Default" ? azapi_resource.this[0] : var.kind == "Hub" ? azapi_resource.hub[0] : azapi_resource.project[0]
   application_insights_id    = var.application_insights.ignore ? null : var.application_insights.create_new ? replace(azurerm_application_insights.this[0].id, "Microsoft.Insights", "Microsoft.insights") : var.application_insights.resource_id

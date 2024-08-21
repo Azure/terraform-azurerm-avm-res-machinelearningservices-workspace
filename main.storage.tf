@@ -82,6 +82,14 @@ module "avm_res_storage_storageaccount" {
     }]
   }
 
+  role_assignments = (var.is_private && ((var.aiservices.name != null && var.aiservices.resource_group_id != null) || var.aiservices.create_new)) ? {
+    "aiservices" = {
+      role_definition_id_or_name       = "Storage Blob Data Contributor"
+      principal_id                     = jsondecode(local.ai_services).identity.principalId
+      skip_service_principal_aad_check = true
+    }
+  } : {}
+
   tags = var.storage_account.tags == null ? var.tags : var.storage_account.tags == {} ? {} : var.storage_account.tags
 
   count = var.storage_account.create_new ? 1 : 0

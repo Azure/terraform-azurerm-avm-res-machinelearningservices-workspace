@@ -83,10 +83,18 @@ module "aihub" {
 
   key_vault = {
     create_new = true
+    network_acls = {
+      bypass         = "AzureServices"
+      default_action = "Deny"
+    }
   }
 
   storage_account = {
     create_new = true
+    network_rules = {
+      bypass         = ["Logging", "Metrics", "AzureServices"]
+      default_action = "Deny"
+    }
   }
 
   aiservices = {

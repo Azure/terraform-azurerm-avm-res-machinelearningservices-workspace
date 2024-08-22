@@ -3,10 +3,10 @@ resource "azurerm_private_endpoint" "this" {
 
   location                      = each.value.location != null ? each.value.location : var.location
   name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
-  resource_group_name           = var.resource_group.name
+  resource_group_name           = var.resource_group_name
   subnet_id                     = each.value.subnet_resource_id
   custom_network_interface_name = each.value.network_interface_name
-  tags                          = each.value.tags
+  tags                          = each.value.tags == null ? var.tags : each.value.tags == {} ? {} : each.value.tags
 
   private_service_connection {
     is_manual_connection           = false

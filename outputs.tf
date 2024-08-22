@@ -40,8 +40,3 @@ output "storage_account" {
   description = "The storage account resource."
   value       = length(module.avm_res_storage_storageaccount) == 1 ? module.avm_res_storage_storageaccount[0].resource : null
 }
-
-output "vnet" {
-  description = "The ID of the virtual network."
-  value       = length(module.avm_res_network_virtualnetwork) == 1 ? module.avm_res_network_virtualnetwork[0].resource : null
-}

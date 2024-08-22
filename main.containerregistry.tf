@@ -5,10 +5,11 @@ module "avm_res_containerregistry_registry" {
 
   name                          = replace("acr${var.name}", "-", "")
   location                      = var.location
-  resource_group_name           = var.resource_group.name
+  resource_group_name           = var.resource_group_name
   public_network_access_enabled = var.is_private ? false : true
+  zone_redundancy_enabled       = var.container_registry.zone_redundant
 
-  private_endpoints = var.is_private ? {
+  private_endpoints = var.is_private && var.vnet != null ? {
     for key, value in var.container_registry.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
@@ -20,7 +21,7 @@ module "avm_res_containerregistry_registry" {
     }
   } : {}
 
-  tags = var.tags
+  tags = var.container_registry.tags == null ? var.tags : var.container_registry.tags == {} ? {} : var.container_registry.tags
 
   count = var.container_registry.create_new ? 1 : 0
 }

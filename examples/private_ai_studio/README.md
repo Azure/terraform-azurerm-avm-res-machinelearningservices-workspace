@@ -1,12 +1,24 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# Azure AI Hub
 
-This deploys the module in its simplest form:
+This deploys the private AI Studio Hub with all possible supporting resources:
 
-- AML workspace (public access)
-- Storage Account
-- Key Vault
+- AI Hub workspace (private)
+- Storage Account (private)
+- Key Vault (private)
+- Azure Container Registry (private)
 - App Insights and Log Analytics workspace
+- AI Services + an AI Services Connection to the Hub
+
+The managed VNet is not provisioned by default. In the unprovisioned state, you can see the outbound rules created in the Azure Portal or with the Azure CLI + machine learning extension `az ml workspace outbound-rule list --resource-group $RESOURCE_GROUP --workspace-name $WORKSPACE`. Since all possible provisioned resources are private, this collection should include one of type `PrivateEndpoint` for each of the following:
+
+- Key Vault
+- Storage Account: file (spark enabled)
+- Storage Account: blob (spark enabled)
+- Container Registry
+- The AI Hub Workspace (spark enabled)
+
+After the network is provisioned (either by adding compute or manually provisioning it with [the Azure CLI + machine learning extension](https://learn.microsoft.com/en-us/cli/azure/ml/workspace?view=azure-cli-latest#az-ml-workspace-provision-network)), the private endpoints themselves will be created internally for AI Studio.
 
 ```hcl
 terraform {
@@ -14,7 +26,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
+      version = "~> 3.115.0"
     }
   }
 }
@@ -30,13 +42,6 @@ provider "azurerm" {
   }
 }
 
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
-}
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -49,24 +54,61 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+locals {
+  name = module.naming.machine_learning_workspace.name_unique
+}
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
-
-module "azureml" {
+module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = var.location
-  name                = module.naming.machine_learning_workspace.name_unique
+  location            = azurerm_resource_group.this.location
+  name                = local.name
   resource_group_name = azurerm_resource_group.this.name
+  is_private          = true
+  kind                = "Hub"
+  workspace_managed_network = {
+    isolation_mode = "AllowInternetOutbound"
+    spark_ready    = true
+  }
+
+  container_registry = {
+    create_new     = true
+    zone_redundant = false
+  }
+
+  key_vault = {
+    create_new = true
+    network_acls = {
+      bypass         = "AzureServices"
+      default_action = "Deny"
+    }
+  }
+
+  storage_account = {
+    create_new = true
+    network_rules = {
+      bypass         = ["Logging", "Metrics", "AzureServices"]
+      default_action = "Deny"
+    }
+  }
+
+  aiservices = {
+    create_new = true
+  }
+
   application_insights = {
     create_new = true
   }
+
   log_analytics_workspace = {
     create_new = true
   }
+
   enable_telemetry = var.enable_telemetry
 }
 ```
@@ -78,7 +120,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.74)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.115.0)
 
 ## Resources
 
@@ -111,21 +153,17 @@ Description: The location for the resources.
 
 Type: `string`
 
-Default: `"uksouth"`
+Default: `"australiaeast"`
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The machine learning workspace.
+No outputs.
 
 ## Modules
 
 The following Modules are called:
 
-### <a name="module_azureml"></a> [azureml](#module\_azureml)
+### <a name="module_aihub"></a> [aihub](#module\_aihub)
 
 Source: ../../
 
@@ -134,12 +172,6 @@ Version:
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
-
-Version: ~> 0.3
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/regions/azurerm
 
 Version: ~> 0.3
 

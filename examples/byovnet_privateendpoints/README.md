@@ -24,6 +24,9 @@ provider "azurerm" {
     key_vault {
       purge_soft_delete_on_destroy = false
     }
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
   }
 }
 
@@ -104,13 +107,9 @@ module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location = var.location
-  name     = module.naming.machine_learning_workspace.name_unique
-  resource_group = {
-    name = azurerm_resource_group.this.name
-    id   = azurerm_resource_group.this.id
-  }
-
+  location            = var.location
+  name                = module.naming.machine_learning_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
   private_endpoints = {
     api = {
       name                          = "pe-api-aml"
@@ -125,7 +124,12 @@ module "azureml" {
       inherit_lock                  = false
     }
   }
-
+  application_insights = {
+    create_new = true
+  }
+  log_analytics_workspace = {
+    create_new = true
+  }
   enable_telemetry = var.enable_telemetry
 }
 ```

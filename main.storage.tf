@@ -4,7 +4,7 @@ module "avm_res_storage_storageaccount" {
 
   enable_telemetry              = var.enable_telemetry
   name                          = replace("sa${var.name}", "-", "")
-  resource_group_name           = var.resource_group.name
+  resource_group_name           = var.resource_group_name
   location                      = var.location
   shared_access_key_enabled     = true
   public_network_access_enabled = var.is_private ? false : true
@@ -13,7 +13,7 @@ module "avm_res_storage_storageaccount" {
     system_assigned = true
   }
 
-  private_endpoints = var.is_private ? {
+  private_endpoints = var.is_private && var.vnet != null ? {
     for key, value in var.storage_account.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name
@@ -26,12 +26,71 @@ module "avm_res_storage_storageaccount" {
     }
   } : {}
 
-  network_rules = {
-    bypass         = ["AzureServices"]
-    default_action = var.is_private ? "Deny" : "Allow"
+  network_rules = var.storage_account.network_rules
+
+  # for idempotency
+  blob_properties = {
+    cors_rule = [{
+      allowed_headers = ["*", ]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+        "PATCH",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers = [
+        "*",
+      ]
+      max_age_in_seconds = 1800
+    }]
   }
 
-  tags = var.tags
+  # for idempotency
+  share_properties = {
+    cors_rule = [{
+      allowed_headers = ["*", ]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+        "PATCH",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers = [
+        "*",
+      ]
+      max_age_in_seconds = 1800
+    }]
+  }
+
+  role_assignments = (var.is_private && ((var.aiservices.name != null && var.aiservices.resource_group_id != null) || var.aiservices.create_new)) ? {
+    "aiservices" = {
+      role_definition_id_or_name       = "Storage Blob Data Contributor"
+      principal_id                     = jsondecode(local.ai_services).identity.principalId
+      skip_service_principal_aad_check = true
+    }
+  } : {}
+
+  tags = var.storage_account.tags == null ? var.tags : var.storage_account.tags == {} ? {} : var.storage_account.tags
 
   count = var.storage_account.create_new ? 1 : 0
 }

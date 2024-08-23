@@ -26,7 +26,10 @@ module "avm_res_storage_storageaccount" {
     }
   } : {}
 
-  network_rules = var.storage_account.network_rules
+  network_rules = var.is_private ? {
+    bypass         = ["Logging", "Metrics", "AzureServices"]
+    default_action = "Deny"
+  } : null
 
   # for idempotency
   blob_properties = {

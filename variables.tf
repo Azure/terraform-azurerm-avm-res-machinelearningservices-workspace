@@ -43,7 +43,7 @@ variable "aiservices" {
     create_new = false
   }
   description = <<DESCRIPTION
-An object describing the Application Insights resource to create or reference. This includes the following properties:
+An object describing the AI Services resource to create or reference. This includes the following properties:
 - `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
@@ -173,10 +173,6 @@ variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
     create_new  = bool
-    network_acls = optional(object({
-      bypass         = optional(string, null)
-      default_action = optional(string, "Deny")
-    }))
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -194,9 +190,6 @@ variable "key_vault" {
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
 - `create_new` -  A flag indicating if a new resource must be created.
-- `network_acls` - (Optional) An object to configure the Key Vault's network rules
-  - `bypass` - (Optional) Specifies whether traffic is bypassed for AzureServices. Valid options are 'AzureServices' or 'None'.
-  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -365,10 +358,6 @@ variable "storage_account" {
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
-    network_rules = optional(object({
-      bypass         = optional(set(string), [])
-      default_action = optional(string, "Deny")
-    }))
     tags = optional(map(string), null)
   })
   default = {
@@ -384,9 +373,6 @@ An object describing the Storage Account. This includes the following properties
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `network_rules` - (Optional) An object to configure the Storage Account's network rules
-  - `bypass` - (Optional) Specifies whether traffic is bypassed for Logging/Metrics/AzureServices. Valid options are any combination of 'Logging', 'Metrics', 'AzureServices', or `None`.
-  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
 - `tags` - (Optional) Tags for the Storage Account resource.
 DESCRIPTION
 
@@ -421,6 +407,18 @@ variable "vnet" {
 An object describing the Virtual Network to associate with the resource. This includes the following properties:
 - `resource_id` - The resource ID of the Virtual Network.
 DESCRIPTION
+}
+
+variable "workspace_description" {
+  type        = string
+  default     = null
+  description = "The description of this workspace."
+}
+
+variable "workspace_friendly_name" {
+  type        = string
+  default     = null
+  description = "The friendly name for this workspace. This value in mutable."
 }
 
 variable "workspace_managed_network" {

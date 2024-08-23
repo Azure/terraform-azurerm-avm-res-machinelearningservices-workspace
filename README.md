@@ -3,12 +3,12 @@
 
 ### Overview
 
-This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `hub`, this module can also provision an Azure AI Studio, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases.
+This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Studio, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision a AI Studio Project for a Hub workspace.
 
 ### Functionality
 
 * **Azure Machine Learning Workspace:** The default behavior of this module is to create an Azure Machine Learning Workspace, which provides the environment and tools necessary for machine learning tasks.
-* **Azure AI Studio:** If the `kind` variable is set to `hub`, the module provisions an Azure AI Studio instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
+* **Azure AI Studio:** If the `kind` variable is set to `Hub`, the module provisions an Azure AI Studio instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
 
 ### Example Usage
 
@@ -17,17 +17,28 @@ module "ml_workspace" {
   source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
   version = "x.x.x"
 
-  resource_group = {
-    name = "<resource_group_name>"
-    id   = "<resource_group_id>"
-  }
+  resource_group_name = "<resource_group_name>"
 
   location = "<your_location>"
-  kind     = "hub" # Set to 'hub' for Azure AI Studio, or omit for Azure ML Workspace
+  kind     = "Default" # Omitting this parameter will result in the same outcome
 }
 ```
 
-This will create an Azure Machine Learning Workspace or, if `kind` is set to `hub`, an Azure AI Studio.
+This will create an Azure Machine Learning Workspace.
+
+```hcl
+module "ml_workspace" {
+  source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
+  version = "x.x.x"
+
+  resource_group_name = "<resource_group_name>"
+
+  location = "<your_location>"
+  kind     = "Hub"
+}
+```
+
+This will create an Azure AI Studio.
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements
@@ -104,7 +115,7 @@ Default: `null`
 
 ### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
 
-Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
+Description: An object describing the AI Services resource to create or reference. This includes the following properties:
 - `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
@@ -261,9 +272,6 @@ Default: `false`
 Description: An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
 - `create_new` -  A flag indicating if a new resource must be created.
-- `network_acls` - (Optional) An object to configure the Key Vault's network rules
-  - `bypass` - (Optional) Specifies whether traffic is bypassed for AzureServices. Valid options are 'AzureServices' or 'None'.
-  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -279,10 +287,6 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    network_acls = optional(object({
-      bypass         = optional(string, null)
-      default_action = optional(string, "Deny")
-    }))
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -456,9 +460,6 @@ Description: An object describing the Storage Account. This includes the followi
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `network_rules` - (Optional) An object to configure the Storage Account's network rules
-  - `bypass` - (Optional) Specifies whether traffic is bypassed for Logging/Metrics/AzureServices. Valid options are any combination of 'Logging', 'Metrics', 'AzureServices', or `None`.
-  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
 - `tags` - (Optional) Tags for the Storage Account resource.
 
 Type:
@@ -476,10 +477,6 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
-    network_rules = optional(object({
-      bypass         = optional(set(string), [])
-      default_action = optional(string, "Deny")
-    }))
     tags = optional(map(string), null)
   })
 ```
@@ -521,6 +518,22 @@ object({
     resource_group_name = optional(string, null)
   })
 ```
+
+Default: `null`
+
+### <a name="input_workspace_description"></a> [workspace\_description](#input\_workspace\_description)
+
+Description: The description of this workspace.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_workspace_friendly_name"></a> [workspace\_friendly\_name](#input\_workspace\_friendly\_name)
+
+Description: The friendly name for this workspace. This value in mutable.
+
+Type: `string`
 
 Default: `null`
 

@@ -10,7 +10,8 @@ resource "azapi_resource" "this" {
       keyVault            = local.key_vault_id
       storageAccount      = local.storage_account_id
       containerRegistry   = local.container_registry_id
-      friendlyName        = var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -42,7 +43,8 @@ resource "azapi_resource" "hub" {
       keyVault            = local.key_vault_id
       storageAccount      = local.storage_account_id
       containerRegistry   = local.container_registry_id
-      friendlyName        = var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -77,8 +79,8 @@ resource "azapi_resource" "project" {
   type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
-      description   = "Azure AI PROJECT"
-      friendlyName  = "AI Project"
+      description   = var.workspace_description
+      friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
       hubResourceId = var.ai_studio_hub_id
     }
     kind = var.kind

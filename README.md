@@ -600,7 +600,7 @@ Version: ~> 0.1
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: ~> 0.7
+Version: 0.8.0
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 

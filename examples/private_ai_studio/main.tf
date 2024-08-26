@@ -68,7 +68,8 @@ module "aihub" {
   }
 
   aiservices = {
-    create_new = true
+    create_new                = true
+    create_service_connection = true
   }
 
   application_insights = {

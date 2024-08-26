@@ -96,15 +96,15 @@ resource "azapi_resource" "project" {
 
 # AzAPI AI Services Connection
 resource "azapi_resource" "aiserviceconnection" {
-  count = var.aiservices.create_new || (var.aiservices.name != null && var.aiservices.resource_group_id != null) ? 1 : 0
+  count = var.aiservices.create_service_connection ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
   body = jsonencode({
     properties = {
-      category      = "AIServices",
-      target        = jsondecode(local.ai_services).properties.endpoint,
-      authType      = "AAD",
-      isSharedToAll = true,
+      category      = "AIServices"
+      target        = jsondecode(local.ai_services).properties.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
       metadata = {
         ApiType    = "Azure",
         ResourceId = local.ai_services_id

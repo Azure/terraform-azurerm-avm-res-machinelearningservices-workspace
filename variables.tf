@@ -33,11 +33,12 @@ variable "ai_studio_hub_id" {
 
 variable "aiservices" {
   type = object({
-    create_new            = optional(bool, false)
-    analysis_services_sku = optional(string, "S0")
-    name                  = optional(string, null)
-    resource_group_id     = optional(string, null)
-    tags                  = optional(map(string), null)
+    create_new                = optional(bool, false)
+    analysis_services_sku     = optional(string, "S0")
+    name                      = optional(string, null)
+    resource_group_id         = optional(string, null)
+    tags                      = optional(map(string), null)
+    create_service_connection = optional(bool, false)
   })
   default = {
     create_new = false
@@ -48,7 +49,8 @@ An object describing the AI Services resource to create or reference. This inclu
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
 - `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags` - (Optional) Tags for the AI Services resource.
+- `tags`: (Optional) Tags for the AI Services resource.
+- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
 DESCRIPTION
 
   validation {

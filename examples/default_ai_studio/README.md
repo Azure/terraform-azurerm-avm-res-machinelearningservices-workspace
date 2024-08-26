@@ -65,7 +65,8 @@ module "aihub" {
   }
 
   aiservices = {
-    create_new = true
+    create_new                = true
+    create_service_connection = true
   }
 
   enable_telemetry = var.enable_telemetry

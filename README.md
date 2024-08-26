@@ -59,7 +59,6 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
@@ -119,17 +118,19 @@ Description: An object describing the AI Services resource to create or referenc
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
 - `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags` - (Optional) Tags for the AI Services resource.
+- `tags`: (Optional) Tags for the AI Services resource.
+- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
 
 Type:
 
 ```hcl
 object({
-    create_new            = optional(bool, false)
-    analysis_services_sku = optional(string, "S0")
-    name                  = optional(string, null)
-    resource_group_id     = optional(string, null)
-    tags                  = optional(map(string), null)
+    create_new                = optional(bool, false)
+    analysis_services_sku     = optional(string, "S0")
+    name                      = optional(string, null)
+    resource_group_id         = optional(string, null)
+    tags                      = optional(map(string), null)
+    create_service_connection = optional(bool, false)
   })
 ```
 
@@ -587,6 +588,12 @@ Description: The storage account resource.
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_cognitiveservices_account"></a> [avm\_res\_cognitiveservices\_account](#module\_avm\_res\_cognitiveservices\_account)
+
+Source: Azure/avm-res-cognitiveservices-account/azurerm
+
+Version: ~> 0.1
 
 ### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
 

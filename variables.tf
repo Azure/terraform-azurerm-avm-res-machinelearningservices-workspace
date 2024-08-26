@@ -62,20 +62,34 @@ variable "application_insights" {
     resource_id = optional(string, null)
     create_new  = bool
     tags        = optional(map(string), null)
+    log_analytics_workspace = optional(object({
+      resource_id = optional(string, null)
+      create_new  = bool
+      tags        = optional(map(string), null)
+      }), {
+      create_new = false
+    })
   })
   default = {
     create_new = false
+    log_analytics_workspace = {
+      create_new = false
+    }
   }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create or use. This includes the following properties:
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
 - `create_new` - A flag indicating if a new resource must be created.
 - `tags` - (Optional) Tags for a new Application Insights resource.
+- `log_analytics_workspace - An object describing the Log Analytics Workspace for the Application Insights resource
+  - `resource_id` - The resource ID of an existing Log Analytics Workspace.
+  - `create_new` - A flag indicating if a new workspace must be created.
+  - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 DESCRIPTION
 
   validation {
-    condition     = !(var.application_insights.create_new && var.application_insights.resource_id != null)
-    error_message = "When creating new Application Insights, `resource_id` must be null."
+    condition     = !(var.application_insights.create_new && var.application_insights.resource_id != null) && (var.application_insights.create_new == false || (var.application_insights.create_new == true && (var.application_insights.log_analytics_workspace.resource_id != null || var.application_insights.log_analytics_workspace.create_new)))
+    error_message = "If creating new App Insights resource, `resource_id` must be null and either `log_analytics_workspace.create_new` must be true or `log_analytics_workspace.resource_id` cannot be null"
   }
 }
 
@@ -113,8 +127,8 @@ An object describing the Container Registry. This includes the following propert
 DESCRIPTION
 
   validation {
-    condition     = (var.kind == "Project") || (var.kind == "Hub" && !(var.container_registry.create_new && var.container_registry.resource_id != null)) || (var.kind == "Default" && ((var.is_private && !(var.container_registry.create_new || var.container_registry.resource_id != null)) || (!var.is_private && !(var.container_registry.create_new && var.container_registry.resource_id != null))))
-    error_message = "For Default workspaces: when creating a private resource, either `create_new` must be set to true or `resource_id` must be set to a valid resource ID. These are optional for public workspaces. For Hub workspaces: it is optional to either create a new registry or associate an existing registry with the new Hub. For Project workspaces: no registry is ever created or associated with the new Project."
+    condition     = (var.kind == "Project") || !(var.container_registry.create_new && var.container_registry.resource_id != null)
+    error_message = "For Project workspaces: no registry is ever created or associated with the new Project. For Hub and Default workspaces, when creating a new registry, `resource_id` must be null"
   }
 }
 
@@ -239,28 +253,6 @@ DESCRIPTION
   validation {
     condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
     error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
-  }
-}
-
-variable "log_analytics_workspace" {
-  type = object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    tags        = optional(map(string), null)
-  })
-  default = {
-    create_new = false
-  }
-  description = <<DESCRIPTION
-An object describing the Log Analytics Workspace to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Log Analytics Workspace.
-- `create_new` - A flag indicating if a new workspace must be created.
-- `tags` - (Optional) Tags for the Log Analytics Workspace resource.
-DESCRIPTION
-
-  validation {
-    condition     = !(var.log_analytics_workspace.create_new && var.log_analytics_workspace.resource_id != null)
-    error_message = "When creating a new Log Analytics Workspace, `resource_id` must be null."
   }
 }
 
@@ -411,13 +403,13 @@ DESCRIPTION
 
 variable "workspace_description" {
   type        = string
-  default     = null
+  default     = ""
   description = "The description of this workspace."
 }
 
 variable "workspace_friendly_name" {
   type        = string
-  default     = null
+  default     = "Workspace"
   description = "The friendly name for this workspace. This value in mutable."
 }
 

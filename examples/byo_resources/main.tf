@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -94,11 +94,6 @@ module "azureml" {
 
   container_registry = {
     resource_id = azurerm_container_registry.example.id
-    create_new  = false
-  }
-
-  log_analytics_workspace = {
-    resource_id = azurerm_log_analytics_workspace.example.id
     create_new  = false
   }
 

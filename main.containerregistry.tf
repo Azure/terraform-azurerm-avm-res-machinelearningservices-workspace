@@ -6,7 +6,7 @@ module "avm_res_containerregistry_registry" {
   name                          = replace("acr${var.name}", "-", "")
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  public_network_access_enabled = var.is_private ? false : true
+  public_network_access_enabled = !var.is_private
   zone_redundancy_enabled       = var.container_registry.zone_redundant
 
   private_endpoints = var.is_private && var.vnet != null ? {

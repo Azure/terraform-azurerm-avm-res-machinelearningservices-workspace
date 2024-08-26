@@ -23,7 +23,7 @@ resource "azapi_resource" "this" {
   })
   location  = var.location
   name      = "aml-${var.name}"
-  parent_id = local.resource_group_id
+  parent_id = data.azurerm_resource_group.current.id
   tags      = var.tags
 
   identity {
@@ -56,7 +56,7 @@ resource "azapi_resource" "hub" {
   })
   location  = var.location
   name      = "hub-${var.name}"
-  parent_id = local.resource_group_id
+  parent_id = data.azurerm_resource_group.current.id
   tags      = var.tags
 
   identity {
@@ -87,7 +87,7 @@ resource "azapi_resource" "project" {
   })
   location  = var.location
   name      = "aihubproject-${var.name}"
-  parent_id = local.resource_group_id
+  parent_id = data.azurerm_resource_group.current.id
 
   identity {
     type = "SystemAssigned"

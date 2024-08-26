@@ -1,6 +1,6 @@
 output "application_insights" {
   description = "The ID of the application insights."
-  value       = azurerm_application_insights.this
+  value       = length(module.avm_res_insights_component) == 1 ? module.avm_res_insights_component[0].resource : null
 }
 
 output "container_registry" {

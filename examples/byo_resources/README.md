@@ -5,7 +5,7 @@ This deploys a public Azure Machine Learning Workspace using existing resources.
 
 ```hcl
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -103,11 +103,6 @@ module "azureml" {
     create_new  = false
   }
 
-  log_analytics_workspace = {
-    resource_id = azurerm_log_analytics_workspace.example.id
-    create_new  = false
-  }
-
   application_insights = {
     resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
     create_new  = false
@@ -124,7 +119,7 @@ module "azureml" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.115.0)
 

@@ -45,9 +45,9 @@ This will create an Azure AI Studio.
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.14.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.15.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.115)
 
@@ -59,20 +59,19 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
-- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/data-sources/resource) (data source)
+- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/data-sources/resource) (data source)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/resource_group) (data source)
@@ -148,6 +147,11 @@ Description: An object describing the Application Insights resource to create or
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
 - `create_new` - A flag indicating if a new resource must be created.
 - `tags` - (Optional) Tags for a new Application Insights resource.
+- `log_analytics_workspace - An object describing the Log Analytics Workspace for the Application Insights resource
+  - `resource\_id` - The resource ID of an existing Log Analytics Workspace.
+  - `create\_new` - A flag indicating if a new workspace must be created.
+  - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
+`
 
 Type:
 
@@ -156,6 +160,13 @@ object({
     resource_id = optional(string, null)
     create_new  = bool
     tags        = optional(map(string), null)
+    log_analytics_workspace = optional(object({
+      resource_id = optional(string, null)
+      create_new  = bool
+      tags        = optional(map(string), null)
+      }), {
+      create_new = false
+    })
   })
 ```
 
@@ -163,7 +174,10 @@ Default:
 
 ```json
 {
-  "create_new": false
+  "create_new": false,
+  "log_analytics_workspace": {
+    "create_new": false
+  }
 }
 ```
 
@@ -337,31 +351,6 @@ object({
 
 Default: `null`
 
-### <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace)
-
-Description: An object describing the Log Analytics Workspace to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Log Analytics Workspace.
-- `create_new` - A flag indicating if a new workspace must be created.
-- `tags` - (Optional) Tags for the Log Analytics Workspace resource.
-
-Type:
-
-```hcl
-object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    tags        = optional(map(string), null)
-  })
-```
-
-Default:
-
-```json
-{
-  "create_new": false
-}
-```
-
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
 Description: A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -527,7 +516,7 @@ Description: The description of this workspace.
 
 Type: `string`
 
-Default: `null`
+Default: `""`
 
 ### <a name="input_workspace_friendly_name"></a> [workspace\_friendly\_name](#input\_workspace\_friendly\_name)
 
@@ -535,7 +524,7 @@ Description: The friendly name for this workspace. This value in mutable.
 
 Type: `string`
 
-Default: `null`
+Default: `"Workspace"`
 
 ### <a name="input_workspace_managed_network"></a> [workspace\_managed\_network](#input\_workspace\_managed\_network)
 
@@ -609,11 +598,17 @@ Source: Azure/avm-res-containerregistry-registry/azurerm
 
 Version: ~> 0.1
 
+### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
+
+Source: Azure/avm-res-insights-component/azurerm
+
+Version: ~> 0.1
+
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: 0.8.0
+Version: ~> 0.9.1
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 

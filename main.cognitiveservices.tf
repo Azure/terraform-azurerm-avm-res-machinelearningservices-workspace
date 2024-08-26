@@ -16,7 +16,7 @@ resource "azapi_resource" "aiservice" {
   })
   location               = var.location
   name                   = "ai-svc-${var.name}"
-  parent_id              = local.resource_group_id
+  parent_id              = data.azurerm_resource_group.current.id
   response_export_values = ["*"]
   tags                   = var.aiservices.tags == null ? var.tags : var.aiservices.tags == {} ? {} : var.aiservices.tags
 

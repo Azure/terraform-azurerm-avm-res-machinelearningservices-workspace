@@ -1,6 +1,6 @@
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "0.8.0"
+  version = "~> 0.9.1"
 
   tenant_id           = data.azurerm_client_config.current.tenant_id
   enable_telemetry    = var.enable_telemetry
@@ -8,7 +8,10 @@ module "avm_res_keyvault_vault" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  network_acls = var.key_vault.network_acls
+  network_acls = var.is_private ? {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+  } : null
 
   public_network_access_enabled = var.is_private ? false : true
 

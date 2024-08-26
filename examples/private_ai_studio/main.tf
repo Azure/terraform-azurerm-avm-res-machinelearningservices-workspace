@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -43,11 +43,12 @@ module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = local.name
-  resource_group_name = azurerm_resource_group.this.name
-  is_private          = true
-  kind                = "Hub"
+  location                = azurerm_resource_group.this.location
+  name                    = local.name
+  resource_group_name     = azurerm_resource_group.this.name
+  is_private              = true
+  kind                    = "Hub"
+  workspace_friendly_name = "Private AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "AllowInternetOutbound"
     spark_ready    = true
@@ -72,10 +73,9 @@ module "aihub" {
 
   application_insights = {
     create_new = true
-  }
-
-  log_analytics_workspace = {
-    create_new = true
+    log_analytics_workspace = {
+      create_new = true
+    }
   }
 
   enable_telemetry = var.enable_telemetry

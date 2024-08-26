@@ -7,7 +7,7 @@ module "avm_res_storage_storageaccount" {
   resource_group_name           = var.resource_group_name
   location                      = var.location
   shared_access_key_enabled     = true
-  public_network_access_enabled = var.is_private ? false : true
+  public_network_access_enabled = !var.is_private
 
   managed_identities = {
     system_assigned = true

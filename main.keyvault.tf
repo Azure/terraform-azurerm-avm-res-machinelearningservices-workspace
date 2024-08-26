@@ -13,7 +13,7 @@ module "avm_res_keyvault_vault" {
     default_action = "Deny"
   } : null
 
-  public_network_access_enabled = var.is_private ? false : true
+  public_network_access_enabled = !var.is_private
 
   private_endpoints = var.is_private && var.vnet != null ? {
     for key, value in var.key_vault.private_endpoints :

@@ -24,17 +24,3 @@ module "ml_workspace" {
 ```
 
 This will create an Azure Machine Learning Workspace.
-
-```hcl
-module "ml_workspace" {
-  source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
-  version = "x.x.x"
-
-  resource_group_name = "<resource_group_name>"
-
-  location = "<your_location>"
-  kind     = "Hub"
-}
-```
-
-This will create an Azure AI Studio.

@@ -7,13 +7,13 @@ This deploys a public AI Studio Hub using existing resources. The resource group
 terraform {
   required_version = "~> 1.9"
   required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.115.0"
-    }
     azapi = {
       source  = "Azure/azapi"
       version = "1.15.0"
+    }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.115.0"
     }
   }
 }

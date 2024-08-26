@@ -147,11 +147,10 @@ Description: An object describing the Application Insights resource to create or
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
 - `create_new` - A flag indicating if a new resource must be created.
 - `tags` - (Optional) Tags for a new Application Insights resource.
-- `log_analytics_workspace - An object describing the Log Analytics Workspace for the Application Insights resource
-  - `resource\_id` - The resource ID of an existing Log Analytics Workspace.
-  - `create\_new` - A flag indicating if a new workspace must be created.
+- `log_analytics_workspace` - An object describing the Log Analytics Workspace for the Application Insights resource
+  - `resource_id` - The resource ID of an existing Log Analytics Workspace.
+  - `create_new` - A flag indicating if a new workspace must be created.
   - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
-`
 
 Type:
 
@@ -174,10 +173,7 @@ Default:
 
 ```json
 {
-  "create_new": false,
-  "log_analytics_workspace": {
-    "create_new": false
-  }
+  "create_new": false
 }
 ```
 

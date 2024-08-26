@@ -72,16 +72,13 @@ variable "application_insights" {
   })
   default = {
     create_new = false
-    log_analytics_workspace = {
-      create_new = false
-    }
   }
   description = <<DESCRIPTION
 An object describing the Application Insights resource to create or use. This includes the following properties:
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
 - `create_new` - A flag indicating if a new resource must be created.
 - `tags` - (Optional) Tags for a new Application Insights resource.
-- `log_analytics_workspace - An object describing the Log Analytics Workspace for the Application Insights resource
+- `log_analytics_workspace` - An object describing the Log Analytics Workspace for the Application Insights resource
   - `resource_id` - The resource ID of an existing Log Analytics Workspace.
   - `create_new` - A flag indicating if a new workspace must be created.
   - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
@@ -89,7 +86,7 @@ DESCRIPTION
 
   validation {
     condition     = !(var.application_insights.create_new && var.application_insights.resource_id != null) && (var.application_insights.create_new == false || (var.application_insights.create_new == true && (var.application_insights.log_analytics_workspace.resource_id != null || var.application_insights.log_analytics_workspace.create_new)))
-    error_message = "If creating new App Insights resource, `resource_id` must be null and either `log_analytics_workspace.create_new` must be true or `log_analytics_workspace.resource_id` cannot be null"
+    error_message = "If creating a new Application Insights resource, `resource_id` must be null and either `log_analytics_workspace.create_new` must be true or `log_analytics_workspace.resource_id` must not be null"
   }
 }
 

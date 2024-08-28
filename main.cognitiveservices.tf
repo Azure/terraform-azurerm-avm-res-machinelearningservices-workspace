@@ -1,18 +1,36 @@
-module "avm_res_cognitiveservices_account" {
-  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "~> 0.1"
-
-  resource_group_name           = var.resource_group_name
-  kind                          = "CognitiveServices"
-  sku_name                      = var.aiservices.analysis_services_sku
-  name                          = "ai-svc-${var.name}"
-  location                      = var.location
-  public_network_access_enabled = var.is_private && var.kind != "Hub"
-  managed_identities = {
-    system_assigned = true
-  }
-  tags  = var.aiservices.tags == null ? var.tags : var.aiservices.tags == {} ? {} : var.aiservices.tags
+resource "azapi_resource" "aiservice" {
   count = var.aiservices.create_new ? 1 : 0
+
+  type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
+  body = jsonencode({
+    properties = {
+      publicNetworkAccess = (var.is_private && var.kind != "hub") ? "Disabled" : "Enabled" # Can't have private AI Services with private AI Studio hubs
+      apiProperties = {
+        statisticsEnabled = false
+      }
+    }
+    sku = {
+      "name" : var.aiservices.analysis_services_sku,
+    }
+    kind = "AIServices"
+  })
+  location               = var.location
+  name                   = "ai-svc-${var.name}"
+  parent_id              = data.azurerm_resource_group.current.id
+  response_export_values = ["*"]
+  tags                   = var.aiservices.tags == null ? var.tags : var.aiservices.tags == {} ? {} : var.aiservices.tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      # When the service connection to the AI Studio Hub is created, 
+      # tags are added to this resource
+      tags,
+    ]
+  }
 }
 
 data "azapi_resource" "existing_aiservices" {

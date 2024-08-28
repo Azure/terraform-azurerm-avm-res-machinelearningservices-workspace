@@ -45,6 +45,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
@@ -574,12 +575,6 @@ Description: The storage account resource.
 ## Modules
 
 The following Modules are called:
-
-### <a name="module_avm_res_cognitiveservices_account"></a> [avm\_res\_cognitiveservices\_account](#module\_avm\_res\_cognitiveservices\_account)
-
-Source: Azure/avm-res-cognitiveservices-account/azurerm
-
-Version: ~> 0.1
 
 ### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
 

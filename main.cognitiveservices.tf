@@ -16,7 +16,7 @@ resource "azapi_resource" "aiservice" {
   })
   location               = var.location
   name                   = "ai-svc-${var.name}"
-  parent_id              = local.resource_group_id
+  parent_id              = data.azurerm_resource_group.current.id
   response_export_values = ["*"]
   tags                   = var.aiservices.tags == null ? var.tags : var.aiservices.tags == {} ? {} : var.aiservices.tags
 
@@ -34,7 +34,7 @@ resource "azapi_resource" "aiservice" {
 }
 
 data "azapi_resource" "existing_aiservices" {
-  count = (var.aiservices.name != null && var.aiservices.resource_group_id != null) ? 1 : 0
+  count = !var.aiservices.create_new && var.aiservices.create_service_connection ? 1 : 0
 
   type                   = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   name                   = var.aiservices.name

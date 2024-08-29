@@ -11,6 +11,6 @@ module "avm_res_log_analytics_workspace" {
     type = "SystemAssigned"
   }
 
-  tags  = var.log_analytics_workspace.tags == null ? var.tags : var.log_analytics_workspace.tags == {} ? {} : var.log_analytics_workspace.tags
-  count = var.log_analytics_workspace.create_new ? 1 : 0
+  tags  = var.application_insights.log_analytics_workspace.tags == null ? var.tags : var.application_insights.log_analytics_workspace.tags == {} ? {} : var.application_insights.log_analytics_workspace.tags
+  count = var.application_insights.log_analytics_workspace.create_new ? 1 : 0
 }

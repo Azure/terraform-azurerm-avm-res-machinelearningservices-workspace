@@ -1,29 +1,16 @@
 <!-- BEGIN_TF_DOCS -->
-# Azure AI Hub
+# BYO Resources - AI Studio
 
-This deploys the private AI Studio Hub with all possible supporting resources:
-
-- AI Hub workspace (private)
-- Storage Account (private)
-- Key Vault (private)
-- Azure Container Registry (private)
-- App Insights and Log Analytics workspace
-- AI Services + an AI Services Connection to the Hub
-
-The managed VNet is not provisioned by default. In the unprovisioned state, you can see the outbound rules created in the Azure Portal or with the Azure CLI + machine learning extension `az ml workspace outbound-rule list --resource-group $RESOURCE_GROUP --workspace-name $WORKSPACE`. Since all possible provisioned resources are private, this collection should include one of type `PrivateEndpoint` for each of the following:
-
-- Key Vault
-- Storage Account: file (spark enabled)
-- Storage Account: blob (spark enabled)
-- Container Registry
-- The AI Hub Workspace (spark enabled)
-
-After the network is provisioned (either by adding compute or manually provisioning it with [the Azure CLI + machine learning extension](https://learn.microsoft.com/en-us/cli/azure/ml/workspace?view=azure-cli-latest#az-ml-workspace-provision-network)), the private endpoints themselves will be created internally for AI Studio.
+This deploys a public AI Studio Hub using existing resources. The resource group, storage account, key vault, and cognitive services account (AI Services) are all provided to the module.
 
 ```hcl
 terraform {
   required_version = "~> 1.9"
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "1.15.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.115.0"
@@ -49,7 +36,7 @@ module "naming" {
 }
 
 # This is required for resource modules
-resource "azurerm_resource_group" "this" {
+resource "azurerm_resource_group" "example" {
   location = var.location
   name     = module.naming.resource_group.name_unique
 }
@@ -57,6 +44,56 @@ resource "azurerm_resource_group" "this" {
 locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
+
+
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
+}
+
+resource "azurerm_key_vault" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "standard"
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+}
+
+resource "azapi_resource" "aiservice" {
+  type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
+  body = jsonencode({
+    properties = {
+      publicNetworkAccess = "Enabled"
+      apiProperties = {
+        statisticsEnabled = false
+      }
+    }
+    sku = {
+      "name" : "S0",
+    }
+    kind = "AIServices"
+  })
+  location               = var.location
+  name                   = module.naming.cognitive_account.name_unique
+  parent_id              = azurerm_resource_group.example.id
+  response_export_values = ["*"]
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -66,44 +103,36 @@ module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location                = azurerm_resource_group.this.location
+  location                = azurerm_resource_group.example.location
   name                    = local.name
-  resource_group_name     = azurerm_resource_group.this.name
-  is_private              = true
+  resource_group_name     = azurerm_resource_group.example.name
   kind                    = "Hub"
-  workspace_friendly_name = "Private AI Studio Hub"
+  workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
+    isolation_mode = "Disabled"
     spark_ready    = true
   }
 
-  container_registry = {
-    create_new     = true
-    zone_redundant = false
-  }
-
-  key_vault = {
-    create_new = true
-  }
-
-  storage_account = {
-    create_new = true
-  }
-
   aiservices = {
-    create_new                = true
+    create_new                = false
+    name                      = azapi_resource.aiservice.name
+    resource_group_id         = azapi_resource.aiservice.parent_id
     create_service_connection = true
   }
 
-  application_insights = {
-    create_new = true
-    log_analytics_workspace = {
-      create_new = true
-    }
+  key_vault = {
+    create_new  = false
+    resource_id = azurerm_key_vault.example.id
+  }
+
+  storage_account = {
+    create_new  = false
+    resource_id = azurerm_storage_account.example.id
   }
 
   enable_telemetry = var.enable_telemetry
 }
+
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -113,13 +142,19 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.15.0)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.115.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
+- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

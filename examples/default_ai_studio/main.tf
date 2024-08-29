@@ -46,37 +46,16 @@ module "aihub" {
   location                = azurerm_resource_group.this.location
   name                    = local.name
   resource_group_name     = azurerm_resource_group.this.name
-  is_private              = true
   kind                    = "Hub"
-  workspace_friendly_name = "Private AI Studio Hub"
+  workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
+    isolation_mode = "Disabled"
     spark_ready    = true
-  }
-
-  container_registry = {
-    create_new     = true
-    zone_redundant = false
-  }
-
-  key_vault = {
-    create_new = true
-  }
-
-  storage_account = {
-    create_new = true
   }
 
   aiservices = {
     create_new                = true
     create_service_connection = true
-  }
-
-  application_insights = {
-    create_new = true
-    log_analytics_workspace = {
-      create_new = true
-    }
   }
 
   enable_telemetry = var.enable_telemetry

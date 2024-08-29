@@ -3,12 +3,12 @@
 
 ### Overview
 
-This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `hub`, this module can also provision an Azure AI Studio, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases.
+This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Studio, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision a AI Studio Project for a Hub workspace.
 
 ### Functionality
 
 * **Azure Machine Learning Workspace:** The default behavior of this module is to create an Azure Machine Learning Workspace, which provides the environment and tools necessary for machine learning tasks.
-* **Azure AI Studio:** If the `kind` variable is set to `hub`, the module provisions an Azure AI Studio instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
+* **Azure AI Studio:** If the `kind` variable is set to `Hub`, the module provisions an Azure AI Studio instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
 
 ### Example Usage
 
@@ -17,26 +17,23 @@ module "ml_workspace" {
   source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
   version = "x.x.x"
 
-  resource_group = {
-    name = "<resource_group_name>"
-    id   = "<resource_group_id>"
-  }
+  resource_group_name = "<resource_group_name>"
 
   location = "<your_location>"
-  kind     = "hub" # Set to 'hub' for Azure AI Studio, or omit for Azure ML Workspace
+  kind     = "Default" # Omitting this parameter will result in the same outcome
 }
 ```
 
-This will create an Azure Machine Learning Workspace or, if `kind` is set to `hub`, an Azure AI Studio.
+This will create an Azure Machine Learning Workspace.
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.14.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.15.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (3.115)
 
@@ -48,20 +45,19 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/resources/resource) (resource)
-- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/application_insights) (resource)
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
-- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/1.14.0/docs/data-sources/resource) (data source)
+- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/data-sources/resource) (data source)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/client_config) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.115/docs/data-sources/resource_group) (data source)
@@ -104,22 +100,24 @@ Default: `null`
 
 ### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
 
-Description: An object describing the Application Insights resource to create or reference. This includes the following properties:
+Description: An object describing the AI Services resource to create or reference. This includes the following properties:
 - `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
 - `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags` - (Optional) Tags for the AI Services resource.
+- `tags`: (Optional) Tags for the AI Services resource.
+- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
 
 Type:
 
 ```hcl
 object({
-    create_new            = optional(bool, false)
-    analysis_services_sku = optional(string, "S0")
-    name                  = optional(string, null)
-    resource_group_id     = optional(string, null)
-    tags                  = optional(map(string), null)
+    create_new                = optional(bool, false)
+    analysis_services_sku     = optional(string, "S0")
+    name                      = optional(string, null)
+    resource_group_id         = optional(string, null)
+    tags                      = optional(map(string), null)
+    create_service_connection = optional(bool, false)
   })
 ```
 
@@ -137,6 +135,10 @@ Description: An object describing the Application Insights resource to create or
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
 - `create_new` - A flag indicating if a new resource must be created.
 - `tags` - (Optional) Tags for a new Application Insights resource.
+- `log_analytics_workspace` - An object describing the Log Analytics Workspace for the Application Insights resource
+  - `resource_id` - The resource ID of an existing Log Analytics Workspace.
+  - `create_new` - A flag indicating if a new workspace must be created.
+  - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 
 Type:
 
@@ -145,6 +147,13 @@ object({
     resource_id = optional(string, null)
     create_new  = bool
     tags        = optional(map(string), null)
+    log_analytics_workspace = optional(object({
+      resource_id = optional(string, null)
+      create_new  = bool
+      tags        = optional(map(string), null)
+      }), {
+      create_new = false
+    })
   })
 ```
 
@@ -261,9 +270,6 @@ Default: `false`
 Description: An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
 - `create_new` -  A flag indicating if a new resource must be created.
-- `network_acls` - (Optional) An object to configure the Key Vault's network rules
-  - `bypass` - (Optional) Specifies whether traffic is bypassed for AzureServices. Valid options are 'AzureServices' or 'None'.
-  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -279,10 +285,6 @@ Type:
 object({
     resource_id = optional(string, null)
     create_new  = bool
-    network_acls = optional(object({
-      bypass         = optional(string, null)
-      default_action = optional(string, "Deny")
-    }))
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -332,31 +334,6 @@ object({
 ```
 
 Default: `null`
-
-### <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace)
-
-Description: An object describing the Log Analytics Workspace to create. This includes the following properties:
-- `resource_id` - The resource ID of an existing Log Analytics Workspace.
-- `create_new` - A flag indicating if a new workspace must be created.
-- `tags` - (Optional) Tags for the Log Analytics Workspace resource.
-
-Type:
-
-```hcl
-object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    tags        = optional(map(string), null)
-  })
-```
-
-Default:
-
-```json
-{
-  "create_new": false
-}
-```
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -456,9 +433,6 @@ Description: An object describing the Storage Account. This includes the followi
   - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `network_rules` - (Optional) An object to configure the Storage Account's network rules
-  - `bypass` - (Optional) Specifies whether traffic is bypassed for Logging/Metrics/AzureServices. Valid options are any combination of 'Logging', 'Metrics', 'AzureServices', or `None`.
-  - `default_action` - `default_action` - (Required) Specifies the default action of allow or deny when no other rules match. Valid options are 'Deny' or 'Allow'. Defaults to 'Deny'.
 - `tags` - (Optional) Tags for the Storage Account resource.
 
 Type:
@@ -476,10 +450,6 @@ object({
       network_interface_name          = optional(string, null)
       inherit_lock                    = optional(bool, false)
     })), {})
-    network_rules = optional(object({
-      bypass         = optional(set(string), [])
-      default_action = optional(string, "Deny")
-    }))
     tags = optional(map(string), null)
   })
 ```
@@ -523,6 +493,22 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_workspace_description"></a> [workspace\_description](#input\_workspace\_description)
+
+Description: The description of this workspace.
+
+Type: `string`
+
+Default: `""`
+
+### <a name="input_workspace_friendly_name"></a> [workspace\_friendly\_name](#input\_workspace\_friendly\_name)
+
+Description: The friendly name for this workspace. This value in mutable.
+
+Type: `string`
+
+Default: `"Workspace"`
 
 ### <a name="input_workspace_managed_network"></a> [workspace\_managed\_network](#input\_workspace\_managed\_network)
 
@@ -596,11 +582,17 @@ Source: Azure/avm-res-containerregistry-registry/azurerm
 
 Version: ~> 0.1
 
+### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
+
+Source: Azure/avm-res-insights-component/azurerm
+
+Version: ~> 0.1
+
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: 0.8.0
+Version: ~> 0.9.1
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 

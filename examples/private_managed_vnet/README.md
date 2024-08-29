@@ -1,12 +1,23 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# Private AML workspace with managed VNet configured
 
-This deploys the module in its simplest form:
+This deploys the module with workspace isolation set to allow outbound Internet traffic. The resources include:
 
-- AML workspace (public access)
-- Storage Account
-- Key Vault
+- AML Workspace (private)
+- Storage Account (private)
+- Key Vault (private)
+- Azure Container Registry (private)
 - App Insights and Log Analytics workspace
+
+The managed VNet is not provisioned by default. In the unprovisioned state, you can see the outbound rules created in the Azure Portal or with the Azure CLI + machine learning extension `az ml workspace outbound-rule list --resource-group $RESOURCE_GROUP --workspace-name $WORKSPACE`. Since all possible provisioned resources are private, this collection should include one of type `PrivateEndpoint` for each of the following:
+
+- Key Vault
+- Storage Account: file (spark enabled)
+- Storage Account: blob (spark enabled)
+- Container Registry
+- AML Workspace (spark enabled)
+
+After the network is provisioned (either by adding compute or manually provisioning it with [the Azure CLI + machine learning extension](https://learn.microsoft.com/en-us/cli/azure/ml/workspace?view=azure-cli-latest#az-ml-workspace-provision-network)), the private endpoints themselves will be created internally for Azure Machine Learning.
 
 ```hcl
 terraform {
@@ -14,7 +25,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
+      version = "=3.115.0"
     }
   }
 }
@@ -49,18 +60,34 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+locals {
+  name = module.naming.machine_learning_workspace.name_unique
+}
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
-
 module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = var.location
-  name                = module.naming.machine_learning_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+  location                = azurerm_resource_group.this.location
+  name                    = local.name
+  resource_group_name     = azurerm_resource_group.this.name
+  is_private              = true
+  workspace_friendly_name = "private-aml-workspace"
+  workspace_description   = "A private AML workspace"
+
+  workspace_managed_network = {
+    isolation_mode = "AllowInternetOutbound"
+  }
+
+  container_registry = {
+    create_new     = true
+    zone_redundant = false
+  }
+
   application_insights = {
     create_new = true
     log_analytics_workspace = {
@@ -68,7 +95,7 @@ module "azureml" {
     }
   }
 
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
 }
 ```
 
@@ -79,13 +106,13 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.74)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (=3.115.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.115.0/docs/resources/resource_group) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -95,16 +122,6 @@ No required inputs.
 ## Optional Inputs
 
 The following input variables are optional (have default values):
-
-### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
-
-Description: This variable controls whether or not telemetry is enabled for the module.  
-For more information see <https://aka.ms/avm/telemetryinfo>.  
-If it is set to false, then no telemetry will be collected.
-
-Type: `bool`
-
-Default: `true`
 
 ### <a name="input_location"></a> [location](#input\_location)
 

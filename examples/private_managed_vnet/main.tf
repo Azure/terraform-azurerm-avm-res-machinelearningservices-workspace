@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.115.0"
+      version = "=3.115.0"
     }
   }
 }
@@ -17,6 +17,13 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
+}
+
+## Section to provide a random Azure region for the resource group
+# This allows us to randomize the region for the resource group.
+module "regions" {
+  source  = "Azure/regions/azurerm"
+  version = "~> 0.3"
 }
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -39,7 +46,7 @@ locals {
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
-module "aihub" {
+module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
@@ -47,29 +54,16 @@ module "aihub" {
   name                    = local.name
   resource_group_name     = azurerm_resource_group.this.name
   is_private              = true
-  kind                    = "Hub"
-  workspace_friendly_name = "Private AI Studio Hub"
+  workspace_friendly_name = "private-aml-workspace"
+  workspace_description   = "A private AML workspace"
+
   workspace_managed_network = {
     isolation_mode = "AllowInternetOutbound"
-    spark_ready    = true
   }
 
   container_registry = {
     create_new     = true
     zone_redundant = false
-  }
-
-  key_vault = {
-    create_new = true
-  }
-
-  storage_account = {
-    create_new = true
-  }
-
-  aiservices = {
-    create_new                = true
-    create_service_connection = true
   }
 
   application_insights = {
@@ -79,5 +73,5 @@ module "aihub" {
     }
   }
 
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
 }

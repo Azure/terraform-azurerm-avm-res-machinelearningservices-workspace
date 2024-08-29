@@ -10,7 +10,8 @@ resource "azapi_resource" "this" {
       keyVault            = local.key_vault_id
       storageAccount      = local.storage_account_id
       containerRegistry   = local.container_registry_id
-      friendlyName        = var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -22,7 +23,7 @@ resource "azapi_resource" "this" {
   })
   location  = var.location
   name      = "aml-${var.name}"
-  parent_id = local.resource_group_id
+  parent_id = data.azurerm_resource_group.current.id
   tags      = var.tags
 
   identity {
@@ -42,7 +43,8 @@ resource "azapi_resource" "hub" {
       keyVault            = local.key_vault_id
       storageAccount      = local.storage_account_id
       containerRegistry   = local.container_registry_id
-      friendlyName        = var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -54,7 +56,7 @@ resource "azapi_resource" "hub" {
   })
   location  = var.location
   name      = "hub-${var.name}"
-  parent_id = local.resource_group_id
+  parent_id = data.azurerm_resource_group.current.id
   tags      = var.tags
 
   identity {
@@ -77,15 +79,15 @@ resource "azapi_resource" "project" {
   type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
   body = jsonencode({
     properties = {
-      description   = "Azure AI PROJECT"
-      friendlyName  = "AI Project"
+      description   = var.workspace_description
+      friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
       hubResourceId = var.ai_studio_hub_id
     }
     kind = var.kind
   })
   location  = var.location
   name      = "aihubproject-${var.name}"
-  parent_id = local.resource_group_id
+  parent_id = data.azurerm_resource_group.current.id
 
   identity {
     type = "SystemAssigned"
@@ -94,15 +96,15 @@ resource "azapi_resource" "project" {
 
 # AzAPI AI Services Connection
 resource "azapi_resource" "aiserviceconnection" {
-  count = var.aiservices.create_new || (var.aiservices.name != null && var.aiservices.resource_group_id != null) ? 1 : 0
+  count = var.aiservices.create_service_connection ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
   body = jsonencode({
     properties = {
-      category      = "AIServices",
-      target        = jsondecode(local.ai_services).properties.endpoint,
-      authType      = "AAD",
-      isSharedToAll = true,
+      category      = "AIServices"
+      target        = jsondecode(local.ai_services).properties.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
       metadata = {
         ApiType    = "Azure",
         ResourceId = local.ai_services_id

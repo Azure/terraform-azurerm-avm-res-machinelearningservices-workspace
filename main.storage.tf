@@ -7,7 +7,7 @@ module "avm_res_storage_storageaccount" {
   resource_group_name           = var.resource_group_name
   location                      = var.location
   shared_access_key_enabled     = true
-  public_network_access_enabled = var.is_private ? false : true
+  public_network_access_enabled = !var.is_private
 
   managed_identities = {
     system_assigned = true
@@ -26,7 +26,10 @@ module "avm_res_storage_storageaccount" {
     }
   } : {}
 
-  network_rules = var.storage_account.network_rules
+  network_rules = var.is_private ? {
+    bypass         = ["Logging", "Metrics", "AzureServices"]
+    default_action = "Deny"
+  } : null
 
   # for idempotency
   blob_properties = {
@@ -82,7 +85,7 @@ module "avm_res_storage_storageaccount" {
     }]
   }
 
-  role_assignments = (var.is_private && ((var.aiservices.name != null && var.aiservices.resource_group_id != null) || var.aiservices.create_new)) ? {
+  role_assignments = (var.is_private && var.aiservices.create_service_connection) ? {
     "aiservices" = {
       role_definition_id_or_name       = "Storage Blob Data Contributor"
       principal_id                     = jsondecode(local.ai_services).identity.principalId

@@ -13,3 +13,9 @@ variable "location" {
   default     = "australiaeast"
   description = "The location for the resources."
 }
+
+variable "tags" {
+  type        = map(string)
+  default     = null
+  description = "(Optional) Tags of the resource."
+}

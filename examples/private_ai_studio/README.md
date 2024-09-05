@@ -1,12 +1,21 @@
 <!-- BEGIN_TF_DOCS -->
 # Azure AI Hub
 
-This deploys the private AI Studio Hub with all possible supporting resources:
+This deploys the following:
 
-- AI Hub workspace (private)
-- Storage Account (private)
-- Key Vault (private)
-- Azure Container Registry (private)
+- Azure VNet
+  - subnet named "private\_endpoints"
+- 4 private DNS zones linked to the VNet
+  - "privatelink.api.azureml.ms" for the AI Studio Hub
+  - "privatelink.notebooks.azure.net" for the AI Studio Hub
+  - "privatelink.vaultcore.azure.net" for Key Vault
+  - "privatelink.blob.core.windows.net" for Blob Storage Account
+
+The Resource module deploys:
+
+- AI Hub workspace (private) with a private endpoint in the "private\_endpoints" subnet, referencing both "privatelink.api.azureml.ms" and "privatelink.notebooks.azure.net" DNS zones
+- Storage Account (private) with a private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.blob.core.windows.net" DNS zone
+- Key Vault (private) with a private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.vaultcore.azure.net" DNS zone
 - App Insights and Log Analytics workspace
 - AI Services + an AI Services Connection to the Hub
 
@@ -15,7 +24,6 @@ The managed VNet is not provisioned by default. In the unprovisioned state, you 
 - Key Vault
 - Storage Account: file (spark enabled)
 - Storage Account: blob (spark enabled)
-- Container Registry
 - The AI Hub Workspace (spark enabled)
 
 After the network is provisioned (either by adding compute or manually provisioning it with [the Azure CLI + machine learning extension](https://learn.microsoft.com/en-us/cli/azure/ml/workspace?view=azure-cli-latest#az-ml-workspace-provision-network)), the private endpoints themselves will be created internally for AI Studio.
@@ -58,6 +66,88 @@ locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
 
+data "azurerm_client_config" "current" {}
+
+module "virtual_network" {
+  source              = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version             = "~> 0.2.0"
+  resource_group_name = azurerm_resource_group.this.name
+  subnets = {
+    private_endpoints = {
+      name                              = "private_endpoints"
+      address_prefixes                  = ["192.168.0.0/24"]
+      private_endpoint_network_policies = "Disabled"
+      service_endpoints                 = null
+    }
+  }
+  address_space = ["192.168.0.0/24"]
+  location      = var.location
+  name          = module.naming.virtual_network.name_unique
+  tags          = var.tags
+}
+
+
+module "private_dns_aml_api" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.api.azureml.ms"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.api.azureml.ms"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_aml_notebooks" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.notebooks.azure.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.notebooks.azureml.ms"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_keyvault_vault" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.vaultcore.azure.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.notebooks.azureml.ms"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_storageaccount_blob" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.blob.core.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.blob.core.windows.net"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -78,16 +168,32 @@ module "aihub" {
   }
 
   container_registry = {
-    create_new     = true
-    zone_redundant = false
+    create_new = false
   }
 
   key_vault = {
     create_new = true
+    private_endpoints = {
+      vault = {
+        name                          = "pe-keyvault-vault"
+        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+        private_dns_zone_resource_ids = [module.private_dns_keyvault_vault.resource_id]
+        inherit_lock                  = false
+      }
+    }
   }
 
   storage_account = {
     create_new = true
+    private_endpoints = {
+      blob = {
+        name                          = "pe-storage-blob"
+        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+        subresource_name              = "blob"
+        private_dns_zone_resource_ids = [module.private_dns_storageaccount_blob.resource_id]
+        inherit_lock                  = false
+      }
+    }
   }
 
   aiservices = {
@@ -99,6 +205,15 @@ module "aihub" {
     create_new = true
     log_analytics_workspace = {
       create_new = true
+    }
+  }
+
+  private_endpoints = {
+    hub = {
+      name                          = "pe-aistudio-hub"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id, module.private_dns_aml_notebooks.resource_id]
+      inherit_lock                  = false
     }
   }
 
@@ -120,6 +235,7 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -148,6 +264,14 @@ Type: `string`
 
 Default: `"australiaeast"`
 
+### <a name="input_tags"></a> [tags](#input\_tags)
+
+Description: (Optional) Tags of the resource.
+
+Type: `map(string)`
+
+Default: `null`
+
 ## Outputs
 
 The following outputs are exported:
@@ -171,6 +295,36 @@ Version:
 Source: Azure/naming/azurerm
 
 Version: ~> 0.3
+
+### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
+### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
+### <a name="module_private_dns_keyvault_vault"></a> [private\_dns\_keyvault\_vault](#module\_private\_dns\_keyvault\_vault)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
+### <a name="module_private_dns_storageaccount_blob"></a> [private\_dns\_storageaccount\_blob](#module\_private\_dns\_storageaccount\_blob)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
+### <a name="module_virtual_network"></a> [virtual\_network](#module\_virtual\_network)
+
+Source: Azure/avm-res-network-virtualnetwork/azurerm
+
+Version: ~> 0.2.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

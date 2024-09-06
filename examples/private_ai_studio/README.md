@@ -240,7 +240,7 @@ module "aihub" {
       }
       file = {
         name                          = "pe-storage-file"
-        subnet_resource_id            = module.virtual_network["private_endpoints"].resource_id
+        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
         subresource_name              = "file"
         private_dns_zone_resource_ids = [module.private_dns_storageaccount_file.resource_id]
         inherit_lock                  = false

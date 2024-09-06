@@ -35,8 +35,6 @@ locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
 
-data "azurerm_client_config" "current" {}
-
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
   version             = "~> 0.2.0"
@@ -54,7 +52,6 @@ module "virtual_network" {
   name          = module.naming.virtual_network.name_unique
   tags          = var.tags
 }
-
 
 module "private_dns_aml_api" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
@@ -116,6 +113,36 @@ module "private_dns_storageaccount_blob" {
   enable_telemetry = var.enable_telemetry
 }
 
+module "private_dns_storageaccount_file" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.file.core.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.file.core.windows.net"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_containerregistry_registry" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.azurecr.io"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.azurecr.io"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -137,7 +164,15 @@ module "aihub" {
   }
 
   container_registry = {
-    create_new = false
+    create_new = true
+    private_endpoints = {
+      registry = {
+        name                          = "pe-containerregistry-regsitry"
+        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+        private_dns_zone_resource_ids = [module.private_dns_containerregistry_registry.resource_id]
+        inherit_lock                  = false
+      }
+    }
   }
 
   key_vault = {
@@ -160,6 +195,13 @@ module "aihub" {
         subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
         subresource_name              = "blob"
         private_dns_zone_resource_ids = [module.private_dns_storageaccount_blob.resource_id]
+        inherit_lock                  = false
+      }
+      file = {
+        name                          = "pe-storage-file"
+        subnet_resource_id            = module.virtual_network["private_endpoints"].resource_id
+        subresource_name              = "file"
+        private_dns_zone_resource_ids = [module.private_dns_storageaccount_file.resource_id]
         inherit_lock                  = false
       }
     }

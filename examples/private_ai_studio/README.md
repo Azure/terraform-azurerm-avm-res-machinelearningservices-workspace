@@ -1,21 +1,30 @@
 <!-- BEGIN_TF_DOCS -->
 # Azure AI Hub
 
-This deploys the following:
+This example deploys the core aspects of the architecture depicted in the image below.
 
-- Azure VNet
+![An architecture diagram. At the top, a Managed VNet containing a compute instance, serverless compute, a managed online endpoint and AI project is depicted. A private endpoint within the Managed VNet connects to the Azure AI Studio hub. There are also private endpoints connecting an Azure Storage Account, Azure Key Vault and Azure Container Registry to the Managed VNet. Azure AI Services, Azure Open AI and, optionally, Azure AI Search are accessible within the Managed VNet as well. In the middle left, there is an Azure VNet labeled 'Your Azure VNet' which serves as a bridge between an on-premise network and Azure resources with various private endpoints.](https://learn.microsoft.com/en-us/azure/ai-studio/media/how-to/network/azure-ai-network-outbound.png)
+
+This specifically includes:
+
+- 1 Azure VNet
   - subnet named "private\_endpoints"
-- 4 private DNS zones linked to the VNet
+- 6 private DNS zones linked to the VNet
   - "privatelink.api.azureml.ms" for the AI Studio Hub
   - "privatelink.notebooks.azure.net" for the AI Studio Hub
   - "privatelink.vaultcore.azure.net" for Key Vault
-  - "privatelink.blob.core.windows.net" for Blob Storage Account
-
-The Resource module deploys:
-
-- AI Hub workspace (private) with a private endpoint in the "private\_endpoints" subnet, referencing both "privatelink.api.azureml.ms" and "privatelink.notebooks.azure.net" DNS zones
-- Storage Account (private) with a private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.blob.core.windows.net" DNS zone
-- Key Vault (private) with a private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.vaultcore.azure.net" DNS zone
+  - "privatelink.blob.core.windows.net" for Storage Account (blob)
+  - "privatelink.file.core.windows.net" for Storage Account (file)
+  - "privatelink.azurecr.io" for Container Registry
+- AI Hub workspace (private)
+  - 1 private endpoint in the "private\_endpoints" subnet referencing both "privatelink.api.azureml.ms" and "privatelink.notebooks.azure.net" DNS zones
+- Storage Account (private)
+  -  1 private endpoint in the "private\_endpoints" subnet referencing the "privatelink.blob.core.windows.net" DNS zone and
+  -  1 private endpoint in the "private\_endpoints" subnet referencing DNS zone "privatelink.file.core.windows.net"
+- Key Vault (private)
+  - 1 private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.vaultcore.azure.net" DNS zone
+- Azure Container Registry (private)
+  - 1 private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.azurecr.io" DNS zone
 - App Insights and Log Analytics workspace
 - AI Services + an AI Services Connection to the Hub
 
@@ -24,6 +33,7 @@ The managed VNet is not provisioned by default. In the unprovisioned state, you 
 - Key Vault
 - Storage Account: file (spark enabled)
 - Storage Account: blob (spark enabled)
+- Container Registry
 - The AI Hub Workspace (spark enabled)
 
 After the network is provisioned (either by adding compute or manually provisioning it with [the Azure CLI + machine learning extension](https://learn.microsoft.com/en-us/cli/azure/ml/workspace?view=azure-cli-latest#az-ml-workspace-provision-network)), the private endpoints themselves will be created internally for AI Studio.
@@ -66,8 +76,6 @@ locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
 
-data "azurerm_client_config" "current" {}
-
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
   version             = "~> 0.2.0"
@@ -85,7 +93,6 @@ module "virtual_network" {
   name          = module.naming.virtual_network.name_unique
   tags          = var.tags
 }
-
 
 module "private_dns_aml_api" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
@@ -147,6 +154,36 @@ module "private_dns_storageaccount_blob" {
   enable_telemetry = var.enable_telemetry
 }
 
+module "private_dns_storageaccount_file" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.file.core.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.file.core.windows.net"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_containerregistry_registry" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "0.1.2"
+  domain_name         = "privatelink.azurecr.io"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.azurecr.io"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
+}
+
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -168,7 +205,15 @@ module "aihub" {
   }
 
   container_registry = {
-    create_new = false
+    create_new = true
+    private_endpoints = {
+      registry = {
+        name                          = "pe-containerregistry-regsitry"
+        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+        private_dns_zone_resource_ids = [module.private_dns_containerregistry_registry.resource_id]
+        inherit_lock                  = false
+      }
+    }
   }
 
   key_vault = {
@@ -191,6 +236,13 @@ module "aihub" {
         subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
         subresource_name              = "blob"
         private_dns_zone_resource_ids = [module.private_dns_storageaccount_blob.resource_id]
+        inherit_lock                  = false
+      }
+      file = {
+        name                          = "pe-storage-file"
+        subnet_resource_id            = module.virtual_network["private_endpoints"].resource_id
+        subresource_name              = "file"
+        private_dns_zone_resource_ids = [module.private_dns_storageaccount_file.resource_id]
         inherit_lock                  = false
       }
     }
@@ -235,7 +287,6 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -308,6 +359,12 @@ Source: Azure/avm-res-network-privatednszone/azurerm
 
 Version: 0.1.2
 
+### <a name="module_private_dns_containerregistry_registry"></a> [private\_dns\_containerregistry\_registry](#module\_private\_dns\_containerregistry\_registry)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
 ### <a name="module_private_dns_keyvault_vault"></a> [private\_dns\_keyvault\_vault](#module\_private\_dns\_keyvault\_vault)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
@@ -315,6 +372,12 @@ Source: Azure/avm-res-network-privatednszone/azurerm
 Version: 0.1.2
 
 ### <a name="module_private_dns_storageaccount_blob"></a> [private\_dns\_storageaccount\_blob](#module\_private\_dns\_storageaccount\_blob)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: 0.1.2
+
+### <a name="module_private_dns_storageaccount_file"></a> [private\_dns\_storageaccount\_file](#module\_private\_dns\_storageaccount\_file)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 

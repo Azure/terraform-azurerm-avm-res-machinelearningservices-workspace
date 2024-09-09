@@ -380,26 +380,6 @@ variable "tags" {
   description = "(Optional) Tags of the resource."
 }
 
-variable "vnet" {
-  type = object({
-    resource_id = optional(string, null)
-    create_new  = optional(bool, false)
-    subnets = map(object({
-      name              = string
-      address_prefixes  = optional(list(string))
-      service_endpoints = optional(list(string), [])
-      nsg_id            = optional(string, null)
-    }))
-    address_space       = optional(list(string))
-    resource_group_name = optional(string, null)
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
-DESCRIPTION
-}
-
 variable "workspace_description" {
   type        = string
   default     = ""

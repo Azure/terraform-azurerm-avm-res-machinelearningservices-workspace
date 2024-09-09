@@ -4,7 +4,7 @@ resource "azapi_resource" "aiservice" {
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
   body = jsonencode({
     properties = {
-      publicNetworkAccess = (var.is_private && var.kind != "hub") ? "Disabled" : "Enabled" # Can't have private AI Services with private AI Studio hubs
+      publicNetworkAccess = (var.is_private && var.kind != "Hub") ? "Disabled" : "Enabled" # Can't have private AI Services with private AI Studio hubs
       apiProperties = {
         statisticsEnabled = false
       }

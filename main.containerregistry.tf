@@ -9,7 +9,7 @@ module "avm_res_containerregistry_registry" {
   public_network_access_enabled = !var.is_private
   zone_redundancy_enabled       = var.container_registry.zone_redundant
 
-  private_endpoints = var.is_private && var.vnet != null ? {
+  private_endpoints = var.is_private && var.container_registry.private_endpoints != null ? {
     for key, value in var.container_registry.private_endpoints :
     key => {
       name                            = value.name == null ? "pe-${key}-${var.name}" : value.name

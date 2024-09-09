@@ -470,30 +470,6 @@ Type: `map(string)`
 
 Default: `null`
 
-### <a name="input_vnet"></a> [vnet](#input\_vnet)
-
-Description: An object describing the Virtual Network to associate with the resource. This includes the following properties:
-- `resource_id` - The resource ID of the Virtual Network.
-
-Type:
-
-```hcl
-object({
-    resource_id = optional(string, null)
-    create_new  = optional(bool, false)
-    subnets = map(object({
-      name              = string
-      address_prefixes  = optional(list(string))
-      service_endpoints = optional(list(string), [])
-      nsg_id            = optional(string, null)
-    }))
-    address_space       = optional(list(string))
-    resource_group_name = optional(string, null)
-  })
-```
-
-Default: `null`
-
 ### <a name="input_workspace_description"></a> [workspace\_description](#input\_workspace\_description)
 
 Description: The description of this workspace.

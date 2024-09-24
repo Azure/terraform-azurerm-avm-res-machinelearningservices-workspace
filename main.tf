@@ -17,6 +17,17 @@ resource "azapi_resource" "this" {
         status = {
           sparkReady = var.workspace_managed_network.spark_ready
         }
+        outboundRules = {
+          for key, rule in var.outbound_rules : key => {
+            type = "PrivateEndpoint"
+            destination = {
+              serviceResourceId = rule.resource_id
+              subresourceTarget = local.resource_type_to_subresource[rule.type]
+              sparkEnabled      = false
+              sparkStatus       = "Inactive"
+            }
+          }
+        }
       }
     }
     kind = var.kind
@@ -49,6 +60,17 @@ resource "azapi_resource" "hub" {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
           sparkReady = var.workspace_managed_network.spark_ready
+        }
+        outboundRules = {
+          for key, rule in var.outbound_rules : key => {
+            type = "PrivateEndpoint"
+            destination = {
+              serviceResourceId = rule.resource_id
+              subresourceTarget = local.resource_type_to_subresource[rule.type]
+              sparkEnabled      = false
+              sparkStatus       = "Inactive"
+            }
+          }
         }
       }
     }

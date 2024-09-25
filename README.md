@@ -337,7 +337,10 @@ Default: `null`
 
 ### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
 
-Description: Map of outbound rules for the managed network
+Description:   A map of private endpoints toutbound rules for the managed network.
+
+  - `resource_id` - The resource id for the corresponding private endpoint.
+  - `type` - The type of subresource that is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
 
 Type:
 

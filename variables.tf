@@ -302,36 +302,6 @@ DESCRIPTION
   }
 }
 
-variable "outbound_rules" {
-  type = map(object({
-    resource_id         = string
-    sub_resource_target = string
-  }))
-  default     = null
-  description = <<DESCRIPTION
-  A map of private endpoints toutbound rules for the managed network.
-
-  - `resource_id` - The resource id for the corresponding private endpoint.
-  - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
-  
-  DESCRIPTION
-}
-
-variable "outbound_rules" {
-  type = map(object({
-    resource_id         = string
-    sub_resource_target = string
-  }))
-  default     = null
-  description = <<DESCRIPTION
-  A map of private endpoints toutbound rules for the managed network.
-
-  - `resource_id` - The resource id for the corresponding private endpoint.
-  - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
-  
-  DESCRIPTION
-}
-
 # required AVM interface
 # tflint-ignore: terraform_unused_declarations
 variable "managed_identities" {
@@ -347,6 +317,21 @@ variable "managed_identities" {
   - `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
   DESCRIPTION
   nullable    = false
+}
+
+variable "outbound_rules" {
+  type = map(object({
+    resource_id         = string
+    sub_resource_target = string
+  }))
+  default     = null
+  description = <<DESCRIPTION
+  A map of private endpoints toutbound rules for the managed network.
+
+  - `resource_id` - The resource id for the corresponding private endpoint.
+  - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
+  
+  DESCRIPTION
 }
 
 # required AVM interface

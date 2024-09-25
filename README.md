@@ -370,42 +370,6 @@ object({
 
 Default: `null`
 
-### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
-
-Description:   A map of private endpoints toutbound rules for the managed network.
-
-  - `resource_id` - The resource id for the corresponding private endpoint.
-  - `sub_resource_target` - The sub\_resource\_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
-
-Type:
-
-```hcl
-map(object({
-    resource_id         = string
-    sub_resource_target = string
-  }))
-```
-
-Default: `null`
-
-### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
-
-Description:   A map of private endpoints toutbound rules for the managed network.
-
-  - `resource_id` - The resource id for the corresponding private endpoint.
-  - `sub_resource_target` - The sub\_resource\_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
-
-Type:
-
-```hcl
-map(object({
-    resource_id         = string
-    sub_resource_target = string
-  }))
-```
-
-Default: `null`
-
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
 Description:   Controls the Managed Identity configuration on this resource. The following properties can be specified:
@@ -423,6 +387,24 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
+
+Description:   A map of private endpoints toutbound rules for the managed network.
+
+  - `resource_id` - The resource id for the corresponding private endpoint.
+  - `sub_resource_target` - The sub\_resource\_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
+
+Type:
+
+```hcl
+map(object({
+    resource_id         = string
+    sub_resource_target = string
+  }))
+```
+
+Default: `null`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 

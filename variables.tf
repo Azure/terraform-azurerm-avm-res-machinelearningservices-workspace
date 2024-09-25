@@ -257,15 +257,15 @@ DESCRIPTION
 
 variable "outbound_rules" {
   type = map(object({
-    resource_id = string
-    type        = string
+    resource_id         = string
+    sub_resource_target = string
   }))
   default     = null
   description = <<DESCRIPTION
   A map of private endpoints toutbound rules for the managed network.
 
   - `resource_id` - The resource id for the corresponding private endpoint.
-  - `type` - The type of subresource that is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
+  - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
   
   DESCRIPTION
 }

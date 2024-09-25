@@ -22,7 +22,7 @@ resource "azapi_resource" "this" {
             type = "PrivateEndpoint"
             destination = {
               serviceResourceId = rule.resource_id
-              subresourceTarget = local.resource_type_to_subresource[rule.type]
+              subresourceTarget = rule.type
               sparkEnabled      = false
               sparkStatus       = "Inactive"
             }
@@ -66,7 +66,7 @@ resource "azapi_resource" "hub" {
             type = "PrivateEndpoint"
             destination = {
               serviceResourceId = rule.resource_id
-              subresourceTarget = local.resource_type_to_subresource[rule.type]
+              subresourceTarget = rule.rule.type
               sparkEnabled      = false
               sparkStatus       = "Inactive"
             }

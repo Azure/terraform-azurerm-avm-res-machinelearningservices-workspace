@@ -23,9 +23,3 @@ locals {
   storage_account_id = var.storage_account.create_new ? module.avm_res_storage_storageaccount[0].resource_id : var.storage_account.resource_id
 }
 
-locals {
-  resource_type_to_subresource = {
-    "Microsoft.Search/searchServices"      = "searchService"
-    "Microsoft.CognitiveServices/accounts" = "account"
-  }
-}

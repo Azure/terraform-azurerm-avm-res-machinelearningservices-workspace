@@ -25,7 +25,7 @@ locals {
 
 locals {
   resource_type_to_subresource = {
-    "Microsoft.Search/searchServices"           = "searchService"
-    "Microsoft.CognitiveServices/accounts"      = "account"
+    "Microsoft.Search/searchServices"      = "searchService"
+    "Microsoft.CognitiveServices/accounts" = "account"
   }
 }

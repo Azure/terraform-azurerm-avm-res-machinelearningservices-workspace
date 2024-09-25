@@ -516,6 +516,21 @@ Default:
 }
 ```
 
+### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
+
+Description: (Optional) Map of outbound rules for the managed network.
+
+Type: 
+
+```hcl
+map(object({
+    resource_id = string
+    type        = string
+  }))
+```
+
+Default: `null`
+
 ## Outputs
 
 The following outputs are exported:

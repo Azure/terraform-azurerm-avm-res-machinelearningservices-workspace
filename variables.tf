@@ -14,6 +14,14 @@ variable "name" {
   }
 }
 
+variable "outbound_rules" {
+  type = map(object({
+    resource_id = string
+    type        = string
+  }))
+  description = "Map of outbound rules for the managed network"
+}
+
 # This is required for most resource modules
 variable "resource_group_name" {
   type        = string
@@ -412,12 +420,4 @@ While is possible to update the workspace to enable network isolation ('AllowInt
 
 `spark_ready` determines whether spark jobs will be run on the network. This value can be updated in the future.
 DESCRIPTION
-}
-
-variable "outbound_rules" {
-  description = "Map of outbound rules for the managed network"
-  type = map(object({
-    resource_id = string
-    type        = string
-  }))
 }

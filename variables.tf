@@ -19,8 +19,8 @@ variable "outbound_rules" {
     resource_id = string
     type        = string
   }))
-  description   = "Map of outbound rules for the managed network"
-  default       = null
+  description = "Map of outbound rules for the managed network"
+  default     = null
 }
 
 # This is required for most resource modules

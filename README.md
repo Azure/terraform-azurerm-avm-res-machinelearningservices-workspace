@@ -335,6 +335,21 @@ object({
 
 Default: `null`
 
+### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
+
+Description: Map of outbound rules for the managed network
+
+Type:
+
+```hcl
+map(object({
+    resource_id = string
+    type        = string
+  }))
+```
+
+Default: `null`
+
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
 Description: A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -515,21 +530,6 @@ Default:
   "spark_ready": true
 }
 ```
-
-### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
-
-Description: (Optional) Map of outbound rules for the managed network.
-
-Type: 
-
-```hcl
-map(object({
-    resource_id = string
-    type        = string
-  }))
-```
-
-Default: `null`
 
 ## Outputs
 

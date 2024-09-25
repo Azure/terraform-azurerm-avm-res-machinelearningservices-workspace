@@ -14,15 +14,6 @@ variable "name" {
   }
 }
 
-variable "outbound_rules" {
-  type = map(object({
-    resource_id = string
-    type        = string
-  }))
-  description = "Map of outbound rules for the managed network"
-  default     = null
-}
-
 # This is required for most resource modules
 variable "resource_group_name" {
   type        = string
@@ -262,6 +253,15 @@ DESCRIPTION
     condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
     error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
   }
+}
+
+variable "outbound_rules" {
+  type = map(object({
+    resource_id = string
+    type        = string
+  }))
+  default     = null
+  description = "Map of outbound rules for the managed network"
 }
 
 variable "private_endpoints" {

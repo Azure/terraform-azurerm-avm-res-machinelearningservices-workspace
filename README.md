@@ -335,6 +335,24 @@ object({
 
 Default: `null`
 
+### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
+
+Description:   A map of private endpoints toutbound rules for the managed network.
+
+  - `resource_id` - The resource id for the corresponding private endpoint.
+  - `sub_resource_target` - The sub\_resource\_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
+
+Type:
+
+```hcl
+map(object({
+    resource_id         = string
+    sub_resource_target = string
+  }))
+```
+
+Default: `null`
+
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
 Description: A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.

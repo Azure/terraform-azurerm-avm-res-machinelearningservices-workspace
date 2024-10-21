@@ -404,7 +404,7 @@ map(object({
   }))
 ```
 
-Default: `null`
+Default: `{}`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 

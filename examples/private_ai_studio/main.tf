@@ -159,8 +159,7 @@ module "aihub" {
   kind                    = "Hub"
   workspace_friendly_name = "Private AI Studio Hub"
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
-    spark_ready    = true
+    isolation_mode = "AllowOnlyApprovedOutbound"
   }
 
   container_registry = {

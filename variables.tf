@@ -324,7 +324,7 @@ variable "outbound_rules" {
     resource_id         = string
     sub_resource_target = string
   }))
-  default     = null
+  default     = {}
   description = <<DESCRIPTION
   A map of private endpoints toutbound rules for the managed network.
 

@@ -66,7 +66,7 @@ resource "azapi_resource" "hub" {
             type = "PrivateEndpoint"
             destination = {
               serviceResourceId = rule.resource_id
-              subresourceTarget = rule.rule.sub_resource_target
+              subresourceTarget = rule.sub_resource_target
               sparkEnabled      = false
               sparkStatus       = "Inactive"
             }

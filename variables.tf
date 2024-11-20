@@ -417,6 +417,12 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "storage_access_type" {
+  type        = string
+  default     = "identity"
+  description = "The auth mode used for accessing the system datastores of the workspace - accessKey or identity."
+}
+
 variable "storage_account" {
   type = object({
     resource_id = optional(string, null)

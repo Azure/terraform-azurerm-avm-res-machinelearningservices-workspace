@@ -493,6 +493,14 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
+
+Description: The auth mode used for accessing the system datastores of the workspace - accessKey or identity.
+
+Type: `string`
+
+Default: `"identity"`
+
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
 Description: An object describing the Storage Account. This includes the following properties:

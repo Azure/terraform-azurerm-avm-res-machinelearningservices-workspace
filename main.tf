@@ -1,7 +1,7 @@
 resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
   body = jsonencode({
     properties = {
       publicNetworkAccess = var.is_private ? "Disabled" : "Enabled"
@@ -12,6 +12,7 @@ resource "azapi_resource" "this" {
       containerRegistry   = local.container_registry_id
       description         = var.workspace_description
       friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
+      systemDatastoresAuthMode    = var.storage_access_type
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -56,6 +57,7 @@ resource "azapi_resource" "hub" {
       containerRegistry   = local.container_registry_id
       description         = var.workspace_description
       friendlyName        = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
+      systemDatastoresAuthMode = var.storage_access_type
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {

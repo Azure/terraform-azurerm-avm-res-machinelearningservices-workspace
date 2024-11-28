@@ -46,7 +46,7 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "hub" {
   count = var.kind == "Hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
   body = jsonencode({
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
@@ -100,7 +100,7 @@ resource "azapi_resource" "hub" {
 resource "azapi_resource" "project" {
   count = var.kind == "Project" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-04-01"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
   body = jsonencode({
     properties = {
       description   = var.workspace_description
@@ -122,7 +122,7 @@ resource "azapi_resource" "project" {
 resource "azapi_resource" "aiserviceconnection" {
   count = var.aiservices.create_service_connection ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-04-01"
+  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-07-01-preview"
   body = jsonencode({
     properties = {
       category      = "AIServices"
@@ -144,7 +144,7 @@ resource "azapi_resource" "aiserviceconnection" {
 resource "azapi_resource" "computeinstance" {
   count = var.create_compute_instance ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-04-01"
+  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-07-01-preview"
   body = jsonencode({
     properties = {
       computeType = "ComputeInstance"

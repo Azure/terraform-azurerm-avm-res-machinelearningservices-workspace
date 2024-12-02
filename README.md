@@ -599,21 +599,29 @@ Default:
 
 The following outputs are exported:
 
+### <a name="output_ai_services"></a> [ai\_services](#output\_ai\_services)
+
+Description: The AI Services resource, if created.
+
+### <a name="output_ai_services_service_connection"></a> [ai\_services\_service\_connection](#output\_ai\_services\_service\_connection)
+
+Description: The service connection between the AIServices and the workspace, if created.
+
 ### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
 
-Description: The ID of the application insights.
+Description: The application insights resource, if created.
 
 ### <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry)
 
-Description: The container registry resource.
+Description: The container registry resource, if created.
 
 ### <a name="output_key_vault"></a> [key\_vault](#output\_key\_vault)
 
-Description: The key vault resource.
+Description: The key vault resource, if created.
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
-Description:   A map of the private endpoints created.
+Description: A map of the private endpoints created.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
@@ -625,7 +633,15 @@ Description: The ID of the machine learning workspace.
 
 ### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
 
-Description: The storage account resource.
+Description: The storage account resource, if created.
+
+### <a name="output_workspace"></a> [workspace](#output\_workspace)
+
+Description: The machine learning workspace created.
+
+### <a name="output_workspace_identity"></a> [workspace\_identity](#output\_workspace\_identity)
+
+Description: The identity for the created workspace.
 
 ## Modules
 

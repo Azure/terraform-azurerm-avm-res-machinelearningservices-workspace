@@ -147,7 +147,9 @@ resource "azapi_resource" "computeinstance" {
   type = "Microsoft.MachineLearningServices/workspaces/computes@2024-07-01-preview"
   body = jsonencode({
     properties = {
-      computeType = "ComputeInstance"
+      computeLocation  = local.aml_resource.location
+      computeType      = "ComputeInstance"
+      disableLocalAuth = true
       properties = {
         enableNodePublicIp = false
         vmSize             = "STANDARD_DS2_V2"
@@ -161,6 +163,8 @@ resource "azapi_resource" "computeinstance" {
   identity {
     type = "SystemAssigned"
   }
+
+  response_export_values = ["*"]
 }
 
 resource "azurerm_management_lock" "this" {

@@ -156,15 +156,14 @@ resource "azapi_resource" "computeinstance" {
       }
     }
   })
-  location  = local.aml_resource.location
-  name      = "ci-${var.name}"
-  parent_id = local.aml_resource.id
+  location               = local.aml_resource.location
+  name                   = "ci-${var.name}"
+  parent_id              = local.aml_resource.id
+  response_export_values = ["*"]
 
   identity {
     type = "SystemAssigned"
   }
-
-  response_export_values = ["*"]
 }
 
 resource "azurerm_management_lock" "this" {

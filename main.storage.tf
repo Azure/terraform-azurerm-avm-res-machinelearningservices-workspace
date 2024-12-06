@@ -88,7 +88,7 @@ module "avm_res_storage_storageaccount" {
   role_assignments = (var.is_private && var.aiservices.create_service_connection) ? {
     "aiservices" = {
       role_definition_id_or_name       = "Storage Blob Data Contributor"
-      principal_id                     = jsondecode(local.ai_services).identity.principalId
+      principal_id                     = local.ai_services.identity.principalId
       skip_service_principal_aad_check = true
     }
   } : {}

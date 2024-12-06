@@ -2,7 +2,7 @@ resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
       applicationInsights      = local.application_insights_id
@@ -32,7 +32,7 @@ resource "azapi_resource" "this" {
       }
     }
     kind = var.kind
-  })
+  }
   location  = var.location
   name      = "aml-${var.name}"
   parent_id = data.azurerm_resource_group.current.id
@@ -47,7 +47,7 @@ resource "azapi_resource" "hub" {
   count = var.kind == "Hub" ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
       applicationInsights      = local.application_insights_id
@@ -77,7 +77,7 @@ resource "azapi_resource" "hub" {
       }
     }
     kind = var.kind
-  })
+  }
   location  = var.location
   name      = "hub-${var.name}"
   parent_id = data.azurerm_resource_group.current.id
@@ -101,14 +101,14 @@ resource "azapi_resource" "project" {
   count = var.kind == "Project" ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       description   = var.workspace_description
       friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
       hubResourceId = var.ai_studio_hub_id
     }
     kind = var.kind
-  })
+  }
   location  = var.location
   name      = "aihubproject-${var.name}"
   parent_id = data.azurerm_resource_group.current.id
@@ -123,10 +123,10 @@ resource "azapi_resource" "aiserviceconnection" {
   count = var.aiservices.create_service_connection ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces/connections@2024-07-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       category      = "AIServices"
-      target        = jsondecode(local.ai_services).properties.endpoint
+      target        = local.ai_services.properties.endpoint
       authType      = "AAD"
       isSharedToAll = true
       metadata = {
@@ -134,7 +134,7 @@ resource "azapi_resource" "aiserviceconnection" {
         ResourceId = local.ai_services_id
       }
     }
-  })
+  }
   name                   = "aiserviceconnection${var.name}"
   parent_id              = local.aml_resource.id
   response_export_values = ["*"]
@@ -145,7 +145,7 @@ resource "azapi_resource" "computeinstance" {
   count = var.create_compute_instance ? 1 : 0
 
   type = "Microsoft.MachineLearningServices/workspaces/computes@2024-07-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       computeLocation  = local.aml_resource.location
       computeType      = "ComputeInstance"
@@ -155,7 +155,7 @@ resource "azapi_resource" "computeinstance" {
         vmSize             = "STANDARD_DS2_V2"
       }
     }
-  })
+  }
   location               = local.aml_resource.location
   name                   = "ci-${var.name}"
   parent_id              = local.aml_resource.id

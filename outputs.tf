@@ -1,21 +1,21 @@
 output "ai_services" {
   description = "The AI Services resource, if created."
   value = var.aiservices.create_new ? {
-    id          = jsondecode(azapi_resource.aiservice[0].output).id
-    name        = jsondecode(azapi_resource.aiservice[0].output).name
-    endpoint    = jsondecode(azapi_resource.aiservice[0].output).properties.endpoint
-    identity_id = try(jsondecode(azapi_resource.aiservice[0].output).identity.principalId, null)
+    id          = azapi_resource.aiservice[0].output.id
+    name        = azapi_resource.aiservice[0].output.name
+    endpoint    = azapi_resource.aiservice[0].output.properties.endpoint
+    identity_id = try(azapi_resource.aiservice[0].output.identity.principalId, null)
   } : null
 }
 
 output "ai_services_service_connection" {
   description = "The service connection between the AIServices and the workspace, if created."
   value = var.aiservices.create_service_connection ? {
-    name                           = jsondecode(azapi_resource.aiserviceconnection[0].output).name
-    id                             = jsondecode(azapi_resource.aiserviceconnection[0].output).id
-    is_shared                      = jsondecode(azapi_resource.aiserviceconnection[0].output).properties.isSharedToAll
-    target                         = jsondecode(azapi_resource.aiserviceconnection[0].output).properties.target
-    use_workspace_managed_identity = jsondecode(azapi_resource.aiserviceconnection[0].output).properties.useWorkspaceManagedIdentity
+    name                           = azapi_resource.aiserviceconnection[0].output.name
+    id                             = azapi_resource.aiserviceconnection[0].output.id
+    is_shared                      = azapi_resource.aiserviceconnection[0].output.properties.isSharedToAll
+    target                         = azapi_resource.aiserviceconnection[0].output.properties.target
+    use_workspace_managed_identity = azapi_resource.aiserviceconnection[0].output.properties.useWorkspaceManagedIdentity
   } : null
 }
 
@@ -84,10 +84,10 @@ output "workspace" {
   description = "The machine learning workspace created."
   value = {
     name                    = local.aml_resource.name
-    container_registry_id   = try(jsondecode(local.aml_resource.body).properties.containerRegistry, null)
-    storage_account_id      = try(jsondecode(local.aml_resource.body).properties.storageAccount, null)
-    key_vault_id            = try(jsondecode(local.aml_resource.body).properties.keyVault, null)
-    application_insights_id = try(jsondecode(local.aml_resource.body).properties.applicationInsights, null)
+    container_registry_id   = try(local.aml_resource.body.properties.containerRegistry, null)
+    storage_account_id      = try(local.aml_resource.body.properties.storageAccount, null)
+    key_vault_id            = try(local.aml_resource.body.properties.keyVault, null)
+    application_insights_id = try(local.aml_resource.body.properties.applicationInsights, null)
   }
 }
 

@@ -9,7 +9,7 @@ terraform {
   required_providers {
     azapi = {
       source  = "Azure/azapi"
-      version = "1.15.0"
+      version = "~> 2.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -66,7 +66,7 @@ resource "azurerm_key_vault" "example" {
 
 resource "azapi_resource" "aiservice" {
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       publicNetworkAccess = "Enabled"
       apiProperties = {
@@ -77,7 +77,7 @@ resource "azapi_resource" "aiservice" {
       "name" : "S0",
     }
     kind = "AIServices"
-  })
+  }
   location               = var.location
   name                   = module.naming.cognitive_account.name_unique
   parent_id              = azurerm_resource_group.example.id
@@ -142,7 +142,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (1.15.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 4.0.0)
 
@@ -150,7 +150,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/1.15.0/docs/resources/resource) (resource)
+- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)

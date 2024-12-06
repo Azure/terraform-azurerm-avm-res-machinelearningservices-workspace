@@ -2,7 +2,7 @@ resource "azapi_resource" "aiservice" {
   count = var.aiservices.create_new ? 1 : 0
 
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       publicNetworkAccess = (var.is_private && var.kind != "Hub") ? "Disabled" : "Enabled" # Can't have private AI Services with private AI Studio hubs
       apiProperties = {
@@ -13,7 +13,7 @@ resource "azapi_resource" "aiservice" {
       "name" : var.aiservices.analysis_services_sku,
     }
     kind = "AIServices"
-  })
+  }
   location               = var.location
   name                   = "ai-svc-${var.name}"
   parent_id              = data.azurerm_resource_group.current.id

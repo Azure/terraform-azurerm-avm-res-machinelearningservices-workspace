@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azapi = {
       source  = "Azure/azapi"
-      version = "1.15.0"
+      version = "~> 2.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -60,7 +60,7 @@ resource "azurerm_key_vault" "example" {
 
 resource "azapi_resource" "aiservice" {
   type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  body = jsonencode({
+  body = {
     properties = {
       publicNetworkAccess = "Enabled"
       apiProperties = {
@@ -71,7 +71,7 @@ resource "azapi_resource" "aiservice" {
       "name" : "S0",
     }
     kind = "AIServices"
-  })
+  }
   location               = var.location
   name                   = module.naming.cognitive_account.name_unique
   parent_id              = azurerm_resource_group.example.id

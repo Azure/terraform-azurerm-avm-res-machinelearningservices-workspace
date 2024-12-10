@@ -41,7 +41,7 @@ resource "azurerm_resource_group" "this" {
 
 module "private_dns_aml_api" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.1.2"
+  version             = "0.2.1"
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -55,7 +55,7 @@ module "private_dns_aml_api" {
 }
 module "private_dns_aml_notebooks" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.1.2"
+  version             = "0.2.1"
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -70,7 +70,7 @@ module "private_dns_aml_notebooks" {
 
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = "~> 0.2.0"
+  version             = "0.7.0"
   resource_group_name = azurerm_resource_group.this.name
   subnets = {
     private_endpoints = {

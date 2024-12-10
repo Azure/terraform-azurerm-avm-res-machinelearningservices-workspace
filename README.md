@@ -390,7 +390,7 @@ Default: `{}`
 
 ### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
 
-Description:   A map of private endpoints toutbound rules for the managed network.
+Description:   A map of private endpoints outbound rules for the managed network. **This will be deprecated in favor of the `var.workspace_managed_network.outbound_rules` in a future release. Until then, the final outbound rules of type 'PrivateEndpoint' will be a combination of this variable's value and that of `workspace_managed_network.outbound_rules.private_endpoint`.
 
   - `resource_id` - The resource id for the corresponding private endpoint.
   - `sub_resource_target` - The sub\_resource\_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
@@ -569,13 +569,24 @@ Default: `"Workspace"`
 
 Description: Specifies properties of the workspace's managed virtual network.
 
-Possible values for `isolation_mode` are:
-- 'Disabled': Inbound and outbound traffic is unrestricted _or_ BYO VNet to protect resources.
-- 'AllowInternetOutbound': Allow all internet outbound traffic.
-- 'AllowOnlyApprovedOutbound': Outbound traffic is allowed by specifying service tags.  
-While is possible to update the workspace to enable network isolation ('AllowInternetOutbound' or 'AllowOnlyApprovedOutbound'), it is not possible to disable it on a workspace with it enabled.
-
-`spark_ready` determines whether spark jobs will be run on the network. This value can be updated in the future.
+- `isolation_mode`: While is possible to update the workspace to enable network isolation (going from 'Disabled' to 'AllowInternetOutbound' or 'AllowOnlyApprovedOutbound'), it is not possible to disable it on a workspace with it enabled.
+  - 'Disabled': Inbound and outbound traffic is unrestricted _or_ BYO VNet to protect resources.
+  - 'AllowInternetOutbound': Allow all internet outbound traffic.
+  - 'AllowOnlyApprovedOutbound': Outbound traffic is allowed by specifying service tags.
+- `spark_ready` determines whether spark jobs will be run on the network. This value can be updated in the future.
+- `outbound_rules`:
+  - `fqdn`: A map of FQDN rules. Only valid when `isolation_mode` is 'AllowOnlyApprovedOutbound'. **The inclusion of FQDN rules requires Azure Firewall to be deployed and used and cost will increase accordingly.
+    - `destination`: The allowed host name. Required. Examples: '*.anaconda.com' to install packages, 'pypi.org' to list dependencies, '*.tensorflow.org' for use with TensorFlow examples
+  - `private_endpoint`: A map of Private Endpoint rules.
+    - `resource_id`: The id of the resource with the private endpoint to enable the workspace to communicate with. Required.
+    - `sub_resource_target`: The specific target endpoint for the resource. Some Azure resources have only 1 option, while others will expose multiple. Required.
+    - `spark_enabled`: Whether to the endpoint should be Spark-enabled. This is primarily set 'true' if, and only if, `spark_ready` is true.
+  - `service_tag`: A map of Service Tag rules. Only valid when `isolation_mode` is 'AllowOnlyApprovedOutbound'.
+    - `action`: The networking rule to apply. Available options are 'Allow' or 'Deny'.
+    - `service_tag`: The target service tag.
+    - `address_prefixes`: Optional collection of address prefixes. If provided, `service_tag` will be ignored.
+    - `protocol`: The allowed protocol(s). Valid options dependent on Service Tag.
+    - `port_ranges`: The allow port(s) / port ranges. Valid options dependent on Service Tag.
 
 Type:
 
@@ -583,6 +594,23 @@ Type:
 object({
     isolation_mode = string
     spark_ready    = optional(bool, true)
+    outbound_rules = optional(object({
+      fqdn = optional(map(object({
+        destination = string
+      })), {})
+      private_endpoint = optional(map(object({
+        resource_id         = string
+        sub_resource_target = string
+        spark_enabled       = optional(bool, false)
+      })), {})
+      service_tag = optional(map(object({
+        action           = string
+        service_tag      = string
+        address_prefixes = optional(list(string), null)
+        protocol         = string
+        port_ranges      = string
+      })), {})
+    }), {})
   })
 ```
 

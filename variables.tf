@@ -138,7 +138,6 @@ variable "create_compute_instance" {
 }
 
 # required AVM interfaces
-# tflint-ignore: terraform_unused_declarations
 variable "customer_managed_key" {
   type = object({
     key_vault_resource_id = string

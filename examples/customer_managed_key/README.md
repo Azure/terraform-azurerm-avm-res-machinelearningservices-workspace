@@ -3,17 +3,23 @@
 
 This deploys the module with a public workspace set to be encrypted with a provided customer-managed key.
 
-For encryption:
+Pre-created resources include:
+
 - Key Vault
-- User-assigned identity with access to Key Vault
 - An RSA Key
 
-- An Azure Machine Learning Workspace
-  - Storage Account
-  - Key Vault
-  - App. Insights & Log Analytics Workspace
-  - Encrypted with the RSA key
-  - The user-assigned identity is assigned to the workspace
+The module creates:
+
+- an Azure Machine Learning Workspace
+  - a new Storage Account
+  - new App. Insights & Log Analytics Workspace
+  - The workspace uses the Key Vault pre-created and is encrypted with the pre-created RSA key
+
+To support encryption with a customer-managed key, a Microsoft-managed resource group is created. It is named using the following convention `azureml-rg-<workspace-name>_<random GUID>`. Within it, are the follow resources:
+
+- AI Search Service: Stores indexes that help with querying machine learning content.
+- Cosmos DB Account: Stores job history data, compute metadata, and asset metadata
+- Storage Account: Stores metadata related to Azure Machine Learning pipeline data.
 
 ```hcl
 terraform {
@@ -52,12 +58,6 @@ resource "azurerm_resource_group" "this" {
 
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_user_assigned_identity" "example_identity" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.user_assigned_identity.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-}
-
 locals {
   cosmos_db_id = "a232010e-820c-4083-83bb-3ace5fc29d0b" # **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
 }
@@ -67,7 +67,7 @@ module "avm_res_keyvault_vault" {
   source              = "Azure/avm-res-keyvault-vault/azurerm"
   version             = "~> 0.9.1"
   tenant_id           = data.azurerm_client_config.current.tenant_id
-  name                = "encrypt-${module.naming.key_vault.name_unique}"
+  name                = module.naming.key_vault.name_unique
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
   network_acls = {
@@ -78,11 +78,6 @@ module "avm_res_keyvault_vault" {
     deployment_user_secrets = {
       role_definition_id_or_name = "Key Vault Administrator"
       principal_id               = data.azurerm_client_config.current.object_id
-    }
-
-    customer_managed_key = {
-      role_definition_id_or_name = "Key Vault Crypto Officer"
-      principal_id               = azurerm_user_assigned_identity.example_identity.principal_id
     }
 
     cosmos_db = {
@@ -101,7 +96,7 @@ module "avm_res_keyvault_vault" {
 }
 
 # create a Customer Managed Key for a Storage Account.
-resource "azurerm_key_vault_key" "example" {
+resource "azurerm_key_vault_key" "cmk" {
   key_opts = [
     "decrypt",
     "encrypt",
@@ -135,20 +130,23 @@ module "azureml" {
     }
   }
 
+  key_vault = {
+    create_new  = false
+    resource_id = module.avm_res_keyvault_vault.resource_id
+  }
+
   managed_identities = {
-    system_assigned            = true
-    user_assigned_resource_ids = [azurerm_user_assigned_identity.example_identity.id]
+    system_assigned = true
   }
 
   customer_managed_key = {
-    key_name              = azurerm_key_vault_key.example.name
+    key_name              = azurerm_key_vault_key.cmk.name
     key_vault_resource_id = module.avm_res_keyvault_vault.resource_id
-    user_assigned_identity = {
-      resource_id = azurerm_user_assigned_identity.example_identity.id
-    }
   }
 
   enable_telemetry = var.enable_telemetry
+
+  depends_on = [azurerm_key_vault_key.cmk]
 }
 ```
 
@@ -165,9 +163,8 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_key_vault_key.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) (resource)
+- [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_user_assigned_identity.example_identity](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->

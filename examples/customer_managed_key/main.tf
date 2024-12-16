@@ -35,7 +35,9 @@ resource "azurerm_resource_group" "this" {
 data "azurerm_client_config" "current" {}
 
 locals {
-  cosmos_db_id = "a232010e-820c-4083-83bb-3ace5fc29d0b" # **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
+  cosmos_db_id   = "a232010e-820c-4083-83bb-3ace5fc29d0b"                                                    # **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
+  kv_admin_role  = "/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483" # Key Vault Administrator
+  kv_crypto_role = "/providers/Microsoft.Authorization/roleDefinitions/e147488a-f6f5-4113-8e2d-b22465e65bf6" # Key Vault Crypto Service Encryption User
 }
 
 # create a keyvault for storing the credential with RBAC for the deployment user
@@ -52,12 +54,12 @@ module "avm_res_keyvault_vault" {
 
   role_assignments = {
     deployment_user_secrets = {
-      role_definition_id_or_name = "Key Vault Administrator"
+      role_definition_id_or_name = local.kv_admin_role
       principal_id               = data.azurerm_client_config.current.object_id
     }
 
     cosmos_db = {
-      role_definition_id_or_name       = "Key Vault Crypto Service Encryption User"
+      role_definition_id_or_name       = local.kv_crypto_role
       principal_id                     = local.cosmos_db_id
       skip_service_principal_aad_check = true # because it isn't a traditional SP
     }

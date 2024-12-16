@@ -1,20 +1,29 @@
 <!-- BEGIN_TF_DOCS -->
 # Encryption with customer-managed key
 
-This deploys the module with a public workspace set to be encrypted with a provided customer-managed key.
+This deploys the module with a public workspace assigned to a user-assigned managed identity and encrypted with a provided customer-managed key.
 
 Pre-created resources include:
 
-- Key Vault
-- An RSA Key
+- A Key Vault specifically for encryption
+  - An RSA Key
+  - The Cosmos DB service principal is assigned the Key Vault Crypto Service Encryption User for this Key Vault
+- A user-assigned managed identity
+  - Role assignments scoped to \_resource group\_:
+    - Role Based Access Control Administrator
+    - Storage Account Contributor
+    - Storage Account Blob Owner
+    - Storage File Data Priviledged Contributor
+    - Key Vault Crypto Officer
 
 The module creates:
 
 - New Azure Machine Learning Workspace
   - New Storage Account
   - New instance of App. Insights & a new Log Analytics Workspace
-  - The existing Key Vault is used in place of creating a new one
+  - New Key Vault instance
   - The workspace is encrypted with the pre-created RSA key
+  - The user-assigned managed identity is the _primary user-assigned identity_ for the workspace
 
 To support encryption with a customer-managed key, a Microsoft-managed resource group is created. It is named using the following convention `azureml-rg-<workspace-name>_<random GUID>`. Within it, are the follow resources:
 
@@ -60,9 +69,45 @@ resource "azurerm_resource_group" "this" {
 data "azurerm_client_config" "current" {}
 
 locals {
-  cosmos_db_id   = "a232010e-820c-4083-83bb-3ace5fc29d0b"                                                    # **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
-  kv_admin_role  = "/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483" # Key Vault Administrator
-  kv_crypto_role = "/providers/Microsoft.Authorization/roleDefinitions/e147488a-f6f5-4113-8e2d-b22465e65bf6" # Key Vault Crypto Service Encryption User
+  cosmos_db_id              = "a232010e-820c-4083-83bb-3ace5fc29d0b" # **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
+  key_name                  = module.naming.key_vault_key.name_unique
+  kv_admin_role             = "/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483" # Key Vault Administrator
+  kv_crypto_officer_role    = "/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b7-41b4-b07b-48a6ebf60603" # Key Vault Crypto Officer
+  kv_crypto_role            = "/providers/Microsoft.Authorization/roleDefinitions/e147488a-f6f5-4113-8e2d-b22465e65bf6" # Key Vault Crypto Service Encryption User
+  rbac_admin_role           = "/providers/Microsoft.Authorization/roleDefinitions/f58310d9-a9f6-439a-9e8d-f62e7b41a168"
+  storage_acct_contrib_role = "/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab" # Storage Account Contributor
+  storage_blob_owner_role   = "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b" # Storage Account Blob Owner
+  storage_file_priv_role    = "/providers/Microsoft.Authorization/roleDefinitions/69566ab7-960f-475b-8e7c-b3118f30c6bd" # Storage File Data Priviledged Contributor
+}
+
+resource "azurerm_user_assigned_identity" "cmk" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.user_assigned_identity.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_role_assignment" "storagecontrib" {
+  principal_id       = azurerm_user_assigned_identity.cmk.principal_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = local.storage_acct_contrib_role
+}
+
+resource "azurerm_role_assignment" "blob" {
+  principal_id       = azurerm_user_assigned_identity.cmk.principal_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = local.storage_blob_owner_role
+}
+
+resource "azurerm_role_assignment" "filepriv" {
+  principal_id       = azurerm_user_assigned_identity.cmk.principal_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = local.storage_file_priv_role
+}
+
+resource "azurerm_role_assignment" "crypto" {
+  principal_id       = azurerm_user_assigned_identity.cmk.principal_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = local.kv_crypto_officer_role
 }
 
 # create a keyvault for storing the credential with RBAC for the deployment user
@@ -90,32 +135,26 @@ module "avm_res_keyvault_vault" {
     }
   }
 
-  wait_for_rbac_before_secret_operations = {
-    create = "60s"
+  keys = {
+    encrypt = {
+      name     = local.key_name
+      key_type = "RSA"
+      key_opts = [
+        "decrypt",
+        "encrypt",
+        "sign",
+        "unwrapKey",
+        "verify",
+        "wrapKey"
+      ]
+      key_size = 2048
+    }
   }
+
   wait_for_rbac_before_key_operations = {
-    create = "60s"
+    create = "70s"
   }
 }
-
-# create a Customer Managed Key for a Storage Account.
-resource "azurerm_key_vault_key" "cmk" {
-  key_opts = [
-    "decrypt",
-    "encrypt",
-    "sign",
-    "unwrapKey",
-    "verify",
-    "wrapKey"
-  ]
-  key_type     = "RSA"
-  key_vault_id = module.avm_res_keyvault_vault.resource_id
-  name         = module.naming.key_vault_key.name_unique
-  key_size     = 2048
-
-  depends_on = [module.avm_res_keyvault_vault]
-}
-
 
 # This is the module call
 module "azureml" {
@@ -133,23 +172,26 @@ module "azureml" {
     }
   }
 
-  key_vault = {
-    create_new  = false
-    resource_id = module.avm_res_keyvault_vault.resource_id
-  }
-
   managed_identities = {
-    system_assigned = true
+    system_assigned            = false
+    user_assigned_resource_ids = [azurerm_user_assigned_identity.cmk.id]
   }
 
   customer_managed_key = {
-    key_name              = azurerm_key_vault_key.cmk.name
+    key_name              = local.key_name
     key_vault_resource_id = module.avm_res_keyvault_vault.resource_id
+    user_assigned_identity = {
+      resource_id = azurerm_user_assigned_identity.cmk.id
+    }
+  }
+
+  primary_user_assigned_identity = {
+    resource_id = azurerm_user_assigned_identity.cmk.id
   }
 
   enable_telemetry = var.enable_telemetry
 
-  depends_on = [azurerm_key_vault_key.cmk]
+  depends_on = [module.avm_res_keyvault_vault]
 }
 ```
 
@@ -166,8 +208,12 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_role_assignment.blob](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.crypto](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.filepriv](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_role_assignment.storagecontrib](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_user_assigned_identity.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->

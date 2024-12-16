@@ -9,10 +9,9 @@ Pre-created resources include:
   - The Cosmos DB service principal is assigned the Key Vault Crypto Service Encryption User for this Key Vault
 - A user-assigned managed identity
   - Role assignments scoped to _resource group_:
-    - Role Based Access Control Administrator
     - Storage Account Contributor
     - Storage Account Blob Owner
-    - Storage File Data Priviledged Contributor
+    - Storage File Data Privileged Contributor
     - Key Vault Crypto Officer
 
 The module creates:

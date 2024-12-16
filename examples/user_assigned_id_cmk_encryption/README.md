@@ -10,10 +10,9 @@ Pre-created resources include:
   - The Cosmos DB service principal is assigned the Key Vault Crypto Service Encryption User for this Key Vault
 - A user-assigned managed identity
   - Role assignments scoped to \_resource group\_:
-    - Role Based Access Control Administrator
     - Storage Account Contributor
     - Storage Account Blob Owner
-    - Storage File Data Priviledged Contributor
+    - Storage File Data Privileged Contributor
     - Key Vault Crypto Officer
 
 The module creates:
@@ -74,10 +73,9 @@ locals {
   kv_admin_role             = "/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483" # Key Vault Administrator
   kv_crypto_officer_role    = "/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b7-41b4-b07b-48a6ebf60603" # Key Vault Crypto Officer
   kv_crypto_role            = "/providers/Microsoft.Authorization/roleDefinitions/e147488a-f6f5-4113-8e2d-b22465e65bf6" # Key Vault Crypto Service Encryption User
-  rbac_admin_role           = "/providers/Microsoft.Authorization/roleDefinitions/f58310d9-a9f6-439a-9e8d-f62e7b41a168"
   storage_acct_contrib_role = "/providers/Microsoft.Authorization/roleDefinitions/17d1049b-9a84-46fb-8f53-869881c3d3ab" # Storage Account Contributor
   storage_blob_owner_role   = "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b" # Storage Account Blob Owner
-  storage_file_priv_role    = "/providers/Microsoft.Authorization/roleDefinitions/69566ab7-960f-475b-8e7c-b3118f30c6bd" # Storage File Data Priviledged Contributor
+  storage_file_priv_role    = "/providers/Microsoft.Authorization/roleDefinitions/69566ab7-960f-475b-8e7c-b3118f30c6bd" # Storage File Data Privileged Contributor
 }
 
 resource "azurerm_user_assigned_identity" "cmk" {

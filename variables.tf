@@ -317,6 +317,21 @@ variable "managed_identities" {
   nullable    = false
 }
 
+variable "primary_user_assigned_identity" {
+  type = object({
+    resource_id = optional(string)
+  })
+  default     = {}
+  description = <<DESCRIPTION
+The resource id of the primary user-assigned managed identity for the workspace.
+DESCRIPTION
+
+  validation {
+    condition     = var.managed_identities.system_assigned == true || (length(var.managed_identities.user_assigned_resource_ids) > 0 && var.primary_user_assigned_identity.resource_id != null)
+    error_message = "Required if `var.managed_identities.user_assigned_resource_ids` has one or more values. If `var.managed_identities.system_assigned` is true, this variable is ignored."
+  }
+}
+
 # required AVM interface
 variable "private_endpoints" {
   type = map(object({
@@ -444,7 +459,6 @@ DESCRIPTION
 }
 
 # required AVM interface
-# tflint-ignore: terraform_unused_declarations
 variable "tags" {
   type        = map(string)
   default     = null

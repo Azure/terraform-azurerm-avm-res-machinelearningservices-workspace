@@ -408,6 +408,20 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_primary_user_assigned_identity"></a> [primary\_user\_assigned\_identity](#input\_primary\_user\_assigned\_identity)
+
+Description: The resource id of the primary user-assigned managed identity for the workspace.
+
+Type:
+
+```hcl
+object({
+    resource_id = optional(string)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
 Description: A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.

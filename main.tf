@@ -30,6 +30,7 @@ resource "azapi_resource" "this" {
           keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.cmk[0].id : "${data.azurerm_key_vault_key.cmk[0].versionless_id}/${var.customer_managed_key.key_version}"
         }
       } : null
+      primaryUserAssignedIdentity = var.managed_identities.system_assigned == true ? "" : var.primary_user_assigned_identity.resource_id
     }
     kind = var.kind
   }
@@ -45,9 +46,6 @@ resource "azapi_resource" "this" {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids
     }
-  }
-  timeouts {
-    create = var.customer_managed_key != null ? "45m" : "20m"
   }
 
   lifecycle {
@@ -91,6 +89,7 @@ resource "azapi_resource" "hub" {
           keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.cmk[0].id : "${data.azurerm_key_vault_key.cmk[0].versionless_id}/${var.customer_managed_key.key_version}"
         }
       } : null
+      primaryUserAssignedIdentity = var.managed_identities.system_assigned == true ? "" : var.primary_user_assigned_identity.resource_id
     }
     kind = var.kind
   }
@@ -200,7 +199,7 @@ resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments
 
   principal_id                           = each.value.principal_id
-  scope                                  = var.resource_group_name
+  scope                                  = local.aml_resource.id
   condition                              = each.value.condition
   condition_version                      = each.value.condition_version
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id

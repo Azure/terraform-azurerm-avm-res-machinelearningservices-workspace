@@ -22,12 +22,12 @@ resource "azapi_resource" "this" {
       }
       encryption = var.customer_managed_key != null ? {
         status = "Enabled" # the other option is Disabled
-        identity = {
+        identity = var.customer_managed_key.user_assigned_identity != null ? {
           userAssignedIdentity = var.customer_managed_key.user_assigned_identity.resource_id
-        }
+        } : null
         keyVaultProperties = {
           keyVaultArmId = var.customer_managed_key.key_vault_resource_id
-          keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.this[0].id : "${data.azurerm_key_vault_key.this[0].versionless_id}/${var.customer_managed_key.key_version}"
+          keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.cmk[0].id : "${data.azurerm_key_vault_key.cmk[0].versionless_id}/${var.customer_managed_key.key_version}"
         }
       } : null
     }
@@ -83,12 +83,12 @@ resource "azapi_resource" "hub" {
       }
       encryption = var.customer_managed_key != null ? {
         status = "Enabled" # the other option is Disabled
-        identity = {
+        identity = var.customer_managed_key.user_assigned_identity != null ? {
           userAssignedIdentity = var.customer_managed_key.user_assigned_identity.resource_id
-        }
+        } : null
         keyVaultProperties = {
           keyVaultArmId = var.customer_managed_key.key_vault_resource_id
-          keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.this[0].id : "${data.azurerm_key_vault_key.this[0].versionless_id}/${var.customer_managed_key.key_version}"
+          keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.cmk[0].id : "${data.azurerm_key_vault_key.cmk[0].versionless_id}/${var.customer_managed_key.key_version}"
         }
       } : null
     }
@@ -106,9 +106,6 @@ resource "azapi_resource" "hub" {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids
     }
-  }
-  timeouts {
-    create = var.customer_managed_key != null ? "45m" : "20m"
   }
 
   lifecycle {

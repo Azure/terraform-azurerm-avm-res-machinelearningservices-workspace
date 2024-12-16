@@ -85,27 +85,10 @@ module "avm_res_storage_storageaccount" {
     }]
   }
 
-  role_assignments = (var.is_private && var.aiservices.create_service_connection && var.customer_managed_key != null) ? {
+  role_assignments = (var.is_private && var.aiservices.create_service_connection) ? {
     "aiservices" = {
       role_definition_id_or_name       = "Storage Blob Data Contributor"
       principal_id                     = local.ai_services.identity.principalId
-      skip_service_principal_aad_check = true
-    }
-    "customerManagedKey" = {
-      role_definition_id_or_name       = "Storage Blob Data Contributor"
-      principal_id                     = data.azurerm_user_assigned_identity.cmk.principal_id
-      skip_service_principal_aad_check = true
-    }
-    } : (var.is_private && var.aiservices.create_service_connection) ? {
-    "aiservices" = {
-      role_definition_id_or_name       = "Storage Blob Data Contributor"
-      principal_id                     = local.ai_services.identity.principalId
-      skip_service_principal_aad_check = true
-    }
-    } : var.customer_managed_key != null ? {
-    "customerManagedKey" = {
-      role_definition_id_or_name       = "Storage Blob Data Contributor"
-      principal_id                     = data.azurerm_user_assigned_identity.cmk.principal_id
       skip_service_principal_aad_check = true
     }
   } : {}
@@ -113,6 +96,4 @@ module "avm_res_storage_storageaccount" {
   tags = var.storage_account.tags == null ? var.tags : var.storage_account.tags == {} ? {} : var.storage_account.tags
 
   count = var.storage_account.create_new ? 1 : 0
-
-  depends_on = [data.azurerm_user_assigned_identity.cmk]
 }

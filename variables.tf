@@ -302,7 +302,6 @@ DESCRIPTION
 }
 
 # required AVM interface
-# tflint-ignore: terraform_unused_declarations
 variable "managed_identities" {
   type = object({
     system_assigned            = optional(bool, false)

@@ -11,13 +11,12 @@ data "azurerm_key_vault_key" "cmk" {
   name         = var.customer_managed_key.key_name
 }
 
-locals {
-  cmk_user = var.customer_managed_key == null || var.customer_managed_key.user_assigned_identity == null ? null : provider::azapi::parse_resource_id("Microsoft.ManagedIdentity/userAssignedIdentities", var.customer_managed_key.user_assigned_identity.resource_id)
-}
-
+# tflint-ignore: terraform_comment_syntax
 data "azurerm_user_assigned_identity" "cmk" {
   count = var.customer_managed_key == null || var.customer_managed_key.user_assigned_identity == null ? 0 : 1
 
-  name                = local.cmk_user.name
+  name = try(
+    provider::azapi::parse_resource_id("Microsoft.ManagedIdentity/userAssignedIdentities", var.customer_managed_key.user_assigned_identity.resource_id),
+  "")
   resource_group_name = var.resource_group_name
 }

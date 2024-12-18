@@ -112,7 +112,7 @@ variable "container_registry" {
   }
   description = <<DESCRIPTION
 An object describing the Container Registry. This includes the following properties:
-- `resource_id` - The resource ID of an existing Container Registry, set to null if a new Container Registry should be created.
+- `resource_id` - The resource ID of an existing Container Registry, if desired.
 - `create_new` -  A flag indicating if a new resource must be created.
 - `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
@@ -123,6 +123,8 @@ An object describing the Container Registry. This includes the following propert
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 - `tags` - (Optional) Tags for new Container Registry resource.
 - `zone_redundant` - (Optional) A flag indicating whether to enable zone redundancy.
+
+> Note: This module does not support creating a container registry encrypted with customer-managed keys. Please create one beforehand and supply the `resource_id`.
 DESCRIPTION
 
   validation {
@@ -319,15 +321,16 @@ variable "managed_identities" {
 
 variable "primary_user_assigned_identity" {
   type = object({
-    resource_id = optional(string)
+    resource_id = optional(string, null)
   })
   default     = {}
   description = <<DESCRIPTION
 The resource id of the primary user-assigned managed identity for the workspace.
 DESCRIPTION
+  nullable    = false
 
   validation {
-    condition     = var.managed_identities.system_assigned == true || (length(var.managed_identities.user_assigned_resource_ids) > 0 && var.primary_user_assigned_identity.resource_id != null)
+    condition     = var.primary_user_assigned_identity.resource_id != null || (var.managed_identities.system_assigned == true || length(var.managed_identities.user_assigned_resource_ids) == 0)
     error_message = "Required if `var.managed_identities.user_assigned_resource_ids` has one or more values. If `var.managed_identities.system_assigned` is true, this variable is ignored."
   }
 }
@@ -418,7 +421,12 @@ DESCRIPTION
 variable "storage_access_type" {
   type        = string
   default     = "identity"
-  description = "The auth mode used for accessing the system datastores of the workspace - accessKey or identity."
+  description = "The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'."
+
+  validation {
+    condition     = contains(["accessKey", "identity"], var.storage_access_type)
+    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
+  }
 }
 
 variable "storage_account" {
@@ -441,7 +449,8 @@ variable "storage_account" {
   }
   description = <<DESCRIPTION
 An object describing the Storage Account. This includes the following properties:
-- `resource_id` - The resource ID of an existing Storage Account, set to null if a new Storage Account should be created.
+- `create_new` - Required. If 'false', `resource_id` is required.
+- `resource_id` - The resource ID of an existing Storage Account.
 - `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -450,6 +459,8 @@ An object describing the Storage Account. This includes the following properties
   - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
   - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
 - `tags` - (Optional) Tags for the Storage Account resource.
+
+> Note: This module does not support creating a storage account encrypted with customer-managed keys. Please create one beforehand and supply the `resource_id`.
 DESCRIPTION
 
   validation {

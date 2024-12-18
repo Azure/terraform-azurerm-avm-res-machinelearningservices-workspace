@@ -1,7 +1,7 @@
 module "avm_res_containerregistry_registry" {
   source = "Azure/avm-res-containerregistry-registry/azurerm"
 
-  version = "< 0.4.0"
+  version = "~> 0.3"
 
   name                          = replace("acr${var.name}", "-", "")
   location                      = var.location

@@ -6,6 +6,51 @@ locals {
   container_registry_id      = var.container_registry.create_new ? module.avm_res_containerregistry_registry[0].resource_id : var.container_registry.resource_id
   key_vault_id               = replace(var.key_vault.create_new ? module.avm_res_keyvault_vault[0].resource_id : var.key_vault.resource_id, "Microsoft.KeyVault", "Microsoft.Keyvault")
   log_analytics_workspace_id = var.application_insights.log_analytics_workspace.create_new ? module.avm_res_log_analytics_workspace[0].resource_id : var.application_insights.log_analytics_workspace.resource_id
+  # merge outbound rules into a single map
+  outbound_rules = merge(
+    {
+      for key, rule in var.workspace_managed_network.outbound_rules.fqdn :
+      key => {
+        type        = "FQDN"
+        destination = rule.destination
+      }
+    },
+    {
+      for key, rule in var.outbound_rules :
+      key => {
+        type = "PrivateEndpoint"
+        destination = {
+          serviceResourceId = rule.resource_id
+          subresourceTarget = rule.sub_resource_target
+          sparkEnabled      = false
+          sparkStatus       = "Inactive"
+        }
+      }
+    },
+    {
+      for key, rule in var.workspace_managed_network.outbound_rules.private_endpoint :
+      key => {
+        type = "PrivateEndpoint"
+        destination = {
+          serviceResourceId = rule.resource_id
+          sparkEnabled      = rule.spark_enabled
+          subresourceTarget = rule.sub_resource_target
+        }
+      }
+    },
+    {
+      for key, rule in var.workspace_managed_network.outbound_rules.service_tag :
+      key => {
+        type = "ServiceTag"
+        destination = {
+          action          = rule.action
+          addressPrefixes = rule.address_prefixes
+          portRanges      = rule.port_ranges
+          protocol        = rule.protocol
+          serviceTag      = rule.service_tag
+        }
+      }
+  })
   # application_insights_id = replace(azurerm_application_insights.this.id, "Microsoft.Insights", "Microsoft.insights")
   # Private endpoint application security group associations.
   # We merge the nested maps from private endpoints and application security group associations into a single map.

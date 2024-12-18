@@ -133,8 +133,13 @@ resource "azapi_resource" "project" {
   name      = "aihubproject-${var.name}"
   parent_id = data.azurerm_resource_group.current.id
 
-  identity {
-    type = "SystemAssigned"
+  dynamic "identity" {
+    for_each = local.managed_identities
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
+    }
   }
 }
 

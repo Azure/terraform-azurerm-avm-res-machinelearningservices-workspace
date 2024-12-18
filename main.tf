@@ -20,6 +20,17 @@ resource "azapi_resource" "this" {
         }
         outboundRules = local.outbound_rules
       }
+      encryption = var.customer_managed_key != null ? {
+        status = "Enabled" # the other option is Disabled
+        identity = var.customer_managed_key.user_assigned_identity != null ? {
+          userAssignedIdentity = var.customer_managed_key.user_assigned_identity.resource_id
+        } : null
+        keyVaultProperties = {
+          keyVaultArmId = var.customer_managed_key.key_vault_resource_id
+          keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.cmk[0].id : "${data.azurerm_key_vault_key.cmk[0].versionless_id}/${var.customer_managed_key.key_version}"
+        }
+      } : null
+      primaryUserAssignedIdentity = var.managed_identities.system_assigned == true ? "" : var.primary_user_assigned_identity.resource_id
     }
     kind = var.kind
   }
@@ -28,8 +39,21 @@ resource "azapi_resource" "this" {
   parent_id = data.azurerm_resource_group.current.id
   tags      = var.tags
 
-  identity {
-    type = "SystemAssigned"
+  dynamic "identity" {
+    for_each = local.managed_identities
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      # When the service connections for CognitiveServices are created, 
+      # tags are added to this resource
+      tags,
+    ]
   }
 }
 
@@ -55,6 +79,17 @@ resource "azapi_resource" "hub" {
         }
         outboundRules = local.outbound_rules
       }
+      encryption = var.customer_managed_key != null ? {
+        status = "Enabled" # the other option is Disabled
+        identity = var.customer_managed_key.user_assigned_identity != null ? {
+          userAssignedIdentity = var.customer_managed_key.user_assigned_identity.resource_id
+        } : null
+        keyVaultProperties = {
+          keyVaultArmId = var.customer_managed_key.key_vault_resource_id
+          keyIdentifier = var.customer_managed_key.key_version == null ? data.azurerm_key_vault_key.cmk[0].id : "${data.azurerm_key_vault_key.cmk[0].versionless_id}/${var.customer_managed_key.key_version}"
+        }
+      } : null
+      primaryUserAssignedIdentity = var.managed_identities.system_assigned == true ? "" : var.primary_user_assigned_identity.resource_id
     }
     kind = var.kind
   }
@@ -63,8 +98,13 @@ resource "azapi_resource" "hub" {
   parent_id = data.azurerm_resource_group.current.id
   tags      = var.tags
 
-  identity {
-    type = "SystemAssigned"
+  dynamic "identity" {
+    for_each = local.managed_identities
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
+    }
   }
 
   lifecycle {
@@ -93,8 +133,13 @@ resource "azapi_resource" "project" {
   name      = "aihubproject-${var.name}"
   parent_id = data.azurerm_resource_group.current.id
 
-  identity {
-    type = "SystemAssigned"
+  dynamic "identity" {
+    for_each = local.managed_identities
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
+    }
   }
 }
 
@@ -159,7 +204,7 @@ resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments
 
   principal_id                           = each.value.principal_id
-  scope                                  = var.resource_group_name
+  scope                                  = local.aml_resource.id
   condition                              = each.value.condition
   condition_version                      = each.value.condition_version
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id

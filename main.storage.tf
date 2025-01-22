@@ -1,6 +1,6 @@
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.1"
+  version = "~> 0.3"
 
   enable_telemetry              = var.enable_telemetry
   name                          = replace("sa${var.name}", "-", "")

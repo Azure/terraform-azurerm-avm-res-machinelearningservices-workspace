@@ -133,12 +133,6 @@ DESCRIPTION
   }
 }
 
-variable "create_compute_instance" {
-  type        = bool
-  default     = false
-  description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet."
-}
-
 # required AVM interfaces
 variable "customer_managed_key" {
   type = object({
@@ -416,17 +410,6 @@ A map of role assignments to create on this resource. The map key is deliberatel
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
-}
-
-variable "storage_access_type" {
-  type        = string
-  default     = "identity"
-  description = "The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'."
-
-  validation {
-    condition     = contains(["accessKey", "identity"], var.storage_access_type)
-    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
-  }
 }
 
 variable "storage_account" {

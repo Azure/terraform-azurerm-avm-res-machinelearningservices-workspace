@@ -213,7 +213,7 @@ Default:
 
 ### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
 
-Description: Specifies whether a compute instance should be created for the workspace to provision the managed vnet.
+Description: Specifies whether a compute instance should be created for the workspace to provision the managed vnet. **Due to the complexity of compute instances and to prevent setting precedent that compute provisioning will be included in this module, this will be deprecated in a future release.
 
 Type: `bool`
 
@@ -512,7 +512,7 @@ Default: `{}`
 
 ### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
 
-Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'.
+Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
 
 Type: `string`
 

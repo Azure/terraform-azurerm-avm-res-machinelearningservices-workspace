@@ -10,13 +10,13 @@ This specifically includes:
 - 1 Azure VNet
   - subnet named "private\_endpoints"
 - 6 private DNS zones linked to the VNet
-  - "privatelink.api.azureml.ms" for the AI Studio Hub
-  - "privatelink.notebooks.azure.net" for the AI Studio Hub
+  - "privatelink.api.azureml.ms" for the AI Foundry Hub
+  - "privatelink.notebooks.azure.net" for the AI Foundry Hub
   - "privatelink.vaultcore.azure.net" for Key Vault
   - "privatelink.blob.core.windows.net" for Storage Account (blob)
   - "privatelink.file.core.windows.net" for Storage Account (file)
   - "privatelink.azurecr.io" for Container Registry
-- AI Hub workspace (private)
+- AI Foundry Hub workspace (private)
   - 1 private endpoint in the "private\_endpoints" subnet referencing both "privatelink.api.azureml.ms" and "privatelink.notebooks.azure.net" DNS zones
 - Storage Account (private)
   -  1 private endpoint in the "private\_endpoints" subnet referencing the "privatelink.blob.core.windows.net" DNS zone and

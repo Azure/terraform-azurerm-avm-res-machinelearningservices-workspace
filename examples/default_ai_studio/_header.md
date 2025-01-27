@@ -1,8 +1,8 @@
-# Default AI Studio example
+# Default AI Foundry example
 
 This deploys the module in its simplest form:
 
-- AI Studio hub (public access)
+- AI Foundry hub (public access)
 - Storage Account
 - Key Vault
 - AI Services

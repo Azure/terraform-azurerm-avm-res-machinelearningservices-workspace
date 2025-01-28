@@ -223,6 +223,12 @@ variable "is_private" {
   description = "Specifies if every provisioned resource should be private and inaccessible from the Internet."
 }
 
+variable use_managed_key_vault {
+  # only applicable to AI Hub, that is when kind is Hub
+  type        = bool
+  default     = false
+  description = "Specifies if the module should use a managed key vault."
+}
 variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
@@ -238,7 +244,9 @@ variable "key_vault" {
     tags = optional(map(string), null)
   })
   default = {
+    # only applicable to AI Hub, that is when kind is Hub, check the use_managed_key_vault variable
     create_new = true
+    # create_new = var.use_managed_key_vault
   }
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:

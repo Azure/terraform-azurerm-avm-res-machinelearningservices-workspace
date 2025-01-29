@@ -232,7 +232,7 @@ variable use_managed_key_vault {
 variable "key_vault" {
   type = object({
     resource_id = optional(string, null)
-    create_new  = bool
+    create_new  = optional(bool,true)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -243,11 +243,12 @@ variable "key_vault" {
     })), {})
     tags = optional(map(string), null)
   })
-  default = {
-    # only applicable to AI Hub, that is when kind is Hub, check the use_managed_key_vault variable
-    create_new = true
-    # create_new = var.use_managed_key_vault
-  }
+  default = null
+  # default = {
+  #   # only applicable to AI Hub, that is when kind is Hub, check the use_managed_key_vault variable
+  #   create_new = true
+  #   # create_new = !var.use_managed_key_vault
+  # }
   description = <<DESCRIPTION
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
@@ -263,7 +264,9 @@ An object describing the Key Vault to create the private endpoint connection to.
 DESCRIPTION
 
   validation {
-    condition     = !(var.key_vault.create_new && var.key_vault.resource_id != null)
+    # condition     = (var.use_managed_key_vault) || (!(var.key_vault.create_new && var.key_vault.resource_id != null))
+    # condition = var.use_managed_key_vault || !var.key_vault.create_new || var.key_vault.resource_id == null
+    condition = var.use_managed_key_vault ? true:  ( !var.key_vault.create_new || var.key_vault.resource_id == null)
     error_message = "When creating a new Key Vault, `resource_id` must be null."
   }
 }

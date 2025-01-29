@@ -4,7 +4,12 @@ locals {
   aml_resource               = var.kind == "Default" ? azapi_resource.this[0] : var.kind == "Hub" ? azapi_resource.hub[0] : azapi_resource.project[0]
   application_insights_id    = var.application_insights.create_new || var.application_insights.resource_id != null ? replace(var.application_insights.create_new ? module.avm_res_insights_component[0].resource_id : var.application_insights.resource_id, "Microsoft.Insights", "Microsoft.insights") : null
   container_registry_id      = var.container_registry.create_new ? module.avm_res_containerregistry_registry[0].resource_id : var.container_registry.resource_id
-  key_vault_id               = replace(var.key_vault.create_new ? module.avm_res_keyvault_vault[0].resource_id : var.key_vault.resource_id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+  # key_vault_id               = replace(var.key_vault.create_new ? module.avm_res_keyvault_vault[0].resource_id : var.key_vault.resource_id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+  key_vault_id = var.use_managed_key_vault ? null : replace(
+  var.key_vault.create_new ? module.avm_res_keyvault_vault[0].resource_id : var.key_vault.resource_id,
+  "Microsoft.KeyVault",
+  "Microsoft.Keyvault"
+)
   log_analytics_workspace_id = var.application_insights.log_analytics_workspace.create_new ? module.avm_res_log_analytics_workspace[0].resource_id : var.application_insights.log_analytics_workspace.resource_id
   # application_insights_id = replace(azurerm_application_insights.this.id, "Microsoft.Insights", "Microsoft.insights")
   managed_identities = {

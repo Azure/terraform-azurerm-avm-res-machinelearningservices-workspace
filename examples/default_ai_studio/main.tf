@@ -47,7 +47,8 @@ module "aihub" {
   name                    = local.name
   resource_group_name     = azurerm_resource_group.this.name
   kind                    = "Hub"
-  use_managed_key_vault = true
+  # key_vault = {create_new = true}
+  key_vault = {use_microsoft_managed_key_vault = true}
   workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "Disabled"

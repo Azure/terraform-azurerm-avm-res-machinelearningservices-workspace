@@ -257,10 +257,9 @@ An object describing the Key Vault to create the private endpoint connection to.
 DESCRIPTION
 
   validation {
-    # condition     = (var.use_managed_key_vault) || (!(var.key_vault.create_new && var.key_vault.resource_id != null))
-    # condition = var.use_managed_key_vault || !var.key_vault.create_new || var.key_vault.resource_id == null
-    condition = var.key_vault.use_microsoft_managed_key_vault ? true:  ( !var.key_vault.create_new || var.key_vault.resource_id == null)
-    error_message = "When creating a new Key Vault, `resource_id` must be null."
+    # either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id
+    condition     = (var.key_vault.use_microsoft_managed_key_vault ? 1 : 0) +(var.key_vault.create_new ? 1 : 0) +(var.key_vault.resource_id != null ? 1 : 0) == 1
+    error_message = " Either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id"
   }
   validation {
     # use_microsoft_managed_key_vault can only be used when kind is Hub

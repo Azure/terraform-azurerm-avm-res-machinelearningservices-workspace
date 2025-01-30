@@ -32,7 +32,7 @@ To support encryption with a customer-managed key, a Microsoft-managed resource 
 
 ```hcl
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -206,7 +206,7 @@ module "azureml" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 4.0.0)
 

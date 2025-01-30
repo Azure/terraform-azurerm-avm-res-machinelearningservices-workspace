@@ -5,7 +5,7 @@ This deploys a public AI Studio Hub using existing resources. The resource group
 
 ```hcl
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azapi = {
       source  = "Azure/azapi"
@@ -140,7 +140,7 @@ module "aihub" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 

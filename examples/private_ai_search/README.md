@@ -5,11 +5,11 @@ This provisions Azure AI Search Service and deploys a private Azure Machine Lear
 
 ```hcl
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.116.0, < 4.0.0"
+      version = "~> 4.0"
     }
   }
 }
@@ -47,7 +47,7 @@ resource "azurerm_resource_group" "this" {
 
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = "0.7.0"
+  version             = "~> 0.7"
   resource_group_name = azurerm_resource_group.this.name
   subnets = {
     private_endpoints = {
@@ -65,7 +65,7 @@ module "virtual_network" {
 
 module "private_dns_aml_api" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -80,7 +80,7 @@ module "private_dns_aml_api" {
 
 module "private_dns_aml_notebooks" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -95,7 +95,7 @@ module "private_dns_aml_notebooks" {
 
 module "private_dns_keyvault_vault" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -110,7 +110,7 @@ module "private_dns_keyvault_vault" {
 
 module "private_dns_storageaccount_blob" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -125,7 +125,7 @@ module "private_dns_storageaccount_blob" {
 
 module "private_dns_storageaccount_file" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.file.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -140,7 +140,7 @@ module "private_dns_storageaccount_file" {
 
 module "private_dns_containerregistry_registry" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.azurecr.io"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -155,7 +155,7 @@ module "private_dns_containerregistry_registry" {
 
 module "private_dns_aisearch" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.search.windows.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -170,7 +170,7 @@ module "private_dns_aisearch" {
 
 module "aisearch" {
   source                        = "Azure/avm-res-search-searchservice/azurerm"
-  version                       = "0.1.3"
+  version                       = "0.1.5"
   location                      = var.location
   name                          = module.naming.search_service.name_unique
   resource_group_name           = azurerm_resource_group.this.name
@@ -284,9 +284,9 @@ module "azureml" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
@@ -345,7 +345,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-search-searchservice/azurerm
 
-Version: 0.1.3
+Version: 0.1.5
 
 ### <a name="module_azureml"></a> [azureml](#module\_azureml)
 
@@ -363,43 +363,43 @@ Version: ~> 0.4
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_containerregistry_registry"></a> [private\_dns\_containerregistry\_registry](#module\_private\_dns\_containerregistry\_registry)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_keyvault_vault"></a> [private\_dns\_keyvault\_vault](#module\_private\_dns\_keyvault\_vault)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_storageaccount_blob"></a> [private\_dns\_storageaccount\_blob](#module\_private\_dns\_storageaccount\_blob)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_storageaccount_file"></a> [private\_dns\_storageaccount\_file](#module\_private\_dns\_storageaccount\_file)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
@@ -411,7 +411,7 @@ Version: ~> 0.3
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: 0.7.0
+Version: ~> 0.7
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

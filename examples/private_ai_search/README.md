@@ -170,7 +170,7 @@ module "private_dns_aisearch" {
 
 module "aisearch" {
   source                        = "Azure/avm-res-search-searchservice/azurerm"
-  version                       = "0.1.4"
+  version                       = "0.1.5"
   location                      = var.location
   name                          = module.naming.search_service.name_unique
   resource_group_name           = azurerm_resource_group.this.name
@@ -345,7 +345,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-search-searchservice/azurerm
 
-Version: 0.1.4
+Version: 0.1.5
 
 ### <a name="module_azureml"></a> [azureml](#module\_azureml)
 

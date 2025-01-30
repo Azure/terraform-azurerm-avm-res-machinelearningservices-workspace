@@ -31,11 +31,11 @@ This will create an Azure Machine Learning Workspace.
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (0.3.2)
 
@@ -699,7 +699,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: < 0.4.0
+Version: ~> 0.4
 
 ### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
 
@@ -711,19 +711,19 @@ Version: ~> 0.1
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: ~> 0.9.1
+Version: ~> 0.9
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 
 Source: Azure/avm-res-operationalinsights-workspace/azurerm
 
-Version: ~> 0.4.2
+Version: ~> 0.4
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: ~> 0.3
+Version: ~> 0.4
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

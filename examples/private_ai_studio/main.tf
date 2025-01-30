@@ -1,9 +1,9 @@
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.116.0, < 4.0.0"
+      version = "~> 4.0"
     }
   }
 }
@@ -37,7 +37,7 @@ locals {
 
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = "0.7.0"
+  version             = "~> 0.7"
   resource_group_name = azurerm_resource_group.this.name
   subnets = {
     private_endpoints = {
@@ -55,7 +55,7 @@ module "virtual_network" {
 
 module "private_dns_aml_api" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -70,7 +70,7 @@ module "private_dns_aml_api" {
 
 module "private_dns_aml_notebooks" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -85,7 +85,7 @@ module "private_dns_aml_notebooks" {
 
 module "private_dns_keyvault_vault" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -100,7 +100,7 @@ module "private_dns_keyvault_vault" {
 
 module "private_dns_storageaccount_blob" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -115,7 +115,7 @@ module "private_dns_storageaccount_blob" {
 
 module "private_dns_storageaccount_file" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.file.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -130,7 +130,7 @@ module "private_dns_storageaccount_file" {
 
 module "private_dns_containerregistry_registry" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.azurecr.io"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {

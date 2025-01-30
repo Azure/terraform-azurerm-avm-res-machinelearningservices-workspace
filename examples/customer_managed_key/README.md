@@ -32,11 +32,11 @@ To support encryption with a customer-managed key, a Microsoft-managed resource 
 
 ```hcl
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.116.0, < 4.0.0"
+      version = "~> 4.0"
     }
   }
 }
@@ -82,7 +82,7 @@ resource "azurerm_role_assignment" "crypto" {
 # create a keyvault for storing the credential with RBAC for the deployment user
 module "avm_res_keyvault_vault" {
   source              = "Azure/avm-res-keyvault-vault/azurerm"
-  version             = "~> 0.9.1"
+  version             = "~> 0.9"
   tenant_id           = data.azurerm_client_config.current.tenant_id
   name                = module.naming.key_vault.name_unique
   resource_group_name = azurerm_resource_group.this.name
@@ -134,7 +134,7 @@ resource "azurerm_key_vault_key" "cmk" {
 
 module "avm_res_storage_storageaccount" {
   source                        = "Azure/avm-res-storage-storageaccount/azurerm"
-  version                       = "~> 0.3.0"
+  version                       = "~> 0.3"
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.storage_account.name_unique
   resource_group_name           = azurerm_resource_group.this.name
@@ -206,9 +206,9 @@ module "azureml" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
@@ -263,13 +263,13 @@ The following Modules are called:
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: ~> 0.9.1
+Version: ~> 0.9
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: ~> 0.3.0
+Version: ~> 0.3
 
 ### <a name="module_azureml"></a> [azureml](#module\_azureml)
 

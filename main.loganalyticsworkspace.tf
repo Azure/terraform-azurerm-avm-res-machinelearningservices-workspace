@@ -1,6 +1,6 @@
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "~> 0.4.2"
+  version = "~> 0.4"
 
   enable_telemetry    = var.enable_telemetry
   location            = var.location

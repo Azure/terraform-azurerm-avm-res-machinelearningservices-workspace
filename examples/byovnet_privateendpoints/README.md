@@ -10,11 +10,11 @@ This deploys a VNet and the module with private endpoints:
 
 ```hcl
 terraform {
-  required_version = "~> 1.9"
+  required_version = ">= 1.9, < 2.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.116.0, < 4.0.0"
+      version = "~> 4.0"
     }
   }
 }
@@ -52,7 +52,7 @@ resource "azurerm_resource_group" "this" {
 
 module "private_dns_aml_api" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -66,7 +66,7 @@ module "private_dns_aml_api" {
 }
 module "private_dns_aml_notebooks" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
-  version             = "0.2.1"
+  version             = "~> 0.2"
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
@@ -81,7 +81,7 @@ module "private_dns_aml_notebooks" {
 
 module "virtual_network" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = "0.7.0"
+  version             = "~> 0.7"
   resource_group_name = azurerm_resource_group.this.name
   subnets = {
     private_endpoints = {
@@ -140,9 +140,9 @@ module "azureml" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 4.0.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
@@ -213,13 +213,13 @@ Version: ~> 0.3
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.2.1
+Version: ~> 0.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
@@ -231,7 +231,7 @@ Version: ~> 0.3
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: 0.7.0
+Version: ~> 0.7
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

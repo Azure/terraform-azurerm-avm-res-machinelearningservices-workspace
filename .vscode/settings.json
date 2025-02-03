@@ -1,5 +1,6 @@
 {
   "editor.bracketPairColorization.enabled": true,
   "editor.tabSize": 2,
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "makefile.configureOnOpen": false
 }

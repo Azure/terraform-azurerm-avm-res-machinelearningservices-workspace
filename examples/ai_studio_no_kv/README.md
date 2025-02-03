@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# AI Foundry with Managed Microsoft Key Vault example
+# Default AI Foundry example
 
-This deploys the module in its simplest form with no Key Vault where the AI foundry uses a Microsoft managed key vault:
+This deploys the module in its simplest form:
 
 - AI Foundry hub (public access)
 - Storage Account
@@ -58,7 +58,7 @@ module "aihub" {
   resource_group_name     = azurerm_resource_group.this.name
   kind                    = "Hub"
   key_vault = {use_microsoft_managed_key_vault = true,
-              create_new = false}
+   create_new = false}
   workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "Disabled"

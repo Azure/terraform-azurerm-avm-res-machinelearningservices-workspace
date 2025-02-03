@@ -225,8 +225,8 @@ variable "is_private" {
 
 variable "key_vault" {
   type = object({
-    resource_id = optional(string, null)
-    create_new  = optional(bool,true)
+    resource_id                     = optional(string, null)
+    create_new                      = optional(bool, true)
     use_microsoft_managed_key_vault = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
@@ -258,7 +258,7 @@ DESCRIPTION
 
   validation {
     # either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id
-    condition     = (var.key_vault.use_microsoft_managed_key_vault ? 1 : 0) +(var.key_vault.create_new ? 1 : 0) +(var.key_vault.resource_id != null ? 1 : 0) == 1
+    condition     = (var.key_vault.use_microsoft_managed_key_vault ? 1 : 0) + (var.key_vault.create_new ? 1 : 0) + (var.key_vault.resource_id != null ? 1 : 0) == 1
     error_message = " Either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id"
   }
   validation {

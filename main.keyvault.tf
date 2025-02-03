@@ -29,5 +29,5 @@ module "avm_res_keyvault_vault" {
   tags = var.key_vault.tags == null ? var.tags : var.key_vault.tags == {} ? {} : var.key_vault.tags
 
 
-  count =  var.key_vault.use_microsoft_managed_key_vault ? 0 : (var.key_vault.create_new ? 1 : 0)
+  count = var.key_vault.use_microsoft_managed_key_vault ? 0 : (var.key_vault.create_new ? 1 : 0)
 }

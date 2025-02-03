@@ -322,8 +322,8 @@ Type:
 
 ```hcl
 object({
-    resource_id = optional(string, null)
-    create_new  = optional(bool,true)
+    resource_id                     = optional(string, null)
+    create_new                      = optional(bool, true)
     use_microsoft_managed_key_vault = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)

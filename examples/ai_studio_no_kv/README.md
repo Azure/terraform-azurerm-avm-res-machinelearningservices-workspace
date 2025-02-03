@@ -53,12 +53,12 @@ module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location                = azurerm_resource_group.this.location
-  name                    = local.name
-  resource_group_name     = azurerm_resource_group.this.name
-  kind                    = "Hub"
-  key_vault = {use_microsoft_managed_key_vault = true,
-   create_new = false}
+  location            = azurerm_resource_group.this.location
+  name                = local.name
+  resource_group_name = azurerm_resource_group.this.name
+  kind                = "Hub"
+  key_vault = { use_microsoft_managed_key_vault = true,
+  create_new = false }
   workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "Disabled"

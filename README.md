@@ -308,6 +308,7 @@ Default: `false`
 Description: An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
 - `create_new` -  A flag indicating if a new resource must be created.
+- `use_microsoft_managed_key_vault` - A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Foundry (Hub).
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -322,7 +323,8 @@ Type:
 ```hcl
 object({
     resource_id = optional(string, null)
-    create_new  = bool
+    create_new  = optional(bool,true)
+    use_microsoft_managed_key_vault = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)

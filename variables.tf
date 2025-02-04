@@ -225,8 +225,9 @@ variable "is_private" {
 
 variable "key_vault" {
   type = object({
-    resource_id = optional(string, null)
-    create_new  = bool
+    resource_id                     = optional(string, null)
+    create_new                      = optional(bool, true)
+    use_microsoft_managed_key_vault = optional(bool, false)
     private_endpoints = optional(map(object({
       name                            = optional(string, null)
       subnet_resource_id              = optional(string, null)
@@ -244,6 +245,7 @@ variable "key_vault" {
 An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
 - `create_new` -  A flag indicating if a new resource must be created.
+- `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Foundry (Hub).
 - `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
   - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
@@ -255,8 +257,14 @@ An object describing the Key Vault to create the private endpoint connection to.
 DESCRIPTION
 
   validation {
-    condition     = !(var.key_vault.create_new && var.key_vault.resource_id != null)
-    error_message = "When creating a new Key Vault, `resource_id` must be null."
+    # either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id
+    condition     = (var.key_vault.use_microsoft_managed_key_vault ? 1 : 0) + (var.key_vault.create_new ? 1 : 0) + (var.key_vault.resource_id != null ? 1 : 0) == 1
+    error_message = " Either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id"
+  }
+  validation {
+    # use_microsoft_managed_key_vault can only be used when kind is Hub
+    condition     = var.kind == "Hub" || var.key_vault.use_microsoft_managed_key_vault == false
+    error_message = "use_microsoft_managed_key_vault can only be used when kind is Hub"
   }
 }
 

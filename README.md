@@ -59,7 +59,6 @@ The following resources are used by this module:
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
 - [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_key) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
@@ -133,29 +132,14 @@ Default:
 
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
-Description: An object describing the Application Insights resource to create or use for monitoring inference endpoints. This includes the following properties:
+Description: An object describing the Application Insights resource to use for monitoring inference endpoints. This includes the following properties:
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
-- `create_new` - A flag indicating if a new resource must be created.
-- `tags` - (Optional) Tags for a new Application Insights resource.
-- `log_analytics_workspace` - An object describing the Log Analytics Workspace for the Application Insights resource
-  - `resource_id` - The resource ID of an existing Log Analytics Workspace.
-  - `create_new` - A flag indicating if a new workspace must be created.
-  - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 
 Type:
 
 ```hcl
 object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    tags        = optional(map(string), null)
-    log_analytics_workspace = optional(object({
-      resource_id = optional(string, null)
-      create_new  = bool
-      tags        = optional(map(string), null)
-      }), {
-      create_new = false
-    })
+    resource_id = optional(string)
   })
 ```
 
@@ -163,7 +147,7 @@ Default:
 
 ```json
 {
-  "create_new": false
+  "resource_id": null
 }
 ```
 
@@ -171,35 +155,12 @@ Default:
 
 Description: An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, if desired.
-- `create_new` -  A flag indicating if a new resource must be created.
-- `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `tags` - (Optional) Tags for new Container Registry resource.
-- `zone_redundant` - (Optional) A flag indicating whether to enable zone redundancy.
-
-> Note: This module does not support creating a container registry encrypted with customer-managed keys. Please create one beforehand and supply the `resource_id`.
 
 Type:
 
 ```hcl
 object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    private_endpoints = optional(map(object({
-      name                            = optional(string, null)
-      subnet_resource_id              = optional(string, null)
-      private_dns_zone_resource_ids   = optional(set(string), [])
-      private_service_connection_name = optional(string, null)
-      network_interface_name          = optional(string, null)
-      inherit_lock                    = optional(bool, false)
-    })), {})
-    tags           = optional(map(string), null)
-    zone_redundant = optional(bool, false)
+    resource_id = optional(string)
   })
 ```
 
@@ -207,7 +168,7 @@ Default:
 
 ```json
 {
-  "create_new": false
+  "resource_id": null
 }
 ```
 
@@ -313,35 +274,16 @@ Default: `false`
 
 ### <a name="input_key_vault"></a> [key\_vault](#input\_key\_vault)
 
-Description: An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
+Description: An object describing the Key Vault required for the workspace. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
-- `create_new` -  A flag indicating if a new resource must be created.
 - `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Foundry (Hub).
-- `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `tags` - (Optional) Tags for the Key Vault resource.
 
 Type:
 
 ```hcl
 object({
-    resource_id                     = optional(string, null)
-    create_new                      = optional(bool, true)
+    resource_id                     = optional(string)
     use_microsoft_managed_key_vault = optional(bool, false)
-    private_endpoints = optional(map(object({
-      name                            = optional(string, null)
-      subnet_resource_id              = optional(string, null)
-      private_dns_zone_resource_ids   = optional(set(string), [])
-      private_service_connection_name = optional(string, null)
-      network_interface_name          = optional(string, null)
-      inherit_lock                    = optional(bool, false)
-    })), {})
-    tags = optional(map(string), null)
   })
 ```
 
@@ -349,7 +291,7 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "resource_id": null
 }
 ```
 
@@ -530,36 +472,15 @@ Default: `"identity"`
 
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
-Description: An object describing the Storage Account. This includes the following properties:
-- `create_new` - Required. If 'false', `resource_id` is required.
-- `resource_id` - The resource ID of an existing Storage Account.
-- `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `tags` - (Optional) Tags for the Storage Account resource.
+Description: An object describing the Storage Account for the workspace. This includes the following properties:
 
-> Note: This module does not support creating a storage account encrypted with customer-managed keys. Please create one beforehand and supply the `resource_id`.
+- `resource_id` - The resource ID of an existing Storage Account.
 
 Type:
 
 ```hcl
 object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    private_endpoints = optional(map(object({
-      name                            = optional(string, null)
-      subnet_resource_id              = optional(string, null)
-      subresource_name                = string
-      private_dns_zone_resource_ids   = optional(set(string), [])
-      private_service_connection_name = optional(string, null)
-      network_interface_name          = optional(string, null)
-      inherit_lock                    = optional(bool, false)
-    })), {})
-    tags = optional(map(string), null)
+    resource_id = optional(string)
   })
 ```
 
@@ -567,7 +488,7 @@ Default:
 
 ```json
 {
-  "create_new": true
+  "resource_id": null
 }
 ```
 
@@ -668,18 +589,6 @@ Description: The AI Services resource, if created.
 
 Description: The service connection between the AIServices and the workspace, if created.
 
-### <a name="output_application_insights"></a> [application\_insights](#output\_application\_insights)
-
-Description: The application insights resource, if created.
-
-### <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry)
-
-Description: The container registry resource, if created.
-
-### <a name="output_key_vault"></a> [key\_vault](#output\_key\_vault)
-
-Description: The key vault resource, if created.
-
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
 Description: A map of the private endpoints created.
@@ -692,10 +601,6 @@ Description: The machine learning workspace.
 
 Description: The ID of the machine learning workspace.
 
-### <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account)
-
-Description: The storage account resource, if created.
-
 ### <a name="output_workspace"></a> [workspace](#output\_workspace)
 
 Description: The machine learning workspace created.
@@ -706,37 +611,7 @@ Description: The identity for the created workspace.
 
 ## Modules
 
-The following Modules are called:
-
-### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
-
-Source: Azure/avm-res-containerregistry-registry/azurerm
-
-Version: ~> 0.4
-
-### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
-
-Source: Azure/avm-res-insights-component/azurerm
-
-Version: ~> 0.1
-
-### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
-
-Source: Azure/avm-res-keyvault-vault/azurerm
-
-Version: ~> 0.9
-
-### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
-
-Source: Azure/avm-res-operationalinsights-workspace/azurerm
-
-Version: ~> 0.4
-
-### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
-
-Source: Azure/avm-res-storage-storageaccount/azurerm
-
-Version: ~> 0.4
+No modules.
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

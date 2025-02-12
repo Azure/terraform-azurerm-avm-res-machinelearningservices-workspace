@@ -157,6 +157,55 @@ module "avm_res_storage_storageaccount" {
   depends_on = [azurerm_key_vault_key.cmk]
 }
 
+module "avm_res_containerregistry" {
+  source                        = "Azure/avm-res-containerregistry-registry/azurerm"
+  version                       = "~> 0.4"
+  enable_telemetry              = var.enable_telemetry
+  name                          = module.naming.container_registry.name_unique
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = azurerm_resource_group.this.location
+  public_network_access_enabled = true
+
+  managed_identities = {
+    system_assigned            = false
+    user_assigned_resource_ids = [azurerm_user_assigned_identity.cmk.id]
+  }
+
+  customer_managed_key = {
+    key_name              = azurerm_key_vault_key.cmk.name
+    key_vault_resource_id = module.avm_res_keyvault_vault.resource_id
+    user_assigned_identity = {
+      resource_id = azurerm_user_assigned_identity.cmk.id
+    }
+  }
+
+  depends_on = [azurerm_key_vault_key.cmk]
+}
+
+
+resource "azurerm_application_insights" "this" {
+  application_type    = "web"
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.application_insights.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  workspace_id        = azurerm_log_analytics_workspace.this.id
+}
+
+resource "azurerm_log_analytics_workspace" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_key_vault" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  sku_name            = "standard"
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+}
+
+
 # This is the module call
 module "azureml" {
   source = "../../"
@@ -167,15 +216,19 @@ module "azureml" {
   resource_group_name = azurerm_resource_group.this.name
 
   application_insights = {
-    create_new = true
-    log_analytics_workspace = {
-      create_new = true
-    }
+    resource_id = azurerm_application_insights.this.id
   }
 
   storage_account = {
-    create_new  = false
     resource_id = module.avm_res_storage_storageaccount.resource_id
+  }
+
+  container_registry = {
+    resource_id = module.avm_res_containerregistry.resource_id
+  }
+
+  key_vault = {
+    resource_id = azurerm_key_vault.this.id
   }
 
   managed_identities = {
@@ -197,7 +250,7 @@ module "azureml" {
 
   enable_telemetry = var.enable_telemetry
 
-  depends_on = [module.avm_res_storage_storageaccount]
+  depends_on = [module.avm_res_storage_storageaccount, module.avm_res_containerregistry]
 }
 ```
 
@@ -214,7 +267,10 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
+- [azurerm_key_vault.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_key) (resource)
+- [azurerm_log_analytics_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_role_assignment.crypto](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_user_assigned_identity.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
@@ -258,6 +314,12 @@ Description: The output of the module
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_containerregistry"></a> [avm\_res\_containerregistry](#module\_avm\_res\_containerregistry)
+
+Source: Azure/avm-res-containerregistry-registry/azurerm
+
+Version: ~> 0.4
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 

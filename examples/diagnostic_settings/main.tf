@@ -91,22 +91,18 @@ module "azureml" {
 
   storage_account = {
     resource_id = azurerm_storage_account.example.id
-    create_new  = false
   }
 
   key_vault = {
     resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
-    create_new  = false
   }
 
   container_registry = {
     resource_id = azurerm_container_registry.example.id
-    create_new  = false
   }
 
   application_insights = {
     resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
-    create_new  = false
   }
 
   diagnostic_settings = {

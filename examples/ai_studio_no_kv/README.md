@@ -41,6 +41,14 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.this.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.this.name
+}
+
 locals {
   name = module.naming.machine_learning_workspace.name_unique
 }
@@ -53,11 +61,14 @@ module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location                = azurerm_resource_group.this.location
-  name                    = local.name
-  resource_group_name     = azurerm_resource_group.this.name
-  kind                    = "Hub"
-  key_vault               = { use_microsoft_managed_key_vault = true }
+  location            = azurerm_resource_group.this.location
+  name                = local.name
+  resource_group_name = azurerm_resource_group.this.name
+  kind                = "Hub"
+  key_vault           = { use_microsoft_managed_key_vault = true }
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
   workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "Disabled"
@@ -87,6 +98,7 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

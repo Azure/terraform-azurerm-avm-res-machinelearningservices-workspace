@@ -609,6 +609,7 @@ Description: Specifies properties of the workspace's managed virtual network.
     - `address_prefixes`: Optional collection of address prefixes. If provided, `service_tag` will be ignored.
     - `protocol`: The allowed protocol(s). Valid options dependent on Service Tag.
     - `port_ranges`: The allow port(s) / port ranges. Valid options dependent on Service Tag.
+- `firewall_sku`: The SKU of the Azure Firewall. Valid options are 'Basic' or 'Standard'. Default is 'Standard'.
 
 Type:
 
@@ -633,6 +634,7 @@ object({
         port_ranges      = string
       })), {})
     }), {})
+    firewall_sku = optional(string, "Standard")
   })
 ```
 
@@ -640,6 +642,7 @@ Default:
 
 ```json
 {
+  "firewall_sku": "Standard",
   "isolation_mode": "Disabled",
   "spark_ready": true
 }

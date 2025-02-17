@@ -1,7 +1,7 @@
 resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
@@ -19,6 +19,7 @@ resource "azapi_resource" "this" {
           sparkReady = var.workspace_managed_network.spark_ready
         }
         outboundRules = local.outbound_rules
+        firewallSku   = var.workspace_managed_network.firewall_sku
       }
       encryption = var.customer_managed_key != null ? {
         status = "Enabled" # the other option is Disabled
@@ -62,7 +63,7 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "hub" {
   count = var.kind == "Hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
@@ -80,6 +81,7 @@ resource "azapi_resource" "hub" {
           sparkReady = var.workspace_managed_network.spark_ready
         }
         outboundRules = local.outbound_rules
+        firewallSku   = var.workspace_managed_network.firewall_sku
       }
       encryption = var.customer_managed_key != null ? {
         status = "Enabled" # the other option is Disabled
@@ -124,7 +126,7 @@ resource "azapi_resource" "hub" {
 resource "azapi_resource" "project" {
   count = var.kind == "Project" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
   body = {
     properties = {
       description   = var.workspace_description
@@ -151,7 +153,7 @@ resource "azapi_resource" "project" {
 resource "azapi_resource" "aiserviceconnection" {
   count = var.aiservices.create_service_connection ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-10-01-preview"
   body = {
     properties = {
       category      = "AIServices"
@@ -173,7 +175,7 @@ resource "azapi_resource" "aiserviceconnection" {
 resource "azapi_resource" "computeinstance" {
   count = var.create_compute_instance ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-07-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-10-01-preview"
   body = {
     properties = {
       computeLocation  = local.aml_resource.location

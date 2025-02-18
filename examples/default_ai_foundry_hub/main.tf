@@ -23,6 +23,12 @@ provider "azurerm" {
   }
 }
 
+locals {
+  tags = {
+    scenario = "default AI Foundry"
+  }
+}
+
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -88,7 +94,6 @@ resource "azapi_resource" "aiservice" {
   }
 }
 
-
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -109,6 +114,11 @@ module "aihub" {
     create_service_connection = true
   }
 
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = false
+  }
+
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }
@@ -118,5 +128,6 @@ module "aihub" {
   }
 
   enable_telemetry = var.enable_telemetry
+  tags             = local.tags
 }
 

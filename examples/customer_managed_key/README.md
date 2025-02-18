@@ -1,9 +1,9 @@
 <!-- BEGIN_TF_DOCS -->
 # Encryption with customer-managed key
 
-This deploys the module with a public workspace assigned to a user-assigned managed identity and encrypted with a provided customer-managed key.
+This example demonstrates provisioning a public AML workspace assigned to a user-assigned managed identity and encrypted with a provided customer-managed key.
 
-Pre-created resources include:
+The following resources are included:
 
 - A user-assigned managed identity
   - Role assignments scoped to \_resource group\_:
@@ -15,12 +15,12 @@ Pre-created resources include:
 - A Storage Account to be used by the AML workspace
   - Encrypted with the RSA key
   - The user-assigned managed identity is the assigned identity
-
-The module creates:
-
-- New Azure Machine Learning Workspace
-  - New instance of Application Insights & a new Log Analytics Workspace
-  - New Key Vault instance
+- A Container Registry to be used by the AML workspace
+  - Encrypted with the RSA key
+  - The user-assigned managed identity is the assigned identity
+- A Log Analytics Workspace and App Insights instance to be used by the AML workspace
+- A Key Vault to be used by the AML workspace
+- An Azure Machine Learning Workspace
   - The workspace is encrypted with the pre-created RSA key
   - The user-assigned managed identity is the _primary user-assigned identity_ for the workspace **and** no service-assigned managed identity is created
 
@@ -67,6 +67,12 @@ resource "azurerm_resource_group" "this" {
 
 data "azurerm_client_config" "current" {}
 
+locals {
+  tags = {
+    scenario = "AML with customer-managed encryption"
+  }
+}
+
 resource "azurerm_user_assigned_identity" "cmk" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.user_assigned_identity.name_unique
@@ -81,12 +87,13 @@ resource "azurerm_role_assignment" "crypto" {
 
 # create a keyvault for storing the credential with RBAC for the deployment user
 module "avm_res_keyvault_vault" {
-  source              = "Azure/avm-res-keyvault-vault/azurerm"
-  version             = "~> 0.9"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  name                = module.naming.key_vault.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
+  source                        = "Azure/avm-res-keyvault-vault/azurerm"
+  version                       = "~> 0.9"
+  tenant_id                     = data.azurerm_client_config.current.tenant_id
+  name                          = "${module.naming.key_vault.name_unique}cmk"
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = azurerm_resource_group.this.location
+  public_network_access_enabled = true
   network_acls = {
     default_action = "Allow"
   }
@@ -182,6 +189,11 @@ module "avm_res_containerregistry" {
   depends_on = [azurerm_key_vault_key.cmk]
 }
 
+resource "azurerm_log_analytics_workspace" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+}
 
 resource "azurerm_application_insights" "this" {
   application_type    = "web"
@@ -189,12 +201,6 @@ resource "azurerm_application_insights" "this" {
   name                = module.naming.application_insights.name_unique
   resource_group_name = azurerm_resource_group.this.name
   workspace_id        = azurerm_log_analytics_workspace.this.id
-}
-
-resource "azurerm_log_analytics_workspace" "this" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
 }
 
 resource "azurerm_key_vault" "this" {

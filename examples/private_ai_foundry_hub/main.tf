@@ -257,38 +257,7 @@ module "avm_res_storage_storageaccount" {
       max_age_in_seconds = 1800
     }]
   }
-
-  # for idempotency
-  share_properties = {
-    cors_rule = [{
-      allowed_headers = ["*", ]
-      allowed_methods = [
-        "GET",
-        "HEAD",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-        "POST",
-        "PATCH",
-      ]
-      allowed_origins = [
-        "https://mlworkspace.azure.ai",
-        "https://ml.azure.com",
-        "https://*.ml.azure.com",
-        "https://ai.azure.com",
-        "https://*.ai.azure.com",
-      ]
-      exposed_headers = [
-        "*",
-      ]
-      max_age_in_seconds = 1800
-    }]
-  }
 }
-
-
-
-
 
 # This is the module call
 # Do not specify location here due to the randomization above.

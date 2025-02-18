@@ -1,9 +1,11 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form:
+This example demonstrates provisioning a publicly-accessible AML workspace with basic configuration.
 
-- AML workspace (public access)
+The following resources are included:
+
+- AML workspace
 - Storage Account
 - Key Vault
 - App Insights and Log Analytics workspace
@@ -41,12 +43,13 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
-
 data "azurerm_client_config" "current" {}
+
+locals {
+  tags = {
+    scenario = "default"
+  }
+}
 
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
@@ -85,6 +88,7 @@ resource "azurerm_log_analytics_workspace" "example" {
   resource_group_name = azurerm_resource_group.this.name
 }
 
+# This is the module call
 module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
@@ -92,6 +96,15 @@ module "azureml" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.machine_learning_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
+
+  managed_identities = {
+    system_assigned = true
+  }
+
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
+  }
 
   storage_account = {
     resource_id = azurerm_storage_account.example.id
@@ -105,7 +118,7 @@ module "azureml" {
     resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
   }
 
-  tags             = {}
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 ```

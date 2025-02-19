@@ -401,11 +401,13 @@ module "avm_res_log_analytics_workspace" {
 
   log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
+}
 
-  monitor_private_link_scoped_resource = {
-    resource_id = azurerm_monitor_private_link_scope.example.id
-    name        = "privatelinkscopedservice.loganalytics"
-  }
+resource "azurerm_monitor_private_link_scoped_service" "law" {
+  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
+  name                = azurerm_monitor_private_link_scope.example.name
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = "privatelinkscopedservice.loganalytics"
 }
 
 module "avm_res_insights_component" {
@@ -421,7 +423,7 @@ module "avm_res_insights_component" {
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
-  linked_resource_id  = module.application_insights.resource_id
+  linked_resource_id  = module.avm_res_insights_component.resource_id
   name                = azurerm_monitor_private_link_scope.example.name
   resource_group_name = azurerm_resource_group.this.name
   scope_name          = "privatelinkscopedservice.appinsights"
@@ -455,7 +457,7 @@ module "azureml" {
   }
 
   application_insights = {
-    resource_id = azurerm_application_insights.this.id
+    resource_id = module.avm_res_insights_component.resource_id
   }
 
   container_registry = {
@@ -481,6 +483,7 @@ The following resources are used by this module:
 
 - [azurerm_monitor_private_link_scope.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scope) (resource)
 - [azurerm_monitor_private_link_scoped_service.appinsights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) (resource)
+- [azurerm_monitor_private_link_scoped_service.law](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) (resource)
 - [azurerm_private_endpoint.privatelinkscope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)

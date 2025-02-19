@@ -119,6 +119,8 @@ module "avm_res_keyvault_vault" {
   wait_for_rbac_before_key_operations = {
     create = "70s"
   }
+
+  tags = local.tags
 }
 
 # create a Customer Managed Key for a Storage Account.
@@ -161,6 +163,8 @@ module "avm_res_storage_storageaccount" {
     }
   }
 
+  tags = local.tags
+
   depends_on = [azurerm_key_vault_key.cmk]
 }
 
@@ -185,6 +189,8 @@ module "avm_res_containerregistry" {
       resource_id = azurerm_user_assigned_identity.cmk.id
     }
   }
+
+  tags = local.tags
 
   depends_on = [azurerm_key_vault_key.cmk]
 }
@@ -255,6 +261,7 @@ module "azureml" {
   }
 
   enable_telemetry = var.enable_telemetry
+  tags             = local.tags
 
   depends_on = [module.avm_res_storage_storageaccount, module.avm_res_containerregistry]
 }

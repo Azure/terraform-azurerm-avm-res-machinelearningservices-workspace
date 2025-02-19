@@ -237,7 +237,6 @@ module "avm_res_containerregistry_registry" {
   }
 }
 
-
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
   version = "~> 0.9"
@@ -298,39 +297,12 @@ module "avm_res_storage_storageaccount" {
   }
 
   network_rules = {
-    bypass         = "AzureServices"
+    bypass         = ["AzureServices"]
     default_action = "Deny"
   }
 
   # for idempotency
   blob_properties = {
-    cors_rule = [{
-      allowed_headers = ["*", ]
-      allowed_methods = [
-        "GET",
-        "HEAD",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-        "POST",
-        "PATCH",
-      ]
-      allowed_origins = [
-        "https://mlworkspace.azure.ai",
-        "https://ml.azure.com",
-        "https://*.ml.azure.com",
-        "https://ai.azure.com",
-        "https://*.ai.azure.com",
-      ]
-      exposed_headers = [
-        "*",
-      ]
-      max_age_in_seconds = 1800
-    }]
-  }
-
-  # for idempotency
-  share_properties = {
     cors_rule = [{
       allowed_headers = ["*", ]
       allowed_methods = [
@@ -389,7 +361,6 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
   }
 }
 
-
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
   version = "~> 0.4"
@@ -405,11 +376,13 @@ module "avm_res_log_analytics_workspace" {
 
   log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
+}
 
-  monitor_private_link_scoped_resource = {
-    resource_id = azurerm_monitor_private_link_scope.example.id
-    name        = "privatelinkscopedservice.loganalytics"
-  }
+resource "azurerm_monitor_private_link_scoped_service" "law" {
+  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
+  name                = azurerm_monitor_private_link_scope.example.name
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = "privatelinkscopedservice.loganalytics"
 }
 
 module "avm_res_insights_component" {
@@ -425,7 +398,7 @@ module "avm_res_insights_component" {
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
-  linked_resource_id  = module.application_insights.resource_id
+  linked_resource_id  = module.avm_res_insights_component.resource_id
   name                = azurerm_monitor_private_link_scope.example.name
   resource_group_name = azurerm_resource_group.this.name
   scope_name          = "privatelinkscopedservice.appinsights"

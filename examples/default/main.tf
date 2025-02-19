@@ -101,6 +101,10 @@ module "azureml" {
     resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
   }
 
+  container_registry = {
+    resource_id = azurerm_container_registry.example.id
+  }
+
   application_insights = {
     resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
   }

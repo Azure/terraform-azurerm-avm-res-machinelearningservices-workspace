@@ -252,6 +252,7 @@ module "avm_res_containerregistry_registry" {
       inherit_lock                  = false
     }
   }
+  tags = local.tags
 }
 
 module "avm_res_keyvault_vault" {
@@ -279,6 +280,7 @@ module "avm_res_keyvault_vault" {
       inherit_lock                  = false
     }
   }
+  tags = local.tags
 }
 
 module "avm_res_storage_storageaccount" {
@@ -344,6 +346,7 @@ module "avm_res_storage_storageaccount" {
       max_age_in_seconds = 1800
     }]
   }
+  tags = local.tags
 }
 
 resource "azurerm_monitor_private_link_scope" "example" {
@@ -393,6 +396,7 @@ module "avm_res_log_analytics_workspace" {
 
   log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
+  tags                                               = local.tags
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "law" {
@@ -412,6 +416,7 @@ module "avm_res_insights_component" {
   workspace_id               = module.avm_res_log_analytics_workspace.resource_id
   internet_ingestion_enabled = false
   internet_query_enabled     = true
+  tags                       = local.tags
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
@@ -462,6 +467,7 @@ module "azureml" {
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 ```

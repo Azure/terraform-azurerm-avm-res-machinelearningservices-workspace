@@ -35,6 +35,9 @@ resource "azurerm_resource_group" "this" {
 
 locals {
   name = module.naming.machine_learning_workspace.name_unique
+  tags = {
+    scenario = "Private AI Foundry Hub"
+  }
 }
 
 module "virtual_network" {
@@ -52,7 +55,7 @@ module "virtual_network" {
   address_space = ["192.168.0.0/24"]
   location      = var.location
   name          = module.naming.virtual_network.name_unique
-  tags          = var.tags
+  tags          = local.tags
 }
 
 module "private_dns_aml_api" {
@@ -66,7 +69,7 @@ module "private_dns_aml_api" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -81,7 +84,7 @@ module "private_dns_aml_notebooks" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -96,7 +99,7 @@ module "private_dns_keyvault_vault" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -111,7 +114,7 @@ module "private_dns_storageaccount_blob" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -126,7 +129,7 @@ module "private_dns_storageaccount_file" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -141,7 +144,7 @@ module "private_dns_containerregistry_registry" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -164,8 +167,9 @@ module "avm_res_containerregistry_registry" {
       inherit_lock                  = false
     }
   }
-}
 
+  tags = local.tags
+}
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
@@ -192,6 +196,8 @@ module "avm_res_keyvault_vault" {
       inherit_lock                  = false
     }
   }
+
+  tags = local.tags
 }
 
 module "avm_res_storage_storageaccount" {
@@ -257,6 +263,23 @@ module "avm_res_storage_storageaccount" {
       max_age_in_seconds = 1800
     }]
   }
+
+  tags = local.tags
+}
+
+module "ai_services" {
+  source                             = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version                            = "0.6.0"
+  resource_group_name                = azurerm_resource_group.this.name
+  kind                               = "AIServices"
+  name                               = module.naming.cognitive_account.name_unique
+  location                           = var.location
+  enable_telemetry                   = var.enable_telemetry
+  sku_name                           = "S0"
+  public_network_access_enabled      = true # required for AI Foundry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  tags                               = local.tags
 }
 
 # This is the module call
@@ -290,7 +313,8 @@ module "aihub" {
   }
 
   aiservices = {
-    create_new                = true
+    resource_group_id         = azurerm_resource_group.this.id
+    name                      = module.ai_services.name
     create_service_connection = true
   }
 

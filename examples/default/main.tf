@@ -44,6 +44,7 @@ resource "azurerm_storage_account" "example" {
   location                 = azurerm_resource_group.this.location
   name                     = module.naming.storage_account.name_unique
   resource_group_name      = azurerm_resource_group.this.name
+  tags                     = local.tags
 }
 
 resource "azurerm_key_vault" "example" {
@@ -52,6 +53,7 @@ resource "azurerm_key_vault" "example" {
   resource_group_name = azurerm_resource_group.this.name
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.current.tenant_id
+  tags                = local.tags
 }
 
 resource "azurerm_container_registry" "example" {
@@ -59,6 +61,7 @@ resource "azurerm_container_registry" "example" {
   name                = module.naming.container_registry.name_unique
   resource_group_name = azurerm_resource_group.this.name
   sku                 = "Premium"
+  tags                = local.tags
 }
 
 resource "azurerm_application_insights" "example" {
@@ -66,6 +69,7 @@ resource "azurerm_application_insights" "example" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.application_insights.name_unique
   resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
   workspace_id        = azurerm_log_analytics_workspace.example.id
 }
 
@@ -73,6 +77,7 @@ resource "azurerm_log_analytics_workspace" "example" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.log_analytics_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
 }
 
 # This is the module call

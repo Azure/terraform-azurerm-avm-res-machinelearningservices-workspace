@@ -401,6 +401,7 @@ module "avm_res_log_analytics_workspace" {
 
   log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
+  tags                                               = local.tags
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "law" {
@@ -420,6 +421,7 @@ module "avm_res_insights_component" {
   workspace_id               = module.avm_res_log_analytics_workspace.resource_id
   internet_ingestion_enabled = false
   internet_query_enabled     = true
+  tags                       = local.tags
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
@@ -463,7 +465,7 @@ module "azureml" {
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
-
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 ```

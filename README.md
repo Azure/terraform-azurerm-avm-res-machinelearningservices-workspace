@@ -1,6 +1,9 @@
 <!-- BEGIN_TF_DOCS -->
 # Azure Machine Learning Workspace Module
 
+> [!IMPORTANT]
+> This module no longer provisions supporting resources, e.g. Key Vault, Storage Account and Azure Container Registry. This change was made to align with [the definition of an AVM resource module](https://azure.github.io/Azure-Verified-Modules/specs/shared/module-classifications/). The included examples in the [examples directory](examples), e.g. [AI Foundry Hub](examples/default\_ai\_foundry\_hub/README.md) and [AML Workspace](examples/default/README.md), can be used as reference for what is required to provision said resources outside of this module.
+
 This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Foundry, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision an AI Foundry Project for a Hub.
 
 ## Functionality
@@ -57,10 +60,10 @@ module "hub" {
 
   resource_group_name = "<resource_group_name>"
 
-  location = "<your_location>"
-  kind     = "Hub"
-
+  location   = "<your_location>"
+  kind       = "Hub"
   is_private = false # Omitting this parameter will result in the same outcome
+
   workspace_managed_network = {
     isolation_mode = "Disabled"
     spark_ready    = true
@@ -72,6 +75,12 @@ module "hub" {
 
   key_vault = {
     resource_id = "<key_vault_resource_id>"
+  }
+
+  aiservices = {
+    resource_group_id         = "<resource_group_id>"
+    name                      = "module.ai_services.name"
+    create_service_connection = true
   }
 }
 ```

@@ -34,11 +34,17 @@ module "naming" {
 
 data "azurerm_client_config" "current" {}
 
+locals {
+  tags = {
+    scenario = "Private AML with AI Search"
+  }
+}
+
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
   location = var.location
   name     = module.naming.resource_group.name_unique
-  tags     = var.tags
+  tags     = local.tags
 }
 
 module "virtual_network" {
@@ -56,7 +62,7 @@ module "virtual_network" {
   address_space = ["192.168.0.0/24"]
   location      = var.location
   name          = module.naming.virtual_network.name_unique
-  tags          = var.tags
+  tags          = local.tags
 }
 
 module "private_dns_aml_api" {
@@ -70,7 +76,7 @@ module "private_dns_aml_api" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -85,7 +91,7 @@ module "private_dns_aml_notebooks" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -100,7 +106,7 @@ module "private_dns_keyvault_vault" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -115,7 +121,7 @@ module "private_dns_storageaccount_blob" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -130,7 +136,7 @@ module "private_dns_storageaccount_file" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -145,7 +151,7 @@ module "private_dns_containerregistry_registry" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -160,7 +166,7 @@ module "private_dns_aisearch" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -184,6 +190,8 @@ module "avm_res_containerregistry_registry" {
       inherit_lock                  = false
     }
   }
+
+  tags = local.tags
 }
 
 
@@ -212,6 +220,8 @@ module "avm_res_keyvault_vault" {
       inherit_lock                  = false
     }
   }
+
+  tags = local.tags
 }
 
 module "avm_res_storage_storageaccount" {
@@ -304,6 +314,7 @@ module "avm_res_storage_storageaccount" {
       max_age_in_seconds = 1800
     }]
   }
+  tags = local.tags
 }
 
 module "aisearch" {
@@ -319,7 +330,7 @@ module "aisearch" {
     primary = {
       subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
       private_dns_zone_resource_ids = [module.private_dns_aisearch.resource_id]
-      tags                          = var.tags
+      tags                          = local.tags
     }
   }
 
@@ -327,7 +338,7 @@ module "aisearch" {
   managed_identities = {
     system_assigned = true
   }
-  tags = var.tags
+  tags = local.tags
 }
 
 module "avm_res_log_analytics_workspace" {
@@ -345,6 +356,7 @@ module "avm_res_log_analytics_workspace" {
 
   log_analytics_workspace_internet_ingestion_enabled = true
   log_analytics_workspace_internet_query_enabled     = true
+  tags                                               = local.tags
 }
 
 module "avm_res_insights_component" {
@@ -357,6 +369,7 @@ module "avm_res_insights_component" {
   workspace_id               = module.avm_res_log_analytics_workspace.resource_id
   internet_ingestion_enabled = true
   internet_query_enabled     = true
+  tags                       = local.tags
 }
 
 
@@ -408,5 +421,6 @@ module "azureml" {
     resource_id = module.avm_res_insights_component.resource_id
   }
 
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }

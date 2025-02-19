@@ -24,16 +24,18 @@ module "naming" {
   version = "~> 0.3"
 }
 
+locals {
+  tags = {
+    scenario = "diagnostic settings"
+  }
+}
+
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
   location = var.location
   name     = module.naming.resource_group.name_unique
+  tags     = local.tags
 }
-
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 
 data "azurerm_client_config" "current" {}
 
@@ -43,6 +45,7 @@ resource "azurerm_storage_account" "example" {
   location                 = azurerm_resource_group.this.location
   name                     = module.naming.storage_account.name_unique
   resource_group_name      = azurerm_resource_group.this.name
+  tags                     = local.tags
 }
 
 resource "azurerm_key_vault" "example" {
@@ -51,6 +54,7 @@ resource "azurerm_key_vault" "example" {
   resource_group_name = azurerm_resource_group.this.name
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.current.tenant_id
+  tags                = local.tags
 }
 
 resource "azurerm_container_registry" "example" {
@@ -58,6 +62,7 @@ resource "azurerm_container_registry" "example" {
   name                = module.naming.container_registry.name_unique
   resource_group_name = azurerm_resource_group.this.name
   sku                 = "Premium"
+  tags                = local.tags
 }
 
 resource "azurerm_application_insights" "example" {
@@ -65,6 +70,7 @@ resource "azurerm_application_insights" "example" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.application_insights.name_unique
   resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
   workspace_id        = azurerm_log_analytics_workspace.example.id
 }
 
@@ -72,14 +78,17 @@ resource "azurerm_log_analytics_workspace" "example" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.log_analytics_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
 }
 
 resource "azurerm_log_analytics_workspace" "diag" {
   location            = azurerm_resource_group.this.location
   name                = "diag${module.naming.log_analytics_workspace.name_unique}"
   resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
 }
 
+# This is the module call
 module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
@@ -112,6 +121,6 @@ module "azureml" {
     }
   }
 
-  tags             = {}
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }

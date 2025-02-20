@@ -217,6 +217,12 @@ variable "hbi_workspace" {
   description = "Specifies if the resource is a High Business Impact (HBI) workspace."
 }
 
+variable "ip_allowlist" {
+  type        = set(string)
+  default     = []
+  description = "The list of IPv4 addresses that are allowed to access the workspace."
+}
+
 variable "is_private" {
   type        = bool
   default     = false
@@ -500,10 +506,12 @@ variable "workspace_managed_network" {
         port_ranges      = string
       })), {})
     }), {})
+    firewall_sku = optional(string, "Standard")
   })
   default = {
     isolation_mode = "Disabled"
     spark_ready    = true
+    firewall_sku   = "Standard"
   }
   description = <<DESCRIPTION
 Specifies properties of the workspace's managed virtual network.
@@ -526,6 +534,7 @@ Specifies properties of the workspace's managed virtual network.
     - `address_prefixes`: Optional collection of address prefixes. If provided, `service_tag` will be ignored.
     - `protocol`: The allowed protocol(s). Valid options dependent on Service Tag. 
     - `port_ranges`: The allow port(s) / port ranges. Valid options dependent on Service Tag.
+- `firewall_sku`: The SKU of the Azure Firewall. Valid options are 'Basic' or 'Standard'. Default is 'Standard'.
 DESCRIPTION
 
   validation {
@@ -547,5 +556,9 @@ DESCRIPTION
   validation {
     condition     = length(var.workspace_managed_network.outbound_rules.private_endpoint) == 0 || alltrue([for _, v in var.workspace_managed_network.outbound_rules.private_endpoint : length(v.sub_resource_target) > 0])
     error_message = "`sub_resource_target` is required for every private endpoint outbound rule."
+  }
+  validation {
+    condition     = contains(["Basic", "Standard"], var.workspace_managed_network.firewall_sku)
+    error_message = "The only valid options for `firewall_sku` are 'Basic' or 'Standard'."
   }
 }

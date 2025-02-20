@@ -217,6 +217,12 @@ variable "hbi_workspace" {
   description = "Specifies if the resource is a High Business Impact (HBI) workspace."
 }
 
+variable "ip_allowlist" {
+  type        = set(string)
+  default     = []
+  description = "The list of IPv4 addresses that are allowed to access the workspace."
+}
+
 variable "is_private" {
   type        = bool
   default     = false

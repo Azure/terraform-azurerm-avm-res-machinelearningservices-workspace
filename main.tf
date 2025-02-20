@@ -21,6 +21,7 @@ resource "azapi_resource" "this" {
         outboundRules = local.outbound_rules
         firewallSku   = var.workspace_managed_network.firewall_sku
       }
+      ipAllowlist = var.ip_allowlist
       encryption = var.customer_managed_key != null ? {
         status = "Enabled" # the other option is Disabled
         identity = var.customer_managed_key.user_assigned_identity != null ? {
@@ -83,6 +84,7 @@ resource "azapi_resource" "hub" {
         outboundRules = local.outbound_rules
         firewallSku   = var.workspace_managed_network.firewall_sku
       }
+      ipAllowlist = var.ip_allowlist
       encryption = var.customer_managed_key != null ? {
         status = "Enabled" # the other option is Disabled
         identity = var.customer_managed_key.user_assigned_identity != null ? {

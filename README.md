@@ -295,6 +295,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_ip_allowlist"></a> [ip\_allowlist](#input\_ip\_allowlist)
+
+Description: The list of IPv4 addresses that are allowed to access the workspace.
+
+Type: `set(string)`
+
+Default: `[]`
+
 ### <a name="input_is_private"></a> [is\_private](#input\_is\_private)
 
 Description: Specifies if every provisioned resource should be private and inaccessible from the Internet.

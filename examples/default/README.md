@@ -1,9 +1,11 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form:
+This example demonstrates provisioning a publicly-accessible AML workspace with basic configuration.
 
-- AML workspace (public access)
+The following resources are included:
+
+- AML workspace
 - Storage Account
 - Key Vault
 - App Insights and Log Analytics workspace
@@ -29,14 +31,6 @@ provider "azurerm" {
     }
   }
 }
-
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
-}
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -49,25 +43,91 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
+data "azurerm_client_config" "current" {}
 
+locals {
+  tags = {
+    scenario = "default"
+  }
+}
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.this.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.this.name
+  tags                     = local.tags
+}
+
+resource "azurerm_key_vault" "example" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  sku_name            = "standard"
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  tags                = local.tags
+}
+
+resource "azurerm_container_registry" "example" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.container_registry.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Premium"
+  tags                = local.tags
+}
+
+resource "azurerm_application_insights" "example" {
+  application_type    = "web"
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.application_insights.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
+  workspace_id        = azurerm_log_analytics_workspace.example.id
+}
+
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
+}
+
+# This is the module call
 module "azureml" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = var.location
+  location            = azurerm_resource_group.this.location
   name                = module.naming.machine_learning_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  application_insights = {
-    create_new = true
-    log_analytics_workspace = {
-      create_new = true
-    }
+
+  managed_identities = {
+    system_assigned = true
   }
 
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
+  }
+
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
+
+  key_vault = {
+    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+  }
+
+  container_registry = {
+    resource_id = azurerm_container_registry.example.id
+  }
+
+  application_insights = {
+    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
+  }
+
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 ```
@@ -85,7 +145,13 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_application_insights.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
+- [azurerm_container_registry.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry) (resource)
+- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
+- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -135,12 +201,6 @@ Version:
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
-
-Version: ~> 0.3
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/regions/azurerm
 
 Version: ~> 0.3
 

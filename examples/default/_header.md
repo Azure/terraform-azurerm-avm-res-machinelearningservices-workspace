@@ -1,8 +1,10 @@
 # Default example
 
-This deploys the module in its simplest form:
+This example demonstrates provisioning a publicly-accessible AML workspace with basic configuration.
 
-- AML workspace (public access)
+The following resources are included:
+
+- AML workspace
 - Storage Account
 - Key Vault
 - App Insights and Log Analytics workspace

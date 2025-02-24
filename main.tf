@@ -8,8 +8,8 @@ resource "azapi_resource" "this" {
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
       keyVault                 = local.key_vault_id
-      storageAccount           = local.storage_account_id
-      containerRegistry        = local.container_registry_id
+      storageAccount           = var.storage_account.resource_id
+      containerRegistry        = try(var.container_registry.resource_id, null)
       description              = var.workspace_description
       friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
       systemDatastoresAuthMode = var.storage_access_type
@@ -71,8 +71,8 @@ resource "azapi_resource" "hub" {
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
       keyVault                 = local.key_vault_id
-      storageAccount           = local.storage_account_id
-      containerRegistry        = local.container_registry_id
+      storageAccount           = var.storage_account.resource_id
+      containerRegistry        = try(var.container_registry.resource_id, null)
       description              = var.workspace_description
       friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
       systemDatastoresAuthMode = var.storage_access_type

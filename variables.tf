@@ -61,75 +61,37 @@ DESCRIPTION
 
 variable "application_insights" {
   type = object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    tags        = optional(map(string), null)
-    log_analytics_workspace = optional(object({
-      resource_id = optional(string, null)
-      create_new  = bool
-      tags        = optional(map(string), null)
-      }), {
-      create_new = false
-    })
+    resource_id = optional(string)
   })
   default = {
-    create_new = false
+    resource_id = null
   }
   description = <<DESCRIPTION
-An object describing the Application Insights resource to create or use for monitoring inference endpoints. This includes the following properties:
+An object describing the Application Insights resource to use for monitoring inference endpoints. This includes the following properties:
 - `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
-- `create_new` - A flag indicating if a new resource must be created.
-- `tags` - (Optional) Tags for a new Application Insights resource.
-- `log_analytics_workspace` - An object describing the Log Analytics Workspace for the Application Insights resource
-  - `resource_id` - The resource ID of an existing Log Analytics Workspace.
-  - `create_new` - A flag indicating if a new workspace must be created.
-  - `tags` - (Optional) Tags for the Log Analytics Workspace resource.
 DESCRIPTION
 
   validation {
-    condition     = !(var.application_insights.create_new && var.application_insights.resource_id != null) && (var.application_insights.create_new == false || (var.application_insights.create_new == true && (var.application_insights.log_analytics_workspace.resource_id != null || var.application_insights.log_analytics_workspace.create_new)))
-    error_message = "If creating a new Application Insights resource, `resource_id` must be null and either `log_analytics_workspace.create_new` must be true or `log_analytics_workspace.resource_id` must not be null"
+    condition     = var.kind != "Project" || var.application_insights.resource_id == null
+    error_message = "Application Insights resource ID is not used when provisioning AI Foundry Projects."
   }
 }
 
 variable "container_registry" {
   type = object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    private_endpoints = optional(map(object({
-      name                            = optional(string, null)
-      subnet_resource_id              = optional(string, null)
-      private_dns_zone_resource_ids   = optional(set(string), [])
-      private_service_connection_name = optional(string, null)
-      network_interface_name          = optional(string, null)
-      inherit_lock                    = optional(bool, false)
-    })), {})
-    tags           = optional(map(string), null)
-    zone_redundant = optional(bool, false)
+    resource_id = optional(string)
   })
   default = {
-    create_new = false
+    resource_id = null
   }
   description = <<DESCRIPTION
 An object describing the Container Registry. This includes the following properties:
 - `resource_id` - The resource ID of an existing Container Registry, if desired.
-- `create_new` -  A flag indicating if a new resource must be created.
-- `private_endpoints` - A map of private endpoints to create on a newly created Container Registry. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `tags` - (Optional) Tags for new Container Registry resource.
-- `zone_redundant` - (Optional) A flag indicating whether to enable zone redundancy.
-
-> Note: This module does not support creating a container registry encrypted with customer-managed keys. Please create one beforehand and supply the `resource_id`.
 DESCRIPTION
 
   validation {
-    condition     = (var.kind == "Project") || !(var.container_registry.create_new && var.container_registry.resource_id != null)
-    error_message = "For Project workspaces: no registry is ever created or associated with the new Project. For Hub and Default workspaces, when creating a new registry, `resource_id` must be null"
+    condition     = var.kind != "Project" || var.container_registry.resource_id == null
+    error_message = "Container Registry resource ID is not used when provisioning AI Foundry Projects."
   }
 }
 
@@ -231,41 +193,22 @@ variable "is_private" {
 
 variable "key_vault" {
   type = object({
-    resource_id                     = optional(string, null)
-    create_new                      = optional(bool, true)
+    resource_id                     = optional(string)
     use_microsoft_managed_key_vault = optional(bool, false)
-    private_endpoints = optional(map(object({
-      name                            = optional(string, null)
-      subnet_resource_id              = optional(string, null)
-      private_dns_zone_resource_ids   = optional(set(string), [])
-      private_service_connection_name = optional(string, null)
-      network_interface_name          = optional(string, null)
-      inherit_lock                    = optional(bool, false)
-    })), {})
-    tags = optional(map(string), null)
   })
   default = {
-    create_new = true
+    resource_id = null
   }
   description = <<DESCRIPTION
-An object describing the Key Vault to create the private endpoint connection to. This includes the following properties:
+An object describing the Key Vault required for the workspace. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
-- `create_new` -  A flag indicating if a new resource must be created.
 - `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Foundry (Hub).
-- `private_endpoints` - A map of private endpoints to create on a newly created Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `tags` - (Optional) Tags for the Key Vault resource.
 DESCRIPTION
 
   validation {
-    # either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id
-    condition     = (var.key_vault.use_microsoft_managed_key_vault ? 1 : 0) + (var.key_vault.create_new ? 1 : 0) + (var.key_vault.resource_id != null ? 1 : 0) == 1
-    error_message = " Either use a microsoft managed key vault, or create a new keyvault, or use an existing keyvault by providing the resource_id"
+    # either use a microsoft managed key vault or use an existing keyvault by providing the resource_id when creating a Hub or default workspace
+    condition     = var.kind == "Project" || (var.key_vault.resource_id != null || var.key_vault.use_microsoft_managed_key_vault)
+    error_message = " Either use a Microsoft-managed Key vault or use an existing Key Vault by providing the resource_id when creating a Hub or default AML workspace"
   }
   validation {
     # use_microsoft_managed_key_vault can only be used when kind is Hub
@@ -428,41 +371,20 @@ DESCRIPTION
 
 variable "storage_account" {
   type = object({
-    resource_id = optional(string, null)
-    create_new  = bool
-    private_endpoints = optional(map(object({
-      name                            = optional(string, null)
-      subnet_resource_id              = optional(string, null)
-      subresource_name                = string
-      private_dns_zone_resource_ids   = optional(set(string), [])
-      private_service_connection_name = optional(string, null)
-      network_interface_name          = optional(string, null)
-      inherit_lock                    = optional(bool, false)
-    })), {})
-    tags = optional(map(string), null)
+    resource_id = optional(string)
   })
   default = {
-    create_new = true
+    resource_id = null
   }
   description = <<DESCRIPTION
-An object describing the Storage Account. This includes the following properties:
-- `create_new` - Required. If 'false', `resource_id` is required.
-- `resource_id` - The resource ID of an existing Storage Account.
-- `private_endpoints` - A map of private endpoints to create on a newly created Storage Account. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-  - `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-  - `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-  - `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-  - `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-  - `inherit_lock` - (Optional) If set to true, the private endpoint will inherit the lock from the parent resource. Defaults to false.
-- `tags` - (Optional) Tags for the Storage Account resource.
+An object describing the Storage Account for the workspace. This includes the following properties:
 
-> Note: This module does not support creating a storage account encrypted with customer-managed keys. Please create one beforehand and supply the `resource_id`.
+- `resource_id` - The resource ID of an existing Storage Account.
 DESCRIPTION
 
   validation {
-    condition     = (var.kind == "Project") || (var.storage_account.create_new == false && var.storage_account.resource_id != null) || (var.storage_account.create_new == true && var.storage_account.resource_id == null)
-    error_message = "Either `create_new` must be set to true and `resource_id` must be set to null or `create_new` must be set to false and `resource_id` must be set to a valid resource ID."
+    condition     = var.kind == "Project" || var.storage_account.resource_id != null
+    error_message = "A storage account resource ID is required when provisioning a Hub or default AML workspace."
   }
 }
 

@@ -1,8 +1,8 @@
 # Encryption with customer-managed key
 
-This deploys the module with a public workspace assigned to a user-assigned managed identity and encrypted with a provided customer-managed key.
+This example demonstrates provisioning a public AML workspace assigned to a user-assigned managed identity and encrypted with a provided customer-managed key.
 
-Pre-created resources include:
+The following resources are included:
 
 - A user-assigned managed identity
   - Role assignments scoped to _resource group_:
@@ -14,15 +14,14 @@ Pre-created resources include:
 - A Storage Account to be used by the AML workspace
   - Encrypted with the RSA key
   - The user-assigned managed identity is the assigned identity
-
-The module creates:
-
-- New Azure Machine Learning Workspace
-  - New instance of Application Insights & a new Log Analytics Workspace
-  - New Key Vault instance
+- A Container Registry to be used by the AML workspace
+  - Encrypted with the RSA key
+  - The user-assigned managed identity is the assigned identity
+- A Log Analytics Workspace and App Insights instance to be used by the AML workspace
+- A Key Vault to be used by the AML workspace
+- An Azure Machine Learning Workspace
   - The workspace is encrypted with the pre-created RSA key
   - The user-assigned managed identity is the _primary user-assigned identity_ for the workspace **and** no service-assigned managed identity is created
-
 
 To support encryption with a customer-managed key, a Microsoft-managed resource group is created. It is named using the following convention `azureml-rg-<workspace-name>_<random GUID>`. Within it, are the follow resources:
 

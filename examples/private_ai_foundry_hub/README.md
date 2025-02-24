@@ -60,6 +60,8 @@ provider "azurerm" {
   }
 }
 
+data "azurerm_client_config" "current" {}
+
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -74,6 +76,9 @@ resource "azurerm_resource_group" "this" {
 
 locals {
   name = module.naming.machine_learning_workspace.name_unique
+  tags = {
+    scenario = "Private AI Foundry Hub"
+  }
 }
 
 module "virtual_network" {
@@ -91,7 +96,7 @@ module "virtual_network" {
   address_space = ["192.168.0.0/24"]
   location      = var.location
   name          = module.naming.virtual_network.name_unique
-  tags          = var.tags
+  tags          = local.tags
 }
 
 module "private_dns_aml_api" {
@@ -105,7 +110,7 @@ module "private_dns_aml_api" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -120,7 +125,7 @@ module "private_dns_aml_notebooks" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -135,7 +140,7 @@ module "private_dns_keyvault_vault" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -150,7 +155,7 @@ module "private_dns_storageaccount_blob" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -165,7 +170,7 @@ module "private_dns_storageaccount_file" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -180,10 +185,143 @@ module "private_dns_containerregistry_registry" {
       vnetid       = module.virtual_network.resource.id
     }
   }
-  tags             = var.tags
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
+module "avm_res_containerregistry_registry" {
+  source = "Azure/avm-res-containerregistry-registry/azurerm"
+
+  version = "~> 0.4"
+
+  name                          = replace(module.naming.container_registry.name_unique, "-", "")
+  location                      = var.location
+  resource_group_name           = azurerm_resource_group.this.name
+  public_network_access_enabled = false
+  zone_redundancy_enabled       = false
+
+  private_endpoints = {
+    registry = {
+      name                          = "pe-containerregistry-regsitry"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_containerregistry_registry.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
+  tags = local.tags
+}
+
+module "avm_res_keyvault_vault" {
+  source  = "Azure/avm-res-keyvault-vault/azurerm"
+  version = "~> 0.9"
+
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  enable_telemetry    = var.enable_telemetry
+  name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+
+  network_acls = {
+    bypass         = "AzureServices"
+    default_action = "Deny"
+  }
+
+  public_network_access_enabled = false
+
+  private_endpoints = {
+    vault = {
+      name                          = "pe-keyvault-vault"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_keyvault_vault.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
+  tags = local.tags
+}
+
+module "avm_res_storage_storageaccount" {
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  version = "~> 0.4"
+
+  enable_telemetry              = var.enable_telemetry
+  name                          = replace(module.naming.storage_account.name_unique, "-", "")
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = var.location
+  shared_access_key_enabled     = true
+  public_network_access_enabled = false
+
+  managed_identities = {
+    system_assigned = true
+  }
+
+  private_endpoints = {
+    blob = {
+      name                          = "pe-storage-blob"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      subresource_name              = "blob"
+      private_dns_zone_resource_ids = [module.private_dns_storageaccount_blob.resource_id]
+      inherit_lock                  = false
+    }
+    file = {
+      name                          = "pe-storage-file"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      subresource_name              = "file"
+      private_dns_zone_resource_ids = [module.private_dns_storageaccount_file.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
+  network_rules = {
+    bypass         = ["Logging", "Metrics", "AzureServices"]
+    default_action = "Deny"
+  }
+
+  # for idempotency
+  blob_properties = {
+    cors_rule = [{
+      allowed_headers = ["*", ]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+        "PATCH",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers = [
+        "*",
+      ]
+      max_age_in_seconds = 1800
+    }]
+  }
+
+  tags = local.tags
+}
+
+module "ai_services" {
+  source                             = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version                            = "0.6.0"
+  resource_group_name                = azurerm_resource_group.this.name
+  kind                               = "AIServices"
+  name                               = module.naming.cognitive_account.name_unique
+  location                           = var.location
+  enable_telemetry                   = var.enable_telemetry
+  sku_name                           = "S0"
+  public_network_access_enabled      = true # required for AI Foundry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  tags                               = local.tags
+}
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -203,60 +341,22 @@ module "aihub" {
     isolation_mode = "AllowOnlyApprovedOutbound"
   }
 
-  container_registry = {
-    create_new = true
-    private_endpoints = {
-      registry = {
-        name                          = "pe-containerregistry-regsitry"
-        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-        private_dns_zone_resource_ids = [module.private_dns_containerregistry_registry.resource_id]
-        inherit_lock                  = false
-      }
-    }
+  storage_account = {
+    resource_id = module.avm_res_storage_storageaccount.resource_id
   }
 
   key_vault = {
-    create_new = true
-    private_endpoints = {
-      vault = {
-        name                          = "pe-keyvault-vault"
-        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-        private_dns_zone_resource_ids = [module.private_dns_keyvault_vault.resource_id]
-        inherit_lock                  = false
-      }
-    }
+    resource_id = module.avm_res_keyvault_vault.resource_id
   }
 
-  storage_account = {
-    create_new = true
-    private_endpoints = {
-      blob = {
-        name                          = "pe-storage-blob"
-        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-        subresource_name              = "blob"
-        private_dns_zone_resource_ids = [module.private_dns_storageaccount_blob.resource_id]
-        inherit_lock                  = false
-      }
-      file = {
-        name                          = "pe-storage-file"
-        subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-        subresource_name              = "file"
-        private_dns_zone_resource_ids = [module.private_dns_storageaccount_file.resource_id]
-        inherit_lock                  = false
-      }
-    }
+  container_registry = {
+    resource_id = module.avm_res_containerregistry_registry.resource_id
   }
 
   aiservices = {
-    create_new                = true
+    resource_group_id         = azurerm_resource_group.this.id
+    name                      = module.ai_services.name
     create_service_connection = true
-  }
-
-  application_insights = {
-    create_new = true
-    log_analytics_workspace = {
-      create_new = true
-    }
   }
 
   private_endpoints = {
@@ -286,6 +386,7 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -314,14 +415,6 @@ Type: `string`
 
 Default: `"australiaeast"`
 
-### <a name="input_tags"></a> [tags](#input\_tags)
-
-Description: (Optional) Tags of the resource.
-
-Type: `map(string)`
-
-Default: `null`
-
 ## Outputs
 
 The following outputs are exported:
@@ -334,11 +427,35 @@ Description: The AI Studio hub workspace.
 
 The following Modules are called:
 
+### <a name="module_ai_services"></a> [ai\_services](#module\_ai\_services)
+
+Source: Azure/avm-res-cognitiveservices-account/azurerm
+
+Version: 0.6.0
+
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 
 Source: ../../
 
 Version:
+
+### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
+
+Source: Azure/avm-res-containerregistry-registry/azurerm
+
+Version: ~> 0.4
+
+### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
+
+Source: Azure/avm-res-keyvault-vault/azurerm
+
+Version: ~> 0.9
+
+### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
+
+Source: Azure/avm-res-storage-storageaccount/azurerm
+
+Version: ~> 0.4
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

@@ -29,16 +29,16 @@ module "regions" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.4"
+  version = "~> 0.3"
 }
-
-data "azurerm_client_config" "current" {}
 
 locals {
   tags = {
-    scenario = "Private AML with AI Search"
+    scenario = "BYO VNet"
   }
 }
+
+data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
@@ -73,7 +73,7 @@ module "private_dns_aml_api" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.api.azureml.ms"
-      vnetid       = module.virtual_network.resource.id
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
@@ -88,7 +88,7 @@ module "private_dns_aml_notebooks" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.notebooks.azureml.ms"
-      vnetid       = module.virtual_network.resource.id
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
@@ -103,7 +103,7 @@ module "private_dns_keyvault_vault" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.notebooks.azureml.ms"
-      vnetid       = module.virtual_network.resource.id
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
@@ -118,7 +118,7 @@ module "private_dns_storageaccount_blob" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.blob.core.windows.net"
-      vnetid       = module.virtual_network.resource.id
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
@@ -133,7 +133,7 @@ module "private_dns_storageaccount_file" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.file.core.windows.net"
-      vnetid       = module.virtual_network.resource.id
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
@@ -148,22 +148,67 @@ module "private_dns_containerregistry_registry" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.azurecr.io"
-      vnetid       = module.virtual_network.resource.id
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
 
-module "private_dns_aisearch" {
+module "private_dns_monitor" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
   version             = "~> 0.2"
-  domain_name         = "privatelink.search.windows.net"
+  domain_name         = "privatelink.monitor.azure.com"
   resource_group_name = azurerm_resource_group.this.name
   virtual_network_links = {
     dnslink = {
-      vnetlinkname = "privatelink.search.windows.net"
-      vnetid       = module.virtual_network.resource.id
+      vnetlinkname = "privatelink.monitor.azure.com"
+      vnetid       = module.virtual_network.resource_id
+    }
+  }
+  tags             = local.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_oms_opinsights" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "~> 0.2"
+  domain_name         = "privatelink.oms.opinsights.azure.com"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.oms.opinsights.azure.com"
+      vnetid       = module.virtual_network.resource_id
+    }
+  }
+  tags             = local.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_ods_opinsights" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "~> 0.2"
+  domain_name         = "privatelink.ods.opinsights.azure.com"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.ods.opinsights.azure.com"
+      vnetid       = module.virtual_network.resource_id
+    }
+  }
+  tags             = local.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_agentsvc" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "~> 0.2"
+  domain_name         = "privatelink.agentsvc.azure-automation.net"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.agentsvc.azure-automation.net"
+      vnetid       = module.virtual_network.resource_id
     }
   }
   tags             = local.tags
@@ -190,10 +235,8 @@ module "avm_res_containerregistry_registry" {
       inherit_lock                  = false
     }
   }
-
   tags = local.tags
 }
-
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
@@ -220,7 +263,6 @@ module "avm_res_keyvault_vault" {
       inherit_lock                  = false
     }
   }
-
   tags = local.tags
 }
 
@@ -257,7 +299,7 @@ module "avm_res_storage_storageaccount" {
   }
 
   network_rules = {
-    bypass         = ["Logging", "Metrics", "AzureServices"]
+    bypass         = ["AzureServices"]
     default_action = "Deny"
   }
 
@@ -287,58 +329,39 @@ module "avm_res_storage_storageaccount" {
       max_age_in_seconds = 1800
     }]
   }
-
-  # for idempotency
-  share_properties = {
-    cors_rule = [{
-      allowed_headers = ["*", ]
-      allowed_methods = [
-        "GET",
-        "HEAD",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-        "POST",
-        "PATCH",
-      ]
-      allowed_origins = [
-        "https://mlworkspace.azure.ai",
-        "https://ml.azure.com",
-        "https://*.ml.azure.com",
-        "https://ai.azure.com",
-        "https://*.ai.azure.com",
-      ]
-      exposed_headers = [
-        "*",
-      ]
-      max_age_in_seconds = 1800
-    }]
-  }
   tags = local.tags
 }
 
-module "aisearch" {
-  source                        = "Azure/avm-res-search-searchservice/azurerm"
-  version                       = "0.1.5"
-  location                      = var.location
-  name                          = module.naming.search_service.name_unique
-  resource_group_name           = azurerm_resource_group.this.name
-  public_network_access_enabled = false
-  enable_telemetry              = var.enable_telemetry
+resource "azurerm_monitor_private_link_scope" "example" {
+  name                  = "example-ampls"
+  resource_group_name   = azurerm_resource_group.this.name
+  ingestion_access_mode = "PrivateOnly"
+  query_access_mode     = "PrivateOnly"
+}
 
-  private_endpoints = {
-    primary = {
-      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-      private_dns_zone_resource_ids = [module.private_dns_aisearch.resource_id]
-      tags                          = local.tags
-    }
-  }
+resource "azurerm_private_endpoint" "privatelinkscope" {
+  location            = var.location
+  name                = "pe-azuremonitor"
+  resource_group_name = azurerm_resource_group.this.name
+  subnet_id           = module.virtual_network.subnets["private_endpoints"].resource_id
+  tags                = local.tags
 
-  local_authentication_enabled = false
-  managed_identities = {
-    system_assigned = true
+  private_service_connection {
+    is_manual_connection           = false
+    name                           = "psc-azuremonitor"
+    private_connection_resource_id = azurerm_monitor_private_link_scope.example.id
+    subresource_names              = ["azuremonitor"]
   }
-  tags = local.tags
+  private_dns_zone_group {
+    name = "azuremonitor-dns-zone-group"
+    private_dns_zone_ids = [
+      module.private_dns_storageaccount_blob.resource_id,
+      module.private_dns_oms_opinsights.resource_id,
+      module.private_dns_monitor.resource_id,
+      module.private_dns_ods_opinsights.resource_id,
+      module.private_dns_agentsvc.resource_id
+    ]
+  }
 }
 
 module "avm_res_log_analytics_workspace" {
@@ -354,9 +377,16 @@ module "avm_res_log_analytics_workspace" {
     type = "SystemAssigned"
   }
 
-  log_analytics_workspace_internet_ingestion_enabled = true
+  log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
   tags                                               = local.tags
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "law" {
+  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
+  name                = azurerm_monitor_private_link_scope.example.name
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = "privatelinkscopedservice.loganalytics"
 }
 
 module "avm_res_insights_component" {
@@ -367,11 +397,17 @@ module "avm_res_insights_component" {
   resource_group_name        = azurerm_resource_group.this.name
   name                       = module.naming.application_insights.name_unique
   workspace_id               = module.avm_res_log_analytics_workspace.resource_id
-  internet_ingestion_enabled = true
+  internet_ingestion_enabled = false
   internet_query_enabled     = true
   tags                       = local.tags
 }
 
+resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
+  linked_resource_id  = module.avm_res_insights_component.resource_id
+  name                = azurerm_monitor_private_link_scope.example.name
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = "privatelinkscopedservice.appinsights"
+}
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -386,41 +422,34 @@ module "azureml" {
   resource_group_name = azurerm_resource_group.this.name
   is_private          = true
   workspace_managed_network = {
-    isolation_mode = "AllowOnlyApprovedOutbound"
-    outbound_rules = {
-      private_endpoint = {
-        aisearch = {
-          resource_id         = module.aisearch.resource_id
-          sub_resource_target = "searchService"
-        }
-      }
-    }
+    isolation_mode = "Disabled"
   }
   private_endpoints = {
-    primary = {
-      name                          = "pe-aml-workspace"
+    api = {
+      name                          = "pe-api-aml"
       subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id, module.private_dns_aml_notebooks.resource_id]
+      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id]
+      inherit_lock                  = false
+    }
+    notebooks = {
+      name                          = "pe-notebooks-aml"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_notebooks.resource_id]
       inherit_lock                  = false
     }
   }
-
-  storage_account = {
-    resource_id = module.avm_res_storage_storageaccount.resource_id
-  }
-
-  container_registry = {
-    resource_id = module.avm_res_containerregistry_registry.resource_id
-  }
-
   key_vault = {
     resource_id = module.avm_res_keyvault_vault.resource_id
   }
-
   application_insights = {
     resource_id = module.avm_res_insights_component.resource_id
   }
-
+  storage_account = {
+    resource_id = module.avm_res_storage_storageaccount.resource_id
+  }
+  container_registry = {
+    resource_id = module.avm_res_containerregistry_registry.resource_id
+  }
   tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }

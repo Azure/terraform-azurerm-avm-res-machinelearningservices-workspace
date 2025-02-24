@@ -13,9 +13,3 @@ variable "location" {
   default     = "eastus2"
   description = "The location for the resources."
 }
-
-variable "tags" {
-  type        = map(string)
-  default     = null
-  description = "(Optional) Tags of the resource."
-}

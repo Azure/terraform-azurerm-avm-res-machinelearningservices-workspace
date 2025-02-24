@@ -22,7 +22,7 @@ This specifically includes:
   -  1 private endpoint in the "private_endpoints" subnet referencing DNS zone "privatelink.file.core.windows.net"
 - Key Vault (private)
   - 1 private endpoint in the "private_endpoints" subnet, referencing the "privatelink.vaultcore.azure.net" DNS zone
-- Azure Container Registry (private) 
+- Azure Container Registry (private)
   - 1 private endpoint in the "private_endpoints" subnet, referencing the "privatelink.azurecr.io" DNS zone
 - App Insights and Log Analytics workspace
 - AI Services + an AI Services Connection to the Hub

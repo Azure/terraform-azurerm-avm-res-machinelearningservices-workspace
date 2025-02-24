@@ -1,10 +1,6 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -33,12 +29,15 @@ module "naming" {
 resource "azurerm_resource_group" "example" {
   location = var.location
   name     = module.naming.resource_group.name_unique
+  tags     = local.tags
 }
 
 locals {
   name = module.naming.machine_learning_workspace.name_unique
+  tags = {
+    scenario = "default AI Foundry"
+  }
 }
-
 
 data "azurerm_client_config" "current" {}
 
@@ -58,36 +57,20 @@ resource "azurerm_key_vault" "example" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
-resource "azapi_resource" "aiservice" {
-  type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  body = {
-    properties = {
-      publicNetworkAccess = "Enabled"
-      apiProperties = {
-        statisticsEnabled = false
-      }
-    }
-    sku = {
-      "name" : "S0",
-    }
-    kind = "AIServices"
-  }
-  location               = var.location
-  name                   = module.naming.cognitive_account.name_unique
-  parent_id              = azurerm_resource_group.example.id
-  response_export_values = ["*"]
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
+module "ai_services" {
+  source                             = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version                            = "0.6.0"
+  resource_group_name                = azurerm_resource_group.example.name
+  kind                               = "AIServices"
+  name                               = module.naming.cognitive_account.name_unique
+  location                           = var.location
+  enable_telemetry                   = var.enable_telemetry
+  sku_name                           = "S0"
+  public_network_access_enabled      = true # required for AI Foundry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  tags                               = local.tags
 }
-
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -102,28 +85,27 @@ module "aihub" {
   resource_group_name     = azurerm_resource_group.example.name
   kind                    = "Hub"
   workspace_friendly_name = "AI Studio Hub"
-  workspace_managed_network = {
-    isolation_mode = "Disabled"
-    spark_ready    = true
-  }
 
   aiservices = {
-    create_new                = false
-    name                      = azapi_resource.aiservice.name
-    resource_group_id         = azapi_resource.aiservice.parent_id
+    resource_group_id         = azurerm_resource_group.example.id
+    name                      = module.ai_services.name
     create_service_connection = true
   }
 
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = false
+  }
+
   key_vault = {
-    create_new  = false
     resource_id = azurerm_key_vault.example.id
   }
 
   storage_account = {
-    create_new  = false
     resource_id = azurerm_storage_account.example.id
   }
 
   enable_telemetry = var.enable_telemetry
+  tags             = local.tags
 }
 

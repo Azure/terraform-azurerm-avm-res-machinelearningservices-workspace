@@ -1,16 +1,18 @@
 <!-- BEGIN_TF_DOCS -->
-# BYO Resources - AI Studio
+# AI Foundry with managed Key Vault
 
-This deploys a public AI Studio Hub using existing resources. The resource group, storage account, key vault, and cognitive services account (AI Services) are all provided to the module.
+This example demonstrates provisioning an AI Foundry Hub using a managed Key Vault instead of a user-managed instance.
+
+The following resources are included:
+
+- A storage account
+- A publicly-accessible AI Foundry Hub
+- An AI Services instance with a connection to the Hub
 
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -36,64 +38,42 @@ module "naming" {
 }
 
 # This is required for resource modules
-resource "azurerm_resource_group" "example" {
+resource "azurerm_resource_group" "this" {
   location = var.location
   name     = module.naming.resource_group.name_unique
+  tags     = local.tags
 }
-
-locals {
-  name = module.naming.machine_learning_workspace.name_unique
-}
-
-
-data "azurerm_client_config" "current" {}
 
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
   account_tier             = "Standard"
-  location                 = azurerm_resource_group.example.location
+  location                 = azurerm_resource_group.this.location
   name                     = module.naming.storage_account.name_unique
-  resource_group_name      = azurerm_resource_group.example.name
+  resource_group_name      = azurerm_resource_group.this.name
+  tags                     = local.tags
 }
 
-resource "azurerm_key_vault" "example" {
-  location            = azurerm_resource_group.example.location
-  name                = module.naming.key_vault.name_unique
-  resource_group_name = azurerm_resource_group.example.name
-  sku_name            = "standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-}
-
-resource "azapi_resource" "aiservice" {
-  type = "Microsoft.CognitiveServices/accounts@2024-04-01-preview"
-  body = {
-    properties = {
-      publicNetworkAccess = "Enabled"
-      apiProperties = {
-        statisticsEnabled = false
-      }
-    }
-    sku = {
-      "name" : "S0",
-    }
-    kind = "AIServices"
-  }
-  location               = var.location
-  name                   = module.naming.cognitive_account.name_unique
-  parent_id              = azurerm_resource_group.example.id
-  response_export_values = ["*"]
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
+locals {
+  name = module.naming.machine_learning_workspace.name_unique
+  tags = {
+    scenario = "AI Foundry with Managed Key Vault"
   }
 }
 
+module "ai_services" {
+  source                             = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version                            = "0.6.0"
+  resource_group_name                = azurerm_resource_group.this.name
+  kind                               = "AIServices"
+  name                               = module.naming.cognitive_account.name_unique
+  location                           = var.location
+  enable_telemetry                   = var.enable_telemetry
+  sku_name                           = "S0"
+  public_network_access_enabled      = true # required for AI Foundry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  tags                               = local.tags
+}
 
 # This is the module call
 # Do not specify location here due to the randomization above.
@@ -103,10 +83,14 @@ module "aihub" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location                = azurerm_resource_group.example.location
-  name                    = local.name
-  resource_group_name     = azurerm_resource_group.example.name
-  kind                    = "Hub"
+  location            = azurerm_resource_group.this.location
+  name                = local.name
+  resource_group_name = azurerm_resource_group.this.name
+  kind                = "Hub"
+  key_vault           = { use_microsoft_managed_key_vault = true }
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
   workspace_friendly_name = "AI Studio Hub"
   workspace_managed_network = {
     isolation_mode = "Disabled"
@@ -114,25 +98,14 @@ module "aihub" {
   }
 
   aiservices = {
-    create_new                = false
-    name                      = azapi_resource.aiservice.name
-    resource_group_id         = azapi_resource.aiservice.parent_id
+    resource_group_id         = azurerm_resource_group.this.id
+    name                      = module.ai_services.name
     create_service_connection = true
   }
 
-  key_vault = {
-    create_new  = false
-    resource_id = azurerm_key_vault.example.id
-  }
-
-  storage_account = {
-    create_new  = false
-    resource_id = azurerm_storage_account.example.id
-  }
-
+  tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
-
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -142,19 +115,14 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
-
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
-- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -194,6 +162,12 @@ Description: The AI Studio hub workspace.
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_ai_services"></a> [ai\_services](#module\_ai\_services)
+
+Source: Azure/avm-res-cognitiveservices-account/azurerm
+
+Version: 0.6.0
 
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 

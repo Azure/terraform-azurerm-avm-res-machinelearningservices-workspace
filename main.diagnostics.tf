@@ -1,7 +1,7 @@
 resource "azurerm_monitor_diagnostic_setting" "this" {
   for_each = var.diagnostic_settings
 
-  name                           = each.value.name != null ? each.value.name : "diag-${var.name}"
+  name                           = coalesce(each.value.name, "diag-${var.name}")
   target_resource_id             = local.aml_resource.id
   eventhub_authorization_rule_id = each.value.event_hub_authorization_rule_resource_id
   eventhub_name                  = each.value.event_hub_name

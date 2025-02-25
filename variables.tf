@@ -6,11 +6,11 @@ variable "location" {
 
 variable "name" {
   type        = string
-  description = "The name of the this resource."
+  description = "The name of the resource."
 
   validation {
-    condition     = can(regex("^[0-9A-Za-z-]{5,}$", var.name))
-    error_message = "`name` must only contain -, a-z, A-Z, or 0-9."
+    condition     = can(regex("^[0-9A-Za-z-_]{3,33}$", var.name))
+    error_message = "`name` must only contain alphanumerics, hyphens and underscores."
   }
 }
 
@@ -28,34 +28,6 @@ variable "ai_studio_hub_id" {
   validation {
     condition     = var.kind != "Project" || var.ai_studio_hub_id != null
     error_message = "The Hub ID is required when `var.kind` equals 'Project'"
-  }
-}
-
-variable "aiservices" {
-  type = object({
-    create_new                = optional(bool, false)
-    analysis_services_sku     = optional(string, "S0")
-    name                      = optional(string, null)
-    resource_group_id         = optional(string, null)
-    tags                      = optional(map(string), null)
-    create_service_connection = optional(bool, false)
-  })
-  default = {
-    create_new = false
-  }
-  description = <<DESCRIPTION
-An object describing the AI Services resource to create or reference. This includes the following properties:
-- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
-- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
-- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
-- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags`: (Optional) Tags for the AI Services resource.
-- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
-DESCRIPTION
-
-  validation {
-    condition     = !(var.aiservices.create_new && var.aiservices.resource_group_id != null && var.aiservices.name != null)
-    error_message = "When creating new AI Services resource, `name` and `resource_group_id` must be null."
   }
 }
 
@@ -369,6 +341,19 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "storage_access_type" {
+  type        = string
+  default     = "Identity"
+  description = <<DESCRIPTION
+The authentication mode used for accessing the system datastores of the workspace. Valid options include "AccessKey", "Identity", and "UserDelegationSAS".
+DESCRIPTION
+
+  validation {
+    condition     = contains(["AccessKey", "Identity", "UserDelegationSAS"], var.storage_access_type)
+    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
+  }
+}
+
 variable "storage_account" {
   type = object({
     resource_id = optional(string)
@@ -393,6 +378,289 @@ variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) Tags of the resource."
+}
+
+variable "workspace_connections" {
+  type = map(object({
+    category         = string
+    target           = string
+    auth_type        = string
+    name             = optional(string, null)
+    expiry_time      = optional(string, null)
+    shared_by_all    = optional(bool, false)
+    shared_user_list = optional(set(string), [])
+    credentials = optional(object({
+      access_key_id     = optional(string, null)
+      secret_access_key = optional(string, null)
+      key               = optional(string, null)
+      keys              = optional(map(string), {})
+      client_id         = optional(string, null)
+      resource_id       = optional(string, null)
+      auth_url          = optional(string, null)
+      client_secret     = optional(string, null)
+      dev_token         = optional(string, null)
+      password          = optional(string, null)
+      refresh_token     = optional(string, null)
+      username          = optional(string, null)
+      pat               = optional(string, null)
+      sas               = optional(string, null)
+      security_token    = optional(string, null)
+      tenant_id         = optional(string, null)
+    }), null)
+    metadata = optional(map(string), {})
+    tags     = optional(map(string), {})
+  }))
+  default     = {}
+  description = <<DESCRIPTION
+A map of details required to connect resources to the provisioned workspace.
+
+Each connection includes the following:
+
+- `name`: The name of the connection. A value will be generated if not provided.
+- `category`: The type of resource or service to be connected. Valid options include:
+    "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
+    "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
+    "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics",
+    "AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry",
+    "CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm",
+    "Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git",
+    "GoogleAdWords" , "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix",
+    "Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql",
+    "Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix",
+    "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
+    "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
+    "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
+- `target`: The target endpoint to connect to.
+- `auth_type`: The method of authentication. Valid options include:
+    "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity", "None", 
+    "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
+- `credentials`: Object with the specifics for authentication. Dependent on `auth_type`.
+- `expiry_time`: (Optional) The connection's time of expiration.
+- `shared_by_all`: (Optional) Indicates whether the connection is shared to all projects in the workspace.
+- `shared_user_list`: (Optional) The list of users who can use the connection.
+- `metadata`: (Optional) Additional metadata about the connection.
+    **Note**: When creating a connection for _an Azure service_, this object must be:
+    ```hcl
+    {
+      ApiType = "Azure"
+      ResourceId = <resource id for connected service>
+    }
+    ```
+- `tags`: (Optional) A map of tags to assign to the connection.
+---
+
+The `credentials` block is dependent on the `auth_type`.
+
+### "AAD" and "None"
+
+```hcl
+{
+  credentials = null
+}
+```
+
+### "AccessKey"
+
+```hcl
+{
+  credentials = {
+    access_key_id = <value>
+    secret_access_key = <value>
+  }
+}
+```
+
+### "AccountKey" and "ApiKey"
+
+```hcl
+{
+  credentials = {
+    key = <value>
+  }
+}
+```
+
+### "CustomKeys"
+
+```hcl
+{
+  credentials = {
+    keys = {
+      {customized property} = <value>
+    }
+  }
+}
+```
+
+### "ManagedIdentity"
+
+```hcl
+{
+  credentials = {
+    client_id = <value>
+    resource_id = <value>
+  }
+}
+```
+
+### "OAuth2"
+
+```hcl
+{
+  credentials = {
+    auth_url = <value>
+    client_secret = <value>
+    dev_token = <value>
+    password = <value>
+    refresh_token = <value>
+    username = <value>
+    tenant_id = <value>
+  }
+}
+```
+
+- `auth_url` is required when `category` is "Concur".
+- `dev_token` is required when `category` is "GoogleAdWords".
+- `refresh_token` is required when `category` is "GoogleBigQuery", "GoogleAdWords", "Hubspot", "QuickBooks", "Square", "Xero", or "Zoho".
+- `tenant_id` is required when `category` is "QuickBooks" or "Xero".
+- `username` is required when `category` is "Concur" or "ServiceNow".
+
+### "PAT"
+
+```hcl
+{
+  credentials = {
+    pat = <value>
+  }
+}
+```
+
+### "SAS"
+
+```hcl
+{
+  credentials = {
+    sas = <value>
+  }
+}
+```
+
+### "ServicePrincipal"
+
+```hcl
+{
+  credentials = {
+    client_id = <value>
+    client_secret = <value>
+    tenant_id = <value>
+  }
+}
+```
+
+### "UsernamePassword"
+
+```hcl
+{
+  credentials = {
+    password = <value>
+    username = <value>
+    security_token = <value>
+  }
+}
+```
+
+DESCRIPTION
+
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : contains(["ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift", "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb", "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics", "AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry", "CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm", "Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git", "GoogleAdWords", "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix", "Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql", "Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix", "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud", "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow", "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"], c.category)])
+    error_message = <<DESCRIPTION
+Valid connection categories include: "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
+"AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
+"AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics",
+"AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry",
+"CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm",
+"Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git",
+"GoogleAdWords" , "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix",
+"Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql",
+"Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix",
+"Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
+"SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
+"Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : contains(["AAD", "AccessKey", "AccountKey", "ApiKey", "CustomKeys", "ManagedIdentity", "None", "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"], c.auth_type)])
+    error_message = <<DESCRIPTION
+Valid authentication methods include: "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity",
+"None", "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
+DESCRIPTION
+  }
+  validation {
+    condition     = var.kind != "Hub" || anytrue([for _, c in var.workspace_connections : contains(["AIServices", "AzureOpenAI"], c.category)])
+    error_message = <<DESCRIPTION
+When creating an AI Foundry Hub, a connection to AI Services (`category` is "AIServices") or Azure OpenAI (`category` is "AzureOpenAI") is required.
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : c.credentials == null if contains(["AAD", "None"], c.auth_type)])
+    error_message = <<DESCRIPTION
+`credentials` must be null when `auth_type` is "AAD" or "None".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.pat) > 0 if c.auth_type == "PAT"])
+    error_message = <<DESCRIPTION
+`credentials.pat` is required when `auth_type` is "PAT".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.sas) > 0 if c.auth_type == "SAS"])
+    error_message = <<DESCRIPTION
+`credentials.sas` is required when `auth_type` is "SAS".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.keys) > 0 if c.auth_type == "CustomKeys"])
+    error_message = <<DESCRIPTION
+`credentials.keys` must contain at least one key when `auth_type` is "CustomKeys".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.key) > 0 if contains(["AccountKey", "ApiKey"], c.auth_type)])
+    error_message = <<DESCRIPTION
+`credentials.key` is required when `auth_type` is "AccountKey" or "ApiKey".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.access_key_id) > 0 && length(c.credentials.secret_access_key) > 0 if c.auth_type == "AccessKey"])
+    error_message = <<DESCRIPTION
+`credentials.access_key_id` and `credentials.secret_access_key` are required when `auth_type` is "AccessKey".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.username) > 0 && length(c.credentials.password) > 0 && length(c.credentials.security_token) > 0 if c.auth_type == "UsernamePassword"])
+    error_message = <<DESCRIPTION
+`credentials.password`, `credentials.username` and `credentials.security_token` are required when `auth_type` is "UsernamePassword".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.client_id) > 0 && length(c.credentials.client_secret) > 0 && length(c.credentials.tenant_id) > 0 if c.auth_type == "ServicePrincipal"])
+    error_message = <<DESCRIPTION
+`credentials.client_id`, `credentials.client_secret` and `credentials.tenant_id` are required when `auth_type` is "ServicePrincipal".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.credentials.client_id) > 0 && length(c.credentials.resource_id) > 0 if c.auth_type == "ManagedIdentity"])
+    error_message = <<DESCRIPTION
+`credentials.client_id` and `credentials.resource_id` are required when `auth_type` is "ManagedIdentity".
+DESCRIPTION
+  }
+  validation {
+    condition     = length(var.workspace_connections) == 0 || alltrue([for _, c in var.workspace_connections : length(c.metadata) > 0 if contains(["ADLSGen2", "AIServices", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb", "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics", "AzureTableStorage", "BingLLMSearch", "CognitiveSearch", "CognitiveService", "ContainerRegistry", "CosmosDb", "CosmosDbMongoDbApi"], c.category)])
+    error_message = <<DESCRIPTION
+`metadata` is required when connecting to Azure services. `APIType` = "Azure" and `ResourceId` = <the resource id>
+DESCRIPTION
+  }
 }
 
 variable "workspace_description" {

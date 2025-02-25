@@ -1,7 +1,38 @@
+# tflint-ignore: terraform_unused_declarations
+variable "aiservices" {
+  type = object({
+    create_new                = optional(bool, false)
+    analysis_services_sku     = optional(string, "S0")
+    name                      = optional(string, null)
+    resource_group_id         = optional(string, null)
+    tags                      = optional(map(string), null)
+    create_service_connection = optional(bool, false)
+  })
+  default = {
+    create_new = false
+  }
+  description = <<DESCRIPTION
+DEPRECATED.
+
+An object describing the AI Services resource to create or reference. This includes the following properties:
+- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
+- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
+- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
+- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
+- `tags`: (Optional) Tags for the AI Services resource.
+- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
+DESCRIPTION
+}
+
+# tflint-ignore: terraform_unused_declarations
 variable "create_compute_instance" {
   type        = bool
   default     = false
-  description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet. **Due to the complexity of compute instances and to prevent setting precedent that compute provisioning will be included in this module, this will be deprecated in a future release."
+  description = <<DESCRIPTION
+DEPRECATED. No compute instance is provisioned when `true`.
+
+Specifies whether a compute instance should be created for the workspace to provision the managed vnet.
+DESCRIPTION
 }
 
 variable "outbound_rules" {
@@ -17,17 +48,4 @@ variable "outbound_rules" {
   - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
   
   DESCRIPTION
-}
-
-variable "storage_access_type" {
-  type        = string
-  default     = "identity"
-  description = <<DESCRIPTION
-The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
-DESCRIPTION
-
-  validation {
-    condition     = contains(["accessKey", "identity"], var.storage_access_type)
-    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
-  }
 }

@@ -98,7 +98,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
-- <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (0.3.2)
+- <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (3.6.2)
 
@@ -106,9 +106,6 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -117,13 +114,12 @@ The following resources are used by this module:
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/resources/telemetry) (resource)
+- [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
-- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_key) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
-- [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/0.3.2/docs/data-sources/module_source) (data source)
+- [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -138,7 +134,7 @@ Type: `string`
 
 ### <a name="input_name"></a> [name](#input\_name)
 
-Description: The name of the this resource.
+Description: The name of the resource.
 
 Type: `string`
 
@@ -162,7 +158,9 @@ Default: `null`
 
 ### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
 
-Description: An object describing the AI Services resource to create or reference. This includes the following properties:
+Description: DEPRECATED.
+
+An object describing the AI Services resource to create or reference. This includes the following properties:
 - `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
 - `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
 - `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
@@ -235,7 +233,9 @@ Default:
 
 ### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
 
-Description: Specifies whether a compute instance should be created for the workspace to provision the managed vnet. **Due to the complexity of compute instances and to prevent setting precedent that compute provisioning will be included in this module, this will be deprecated in a future release.
+Description: DEPRECATED. No compute instance is provisioned when `true`.
+
+Specifies whether a compute instance should be created for the workspace to provision the managed vnet.
 
 Type: `bool`
 
@@ -525,11 +525,11 @@ Default: `{}`
 
 ### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
 
-Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
+Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include "AccessKey", "Identity", and "UserDelegationSAS".
 
 Type: `string`
 
-Default: `"identity"`
+Default: `"Identity"`
 
 ### <a name="input_storage_account"></a> [storage\_account](#input\_storage\_account)
 
@@ -560,6 +560,202 @@ Description: (Optional) Tags of the resource.
 Type: `map(string)`
 
 Default: `null`
+
+### <a name="input_workspace_connections"></a> [workspace\_connections](#input\_workspace\_connections)
+
+Description: A map of details required to connect resources to the provisioned workspace.
+
+Each connection includes the following:
+
+- `name`: The name of the connection. A value will be generated if not provided.
+- `category`: The type of resource or service to be connected. Valid options include:
+    "ADLSGen2", "AIServices", "AmazonMws", "AmazonRdsForOracle", "AmazonRdsForSqlServer", "AmazonRedshift",
+    "AmazonS3Compatible", "ApiKey", "AzureBlob", "AzureDatabricksDeltaLake", "AzureDataExplorer", "AzureMariaDb",
+    "AzureMySqlDb", "AzureOneLake", "AzureOpenAI", "AzurePostgresDb", "AzureSqlDb", "AzureSqlMi", "AzureSynapseAnalytics",
+    "AzureTableStorage", "BingLLMSearch", "Cassandra", "CognitiveSearch", "CognitiveService", "Concur", "ContainerRegistry",
+    "CosmosDb", "CosmosDbMongoDbApi", "Couchbase", "CustomKeys", "Db2", "Drill", "Dynamics", "DynamicsAx", "DynamicsCrm",
+    "Elasticsearch", "Eloqua", "FileServer", "FtpServer", "GenericContainerRegistry", "GenericHttp", "GenericRest", "Git",
+    "GoogleAdWords" , "GoogleBigQuery", "GoogleCloudStorage", "Greenplum", "Hbase", "Hdfs", "Hive", "Hubspot", "Impala", "Informix",
+    "Jira", "Magento", "ManagedOnlineEndpoint", "MariaDb", "Marketo", "MicrosoftAccess", "MongoDbAtlas", "MongoDbV2", "MySql",
+    "Netezza", "ODataRest", "Odbc", "Office365", "OpenAI", "Oracle", "OracleCloudStorage", "OracleServiceCloud", "PayPal", "Phoenix",
+    "Pinecone", "PostgreSql", "Presto", "PythonFeed", "QuickBooks", "Redis", "Responsys", "S3", "Salesforce", "SalesforceMarketingCloud",
+    "SalesforceServiceCloud", "SapBw", "SapCloudForCustomer", "SapEcc", "SapHana", "SapOpenHub", "SapTable", "Serp", "Serverless", "ServiceNow",
+    "Sftp", "SharePointOnlineList", "Shopify", "Snowflake", "Spark", "SqlServer", "Square", "Sybase", "Teradata", "Vertica", "WebTable", "Xero", "Zoho"
+- `target`: The target endpoint to connect to.
+- `auth_type`: The method of authentication. Valid options include:
+    "AAD","AccessKey","AccountKey","ApiKey","CustomKeys", "ManagedIdentity", "None",
+    "OAuth2", "PAT", "SAS", "ServicePrincipal", "UsernamePassword"
+- `credentials`: Object with the specifics for authentication. Dependent on `auth_type`.
+- `expiry_time`: (Optional) The connection's time of expiration.
+- `shared_by_all`: (Optional) Indicates whether the connection is shared to all projects in the workspace.
+- `shared_user_list`: (Optional) The list of users who can use the connection.
+- `metadata`: (Optional) Additional metadata about the connection.
+    **Note**: When creating a connection for \_an Azure service\_, this object must be:
+    ```hcl
+    {
+      ApiType = "Azure"
+      ResourceId = <resource id for connected service>
+    }
+    
+```
+- `tags`: (Optional) A map of tags to assign to the connection.
+---
+
+The `credentials` block is dependent on the `auth_type`.
+
+### "AAD" and "None"
+
+```hcl
+{
+  credentials = null
+}
+```
+
+### "AccessKey"
+
+```hcl
+{
+  credentials = {
+    access_key_id = <value>
+    secret_access_key = <value>
+  }
+}
+```
+
+### "AccountKey" and "ApiKey"
+
+```hcl
+{
+  credentials = {
+    key = <value>
+  }
+}
+```
+
+### "CustomKeys"
+
+```hcl
+{
+  credentials = {
+    keys = {
+      {customized property} = <value>
+    }
+  }
+}
+```
+
+### "ManagedIdentity"
+
+```hcl
+{
+  credentials = {
+    client_id = <value>
+    resource_id = <value>
+  }
+}
+```
+
+### "OAuth2"
+
+```hcl
+{
+  credentials = {
+    auth_url = <value>
+    client_secret = <value>
+    dev_token = <value>
+    password = <value>
+    refresh_token = <value>
+    username = <value>
+    tenant_id = <value>
+  }
+}
+```
+
+- `auth_url` is required when `category` is "Concur".
+- `dev_token` is required when `category` is "GoogleAdWords".
+- `refresh_token` is required when `category` is "GoogleBigQuery", "GoogleAdWords", "Hubspot", "QuickBooks", "Square", "Xero", or "Zoho".
+- `tenant_id` is required when `category` is "QuickBooks" or "Xero".
+- `username` is required when `category` is "Concur" or "ServiceNow".
+
+### "PAT"
+
+```hcl
+{
+  credentials = {
+    pat = <value>
+  }
+}
+```
+
+### "SAS"
+
+```hcl
+{
+  credentials = {
+    sas = <value>
+  }
+}
+```
+
+### "ServicePrincipal"
+
+```hcl
+{
+  credentials = {
+    client_id = <value>
+    client_secret = <value>
+    tenant_id = <value>
+  }
+}
+```
+
+### "UsernamePassword"
+
+```hcl
+{
+  credentials = {
+    password = <value>
+    username = <value>
+    security_token = <value>
+  }
+}
+```
+
+Type:
+
+```hcl
+map(object({
+    category         = string
+    target           = string
+    auth_type        = string
+    name             = optional(string, null)
+    expiry_time      = optional(string, null)
+    shared_by_all    = optional(bool, false)
+    shared_user_list = optional(set(string), [])
+    credentials = optional(object({
+      access_key_id     = optional(string, null)
+      secret_access_key = optional(string, null)
+      key               = optional(string, null)
+      keys              = optional(map(string), {})
+      client_id         = optional(string, null)
+      resource_id       = optional(string, null)
+      auth_url          = optional(string, null)
+      client_secret     = optional(string, null)
+      dev_token         = optional(string, null)
+      password          = optional(string, null)
+      refresh_token     = optional(string, null)
+      username          = optional(string, null)
+      pat               = optional(string, null)
+      sas               = optional(string, null)
+      security_token    = optional(string, null)
+      tenant_id         = optional(string, null)
+    }), null)
+    metadata = optional(map(string), {})
+    tags     = optional(map(string), {})
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_workspace_description"></a> [workspace\_description](#input\_workspace\_description)
 
@@ -642,13 +838,9 @@ Default:
 
 The following outputs are exported:
 
-### <a name="output_ai_services"></a> [ai\_services](#output\_ai\_services)
+### <a name="output_name"></a> [name](#output\_name)
 
-Description: The AI Services resource, if created.
-
-### <a name="output_ai_services_service_connection"></a> [ai\_services\_service\_connection](#output\_ai\_services\_service\_connection)
-
-Description: The service connection between the AIServices and the workspace, if created.
+Description: The name of the resource.
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
@@ -656,23 +848,35 @@ Description: A map of the private endpoints created.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
-Description: The machine learning workspace.
+Description: DEPRECATED. This value is now always `null`; please use the output `workspace` as applicable.
 
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
-Description: The ID of the machine learning workspace.
+Description: The ID of the resource.
+
+### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
+
+Description: The identity for the resource.
 
 ### <a name="output_workspace"></a> [workspace](#output\_workspace)
 
-Description: The machine learning workspace created.
+Description: The created resource.
 
 ### <a name="output_workspace_identity"></a> [workspace\_identity](#output\_workspace\_identity)
 
-Description: The identity for the created workspace.
+Description: DEPRECATED. This will be removed in a future release. Please transition to using output `system_assigned_mi_principal_id`.
+
+The identity for the created workspace.
 
 ## Modules
 
-No modules.
+The following Modules are called:
+
+### <a name="module_connections"></a> [connections](#module\_connections)
+
+Source: ./modules/connection
+
+Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

@@ -14,7 +14,6 @@ resource "azapi_resource" "connection" {
   }
   name                      = var.name
   parent_id                 = var.workspace_id
-  response_export_values    = ["*"]
   schema_validation_enabled = false # authType & credentials have too much variety
   tags                      = var.tags
 
@@ -24,4 +23,5 @@ resource "azapi_resource" "connection" {
       body.properties.metadata # this is also occasionally modified by Azure
     ]
   }
+  ignore_casing = true
 }

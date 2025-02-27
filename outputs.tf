@@ -1,3 +1,8 @@
+output "connections" {
+  description = "The connections created between the workspace/hub/project and other services"
+  value       = [for _, conn in module.connections : { resource_id = conn.resource_id, name = conn.name }]
+}
+
 output "name" {
   description = "The name of the resource."
   value       = local.aml_resource.name

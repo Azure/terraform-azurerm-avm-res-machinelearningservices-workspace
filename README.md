@@ -838,6 +838,10 @@ Default:
 
 The following outputs are exported:
 
+### <a name="output_connections"></a> [connections](#output\_connections)
+
+Description: The connections created between the workspace/hub/project and other services
+
 ### <a name="output_name"></a> [name](#output\_name)
 
 Description: The name of the resource.

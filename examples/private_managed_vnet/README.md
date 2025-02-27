@@ -27,6 +27,10 @@ After the network is provisioned (either by adding compute or manually provision
 terraform {
   required_version = ">= 1.9, < 2.0"
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -174,6 +178,21 @@ module "private_dns_containerregistry_registry" {
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.azurecr.io"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = local.tags
+  enable_telemetry = var.enable_telemetry
+}
+
+module "private_dns_cognitiveservices_azureopenai" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "~> 0.2"
+  domain_name         = "privatelink.openai.azure.com"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.openai.azure.com"
       vnetid       = module.virtual_network.resource.id
     }
   }
@@ -354,11 +373,23 @@ module "avm_res_containerregistry_registry" {
   }
 }
 
-resource "azurerm_monitor_private_link_scope" "example" {
-  name                  = "example-ampls"
-  resource_group_name   = azurerm_resource_group.this.name
-  ingestion_access_mode = "PrivateOnly"
-  query_access_mode     = "PrivateOnly"
+resource "azapi_resource" "amplscope" {
+  type = "Microsoft.Insights/privateLinkScopes@2023-06-01-preview"
+  body = {
+    properties = {
+      accessModeSettings = {
+        ingestionAccessMode = "PrivateOnly"
+        queryAccessMode     = "Open"
+        exclusions          = []
+      }
+    }
+  }
+  ignore_casing             = true
+  location                  = "global"
+  name                      = module.naming.private_link_service.name_unique
+  parent_id                 = azurerm_resource_group.this.id
+  schema_validation_enabled = false
+  tags                      = local.tags
 }
 
 resource "azurerm_private_endpoint" "privatelinkscope" {
@@ -371,7 +402,7 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
   private_service_connection {
     is_manual_connection           = false
     name                           = "psc-azuremonitor"
-    private_connection_resource_id = azurerm_monitor_private_link_scope.example.id
+    private_connection_resource_id = azapi_resource.amplscope.id
     subresource_names              = ["azuremonitor"]
   }
   private_dns_zone_group {
@@ -384,6 +415,8 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
       module.private_dns_agentsvc.resource_id
     ]
   }
+
+  depends_on = [azapi_resource.amplscope]
 }
 
 module "avm_res_log_analytics_workspace" {
@@ -402,13 +435,15 @@ module "avm_res_log_analytics_workspace" {
   log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
   tags                                               = local.tags
-}
 
-resource "azurerm_monitor_private_link_scoped_service" "law" {
-  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
-  name                = azurerm_monitor_private_link_scope.example.name
-  resource_group_name = azurerm_resource_group.this.name
-  scope_name          = "privatelinkscopedservice.loganalytics"
+  monitor_private_link_scoped_resource = {
+    default = {
+      resource_id = azapi_resource.amplscope.id
+      name        = "loganalytics-ampls"
+    }
+  }
+
+  depends_on = [azurerm_private_endpoint.privatelinkscope]
 }
 
 module "avm_res_insights_component" {
@@ -422,15 +457,43 @@ module "avm_res_insights_component" {
   internet_ingestion_enabled = false
   internet_query_enabled     = true
   tags                       = local.tags
+
+  depends_on = [module.avm_res_log_analytics_workspace]
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
   linked_resource_id  = module.avm_res_insights_component.resource_id
-  name                = azurerm_monitor_private_link_scope.example.name
+  name                = "appinsights-ampls"
   resource_group_name = azurerm_resource_group.this.name
-  scope_name          = "privatelinkscopedservice.appinsights"
+  scope_name          = azapi_resource.amplscope.name
+
+  depends_on = [azurerm_private_endpoint.privatelinkscope]
 }
 
+module "avm_res_cognitiveservices_azureopenai" {
+  source                        = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version                       = "0.6.0"
+  resource_group_name           = azurerm_resource_group.this.name
+  kind                          = "OpenAI"
+  name                          = module.naming.cognitive_account.name_unique
+  location                      = var.location
+  enable_telemetry              = var.enable_telemetry
+  sku_name                      = "S0"
+  public_network_access_enabled = false
+  local_auth_enabled            = false
+
+  private_endpoints = {
+    blob = {
+      name                          = "pe-azureopenai-account"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      subresource_name              = "account"
+      private_dns_zone_resource_ids = [module.private_dns_cognitiveservices_azureopenai.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
+  tags = local.tags
+}
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -446,8 +509,29 @@ module "azureml" {
   workspace_friendly_name = "private-aml-workspace"
   workspace_description   = "A private AML workspace"
 
+  workspace_connections = {
+    openai = {
+      category      = "AzureOpenAI"
+      target        = module.avm_res_cognitiveservices_azureopenai.resource.endpoint
+      shared_by_all = true
+      auth_type     = "AAD"
+      metadata = {
+        ApiType    = "Azure"
+        ResourceId = module.avm_res_cognitiveservices_azureopenai.resource_id
+      }
+    }
+  }
+
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
+    isolation_mode = "AllowOnlyApprovedOutbound"
+    outbound_rules = {
+      private_endpoint = {
+        openai = {
+          resource_id         = module.avm_res_cognitiveservices_azureopenai.resource_id
+          sub_resource_target = "account"
+        }
+      }
+    }
   }
 
   key_vault = {
@@ -465,6 +549,16 @@ module "azureml" {
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
+
+  private_endpoints = {
+    aml = {
+      name                          = "pe-machinelearning-workspace"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id, module.private_dns_aml_notebooks.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
   tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }
@@ -477,15 +571,16 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_monitor_private_link_scope.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scope) (resource)
+- [azapi_resource.amplscope](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_monitor_private_link_scoped_service.appinsights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) (resource)
-- [azurerm_monitor_private_link_scoped_service.law](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) (resource)
 - [azurerm_private_endpoint.privatelinkscope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
@@ -528,6 +623,12 @@ Description: The machine learning workspace.
 ## Modules
 
 The following Modules are called:
+
+### <a name="module_avm_res_cognitiveservices_azureopenai"></a> [avm\_res\_cognitiveservices\_azureopenai](#module\_avm\_res\_cognitiveservices\_azureopenai)
+
+Source: Azure/avm-res-cognitiveservices-account/azurerm
+
+Version: 0.6.0
 
 ### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
 
@@ -584,6 +685,12 @@ Source: Azure/avm-res-network-privatednszone/azurerm
 Version: ~> 0.2
 
 ### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
+
+Source: Azure/avm-res-network-privatednszone/azurerm
+
+Version: ~> 0.2
+
+### <a name="module_private_dns_cognitiveservices_azureopenai"></a> [private\_dns\_cognitiveservices\_azureopenai](#module\_private\_dns\_cognitiveservices\_azureopenai)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 

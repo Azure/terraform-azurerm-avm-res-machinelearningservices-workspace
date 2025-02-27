@@ -410,6 +410,19 @@ module "azureml" {
       }
     }
   }
+  workspace_connections = {
+    search = {
+      category = "CognitiveSearch"
+      target   = module.aisearch.resource.endpoint
+      metadata = {
+        ApiType    = "Azure"
+        ResourceId = module.aisearch.resource_id
+      }
+      auth_type     = "AAD"
+      name          = "ai-search-connection"
+      shared_by_all = true
+    }
+  }
   private_endpoints = {
     primary = {
       name                          = "pe-aml-workspace"

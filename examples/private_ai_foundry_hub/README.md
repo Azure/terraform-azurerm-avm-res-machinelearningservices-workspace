@@ -353,10 +353,21 @@ module "aihub" {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
 
-  aiservices = {
-    resource_group_id         = azurerm_resource_group.this.id
-    name                      = module.ai_services.name
-    create_service_connection = true
+  workspace_connections = {
+    ai = {
+      target   = module.ai_services.endpoint
+      category = "AIServices"
+      metadata = {
+        ResourceId = module.ai_services.resource_id
+        ApiType    = "Azure"
+      }
+      auth_type        = "AAD"
+      shared_by_all    = false
+      shared_user_list = [data.azurerm_client_config.current.object_id]
+      tags = merge(local.tags, {
+        connectionType = "AIServices"
+      })
+    }
   }
 
   private_endpoints = {

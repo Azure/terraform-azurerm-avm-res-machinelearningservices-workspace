@@ -12,6 +12,7 @@ resource "azapi_resource" "connection" {
       metadata       = var.metadata
     }
   }
+  ignore_casing             = true
   name                      = var.name
   parent_id                 = var.workspace_id
   schema_validation_enabled = false # authType & credentials have too much variety
@@ -23,5 +24,4 @@ resource "azapi_resource" "connection" {
       body.properties.metadata # this is also occasionally modified by Azure
     ]
   }
-  ignore_casing = true
 }

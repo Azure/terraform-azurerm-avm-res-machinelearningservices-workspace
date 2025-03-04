@@ -27,10 +27,6 @@ After the network is provisioned (either by adding compute or manually provision
 terraform {
   required_version = ">= 1.9, < 2.0"
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -373,23 +369,12 @@ module "avm_res_containerregistry_registry" {
   }
 }
 
-resource "azapi_resource" "amplscope" {
-  type = "Microsoft.Insights/privateLinkScopes@2023-06-01-preview"
-  body = {
-    properties = {
-      accessModeSettings = {
-        ingestionAccessMode = "PrivateOnly"
-        queryAccessMode     = "Open"
-        exclusions          = []
-      }
-    }
-  }
-  ignore_casing             = true
-  location                  = "global"
-  name                      = module.naming.private_link_service.name_unique
-  parent_id                 = azurerm_resource_group.this.id
-  schema_validation_enabled = false
-  tags                      = local.tags
+
+resource "azurerm_monitor_private_link_scope" "example" {
+  name                  = "example-ampls"
+  resource_group_name   = azurerm_resource_group.this.name
+  ingestion_access_mode = "PrivateOnly"
+  query_access_mode     = "PrivateOnly"
 }
 
 resource "azurerm_private_endpoint" "privatelinkscope" {
@@ -402,7 +387,7 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
   private_service_connection {
     is_manual_connection           = false
     name                           = "psc-azuremonitor"
-    private_connection_resource_id = azapi_resource.amplscope.id
+    private_connection_resource_id = azurerm_monitor_private_link_scope.example.id
     subresource_names              = ["azuremonitor"]
   }
   private_dns_zone_group {
@@ -415,8 +400,6 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
       module.private_dns_agentsvc.resource_id
     ]
   }
-
-  depends_on = [azapi_resource.amplscope]
 }
 
 module "avm_res_log_analytics_workspace" {
@@ -435,15 +418,13 @@ module "avm_res_log_analytics_workspace" {
   log_analytics_workspace_internet_ingestion_enabled = false
   log_analytics_workspace_internet_query_enabled     = true
   tags                                               = local.tags
+}
 
-  monitor_private_link_scoped_resource = {
-    default = {
-      resource_id = azapi_resource.amplscope.id
-      name        = "loganalytics-ampls"
-    }
-  }
-
-  depends_on = [azurerm_private_endpoint.privatelinkscope]
+resource "azurerm_monitor_private_link_scoped_service" "law" {
+  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
+  name                = azurerm_monitor_private_link_scope.example.name
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = "privatelinkscopedservice.loganalytics"
 }
 
 module "avm_res_insights_component" {
@@ -463,11 +444,9 @@ module "avm_res_insights_component" {
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
   linked_resource_id  = module.avm_res_insights_component.resource_id
-  name                = "appinsights-ampls"
+  name                = azurerm_monitor_private_link_scope.example.name
   resource_group_name = azurerm_resource_group.this.name
-  scope_name          = azapi_resource.amplscope.name
-
-  depends_on = [azurerm_private_endpoint.privatelinkscope]
+  scope_name          = "privatelinkscopedservice.appinsights"
 }
 
 module "avm_res_cognitiveservices_azureopenai" {
@@ -571,16 +550,15 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
-
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azapi_resource.amplscope](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azurerm_monitor_private_link_scope.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scope) (resource)
 - [azurerm_monitor_private_link_scoped_service.appinsights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) (resource)
+- [azurerm_monitor_private_link_scoped_service.law](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) (resource)
 - [azurerm_private_endpoint.privatelinkscope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)

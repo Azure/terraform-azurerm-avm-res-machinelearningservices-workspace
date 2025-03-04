@@ -399,7 +399,7 @@ module "azureml" {
   workspace_connections = {
     search = {
       category = "CognitiveSearch"
-      target   = module.aisearch.resource.endpoint
+      target   = "https://${module.aisearch.resource.name}.search.windows.net"
       metadata = {
         ApiType    = "Azure"
         ResourceId = module.aisearch.resource_id

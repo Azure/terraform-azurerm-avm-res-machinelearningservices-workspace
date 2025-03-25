@@ -173,6 +173,16 @@ If it is set to false, then no telemetry will be collected.
 DESCRIPTION
 }
 
+variable "force_purge_on_delete" {
+  type        = bool
+  default     = false
+  description = <<DESCRIPTION
+Deletion of an AML workspace or AI Foundry hub is a "soft delete". If there is an attempt to create a new workspace or hub with the same name, it will fail until the soft-deleted workspace is purged.
+
+If "true", `terraform destroy` will delete and purge the workspace or hub. Setting it to "false" will result in the typical soft-delete behavior.
+DESCRIPTION
+}
+
 variable "hbi_workspace" {
   type        = bool
   default     = false

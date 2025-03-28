@@ -36,11 +36,13 @@ resource "azapi_resource" "this" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = "aml-${var.name}"
-  parent_id = data.azurerm_resource_group.current.id
+  ignore_casing = true
+  location      = var.location
+  name          = var.name
+  parent_id     = data.azurerm_resource_group.current.id
   replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.customer_managed_key # these impact the encryption block and would warrant an update-in-place / create/destroy
   ]
   tags = var.tags
 
@@ -55,8 +57,9 @@ resource "azapi_resource" "this" {
 
   lifecycle {
     ignore_changes = [
-      tags,     # tags are occasionally added by Azure
-      parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      tags,                      # tags are occasionally added by Azure
+      parent_id,                 # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      body.properties.encryption # because the key identifier comes from data, the azapi provider doesn't know the value ahead of time and it forces an update-in-place
     ]
   }
 }
@@ -99,11 +102,13 @@ resource "azapi_resource" "hub" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = "hub-${var.name}"
-  parent_id = data.azurerm_resource_group.current.id
+  ignore_casing = true
+  location      = var.location
+  name          = var.name
+  parent_id     = data.azurerm_resource_group.current.id
   replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.customer_managed_key # these impact the encryption block and would warrant an update-in-place / create/destroy
   ]
   tags = var.tags
 
@@ -118,8 +123,9 @@ resource "azapi_resource" "hub" {
 
   lifecycle {
     ignore_changes = [
-      tags,     # When the service connections for CognitiveServices are created, tags are added to this resource
-      parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      tags,                      # tags are occasionally added by Azure
+      parent_id,                 # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      body.properties.encryption # because the key identifier comes from data, the azapi provider doesn't know the value ahead of time and it forces an update-in-place
     ]
   }
 }
@@ -137,9 +143,11 @@ resource "azapi_resource" "project" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = "aihubproject-${var.name}"
-  parent_id = data.azurerm_resource_group.current.id
+  ignore_casing = true
+  location      = var.location
+  name          = var.name
+  parent_id     = data.azurerm_resource_group.current.id
+  tags          = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -148,54 +156,6 @@ resource "azapi_resource" "project" {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids
     }
-  }
-}
-
-# AzAPI AI Services Connection
-resource "azapi_resource" "aiserviceconnection" {
-  count = var.aiservices.create_service_connection ? 1 : 0
-
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-10-01-preview"
-  body = {
-    properties = {
-      category      = "AIServices"
-      target        = local.ai_services.properties.endpoint
-      authType      = "AAD"
-      isSharedToAll = true
-      metadata = {
-        ApiType    = "Azure",
-        ResourceId = local.ai_services_id
-      }
-    }
-  }
-  name                   = "aiserviceconnection${var.name}"
-  parent_id              = local.aml_resource.id
-  response_export_values = ["*"]
-}
-
-# Azure Machine Learning Compute Instance
-resource "azapi_resource" "computeinstance" {
-  count = var.create_compute_instance ? 1 : 0
-
-  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-10-01-preview"
-  body = {
-    properties = {
-      computeLocation  = local.aml_resource.location
-      computeType      = "ComputeInstance"
-      disableLocalAuth = true
-      properties = {
-        enableNodePublicIp = false
-        vmSize             = "STANDARD_DS2_V2"
-      }
-    }
-  }
-  location               = local.aml_resource.location
-  name                   = "ci-${var.name}"
-  parent_id              = local.aml_resource.id
-  response_export_values = ["*"]
-
-  identity {
-    type = "SystemAssigned"
   }
 }
 

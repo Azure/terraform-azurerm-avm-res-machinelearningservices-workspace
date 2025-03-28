@@ -155,6 +155,21 @@ module "private_dns_containerregistry_registry" {
   enable_telemetry = var.enable_telemetry
 }
 
+module "private_dns_cognitiveservices_azureopenai" {
+  source              = "Azure/avm-res-network-privatednszone/azurerm"
+  version             = "~> 0.2"
+  domain_name         = "privatelink.openai.azure.com"
+  resource_group_name = azurerm_resource_group.this.name
+  virtual_network_links = {
+    dnslink = {
+      vnetlinkname = "privatelink.openai.azure.com"
+      vnetid       = module.virtual_network.resource.id
+    }
+  }
+  tags             = local.tags
+  enable_telemetry = var.enable_telemetry
+}
+
 module "private_dns_monitor" {
   source              = "Azure/avm-res-network-privatednszone/azurerm"
   version             = "~> 0.2"
@@ -328,6 +343,7 @@ module "avm_res_containerregistry_registry" {
   }
 }
 
+
 resource "azurerm_monitor_private_link_scope" "example" {
   name                  = "example-ampls"
   resource_group_name   = azurerm_resource_group.this.name
@@ -396,6 +412,8 @@ module "avm_res_insights_component" {
   internet_ingestion_enabled = false
   internet_query_enabled     = true
   tags                       = local.tags
+
+  depends_on = [module.avm_res_log_analytics_workspace]
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
@@ -405,6 +423,30 @@ resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
   scope_name          = "privatelinkscopedservice.appinsights"
 }
 
+module "avm_res_cognitiveservices_azureopenai" {
+  source                        = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version                       = "0.6.0"
+  resource_group_name           = azurerm_resource_group.this.name
+  kind                          = "OpenAI"
+  name                          = module.naming.cognitive_account.name_unique
+  location                      = var.location
+  enable_telemetry              = var.enable_telemetry
+  sku_name                      = "S0"
+  public_network_access_enabled = false
+  local_auth_enabled            = false
+
+  private_endpoints = {
+    blob = {
+      name                          = "pe-azureopenai-account"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      subresource_name              = "account"
+      private_dns_zone_resource_ids = [module.private_dns_cognitiveservices_azureopenai.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
+  tags = local.tags
+}
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -420,8 +462,29 @@ module "azureml" {
   workspace_friendly_name = "private-aml-workspace"
   workspace_description   = "A private AML workspace"
 
+  workspace_connections = {
+    openai = {
+      category      = "AzureOpenAI"
+      target        = module.avm_res_cognitiveservices_azureopenai.resource.endpoint
+      shared_by_all = true
+      auth_type     = "AAD"
+      metadata = {
+        ApiType    = "Azure"
+        ResourceId = module.avm_res_cognitiveservices_azureopenai.resource_id
+      }
+    }
+  }
+
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
+    isolation_mode = "AllowOnlyApprovedOutbound"
+    outbound_rules = {
+      private_endpoint = {
+        openai = {
+          resource_id         = module.avm_res_cognitiveservices_azureopenai.resource_id
+          sub_resource_target = "account"
+        }
+      }
+    }
   }
 
   key_vault = {
@@ -439,6 +502,16 @@ module "azureml" {
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
+
+  private_endpoints = {
+    aml = {
+      name                          = "pe-machinelearning-workspace"
+      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id, module.private_dns_aml_notebooks.resource_id]
+      inherit_lock                  = false
+    }
+  }
+
   tags             = local.tags
   enable_telemetry = var.enable_telemetry
 }

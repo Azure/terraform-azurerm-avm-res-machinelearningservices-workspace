@@ -1,16 +1,16 @@
 resource "azurerm_private_endpoint" "this" {
   for_each = var.private_endpoints
 
-  location                      = each.value.location != null ? each.value.location : var.location
-  name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
+  location                      = coalesce(each.value.location, var.location)
+  name                          = coalesce(each.value.name, "pe-${var.name}")
   resource_group_name           = var.resource_group_name
   subnet_id                     = each.value.subnet_resource_id
   custom_network_interface_name = each.value.network_interface_name
-  tags                          = each.value.tags == null ? var.tags : each.value.tags == {} ? {} : each.value.tags
+  tags                          = coalesce(each.value.tags, var.tags, {})
 
   private_service_connection {
     is_manual_connection           = false
-    name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
+    name                           = coalesce(each.value.private_service_connection_name, "pse-${var.name}")
     private_connection_resource_id = local.aml_resource.id
     subresource_names              = ["amlworkspace"]
   }

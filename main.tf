@@ -39,9 +39,9 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
-  ]
+  # replace_triggers_external_values = [
+  #   var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+  # ]
   tags = var.tags
 
   dynamic "identity" {
@@ -55,8 +55,8 @@ resource "azapi_resource" "this" {
 
   lifecycle {
     ignore_changes = [
-      tags,     # tags are occasionally added by Azure
-      parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      tags, # tags are occasionally added by Azure
+      # parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
 }
@@ -100,11 +100,11 @@ resource "azapi_resource" "hub" {
     kind = var.kind
   }
   location  = var.location
-  name      = "hub-${var.name}"
+  name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
-  ]
+  # replace_triggers_external_values = [
+  #   var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+  # ]
   tags = var.tags
 
   dynamic "identity" {
@@ -118,8 +118,8 @@ resource "azapi_resource" "hub" {
 
   lifecycle {
     ignore_changes = [
-      tags,     # When the service connections for CognitiveServices are created, tags are added to this resource
-      parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      tags, # When the service connections for CognitiveServices are created, tags are added to this resource
+      # parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
 }

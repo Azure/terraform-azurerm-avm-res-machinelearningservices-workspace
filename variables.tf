@@ -270,6 +270,21 @@ variable "managed_identities" {
   nullable    = false
 }
 
+variable "network_acls" {
+  type = object({
+    default_action = optional(string, "Den")
+    ip_rules = optional(list(object({
+      value = string
+    })), [])
+  })
+  default     = null
+  description = <<DESCRIPTION
+Specifies the network access control list (ACL) for the workspace. This includes the following properties:
+- `default_action`: The default action for the network ACL. Possible values are `Allow` and `Deny`. Default is `Deny`.
+- `ip_rules`: A list of IP rules to allow access to the workspace. Each rule should be in CIDR notation.
+DESCRIPTION
+}
+
 variable "primary_user_assigned_identity" {
   type = object({
     resource_id = optional(string, null)

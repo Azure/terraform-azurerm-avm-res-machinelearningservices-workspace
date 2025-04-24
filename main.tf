@@ -13,6 +13,10 @@ resource "azapi_resource" "this" {
       description              = var.workspace_description
       friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
       systemDatastoresAuthMode = var.storage_access_type
+      networkAcls = var.network_acls != null ? {
+        defaultAction = var.network_acls.default_action
+        ipRules       = var.network_acls.ip_rules
+      } : null
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {

@@ -406,6 +406,25 @@ object({
 
 Default: `{}`
 
+### <a name="input_network_acls"></a> [network\_acls](#input\_network\_acls)
+
+Description: Specifies the network access control list (ACL) for the workspace. This includes the following properties:
+- `default_action`: The default action for the network ACL. Possible values are `Allow` and `Deny`. Default is `Deny`.
+- `ip_rules`: A list of IP rules to allow access to the workspace. Each rule should be in CIDR notation.
+
+Type:
+
+```hcl
+object({
+    default_action = optional(string, "Den")
+    ip_rules = optional(list(object({
+      value = string
+    })), [])
+  })
+```
+
+Default: `null`
+
 ### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
 
 Description:   A map of private endpoints outbound rules for the managed network. **This will be deprecated in favor of the `var.workspace_managed_network.outbound_rules` in a future release. Until then, the final outbound rules of type 'PrivateEndpoint' will be a combination of this variable's value and that of `workspace_managed_network.outbound_rules.private_endpoint`.

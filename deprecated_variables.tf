@@ -15,7 +15,7 @@ variable "outbound_rules" {
 
   - `resource_id` - The resource id for the corresponding private endpoint.
   - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
-  
+
   DESCRIPTION
 }
 
@@ -27,7 +27,7 @@ The authentication mode used for accessing the system datastores of the workspac
 DESCRIPTION
 
   validation {
-    condition     = contains(["accessKey", "identity"], var.storage_access_type)
-    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
+    condition     = contains(["accesskey", "identity"], var.storage_access_type)
+    error_message = "Valid options for storage access auth mode are 'accesskey' or 'identity'."
   }
 }

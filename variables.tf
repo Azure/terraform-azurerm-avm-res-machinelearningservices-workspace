@@ -395,11 +395,30 @@ DESCRIPTION
   }
 }
 
+variable "subscription_id" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+The subscription ID where the resource will be created. This is used to determine the parent resource ID for the workspace.
+DESCRIPTION
+}
+
 # required AVM interface
 variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) Tags of the resource."
+}
+
+variable "use_resource_group_data_id" {
+  type        = bool
+  default     = false
+  description = <<DESCRIPTION
+If set to true, the parent_id will be sourced from the data object instead of formatting from the resource group name and subscription ID.
+This can lead to recreating the resource if terraform cant determinate the id of the resource group at plan time.
+Included for backwards compatibility with older versions of the module.
+This is not recommended for new modules.
+DESCRIPTION
 }
 
 variable "workspace_description" {

@@ -55,6 +55,17 @@ locals {
         }
       }
   })
+  parent_resource_id = var.use_resource_group_data_id ? data.azurerm_resource_group.current.id : format("/subscriptions/%s/resourceGroups/%s", var.subscription_id, var.resource_group_name)
+  # private endpoint role assignments
+  pe_role_assignments = { for ra in flatten([
+    for pe_k, pe_v in var.private_endpoints : [
+      for rk, rv in pe_v.role_assignments : {
+        private_endpoint_key = pe_k
+        ra_key               = rk
+        role_assignment      = rv
+      }
+    ]
+  ]) : "${ra.private_endpoint_key}-${ra.ra_key}" => ra }
   # Private endpoint application security group associations.
   # We merge the nested maps from private endpoints and application security group associations into a single map.
   private_endpoint_application_security_group_associations = { for assoc in flatten([
@@ -67,15 +78,5 @@ locals {
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
-  # private endpoint role assignments
-  pe_role_assignments = { for ra in flatten([
-    for pe_k, pe_v in var.private_endpoints : [
-      for rk, rv in pe_v.role_assignments : {
-        private_endpoint_key = pe_k
-        ra_key               = rk
-        role_assignment      = rv
-      }
-    ]
-  ]) : "${ra.private_endpoint_key}-${ra.ra_key}" => ra }
 }
 

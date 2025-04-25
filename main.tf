@@ -100,7 +100,7 @@ resource "azapi_resource" "hub" {
     kind = var.kind
   }
   location  = var.location
-  name      = "hub-${var.name}"
+  name      = var.name
   parent_id = data.azurerm_resource_group.current.id
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
@@ -138,7 +138,7 @@ resource "azapi_resource" "project" {
     kind = var.kind
   }
   location  = var.location
-  name      = "aihubproject-${var.name}"
+  name      = var.name
   parent_id = data.azurerm_resource_group.current.id
 
   dynamic "identity" {

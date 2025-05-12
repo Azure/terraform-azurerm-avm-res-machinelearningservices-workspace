@@ -83,37 +83,31 @@ resource "azurerm_log_analytics_workspace" "example" {
 # This is the module call
 module "azureml" {
   source = "../../"
+
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
   location            = azurerm_resource_group.this.location
   name                = module.naming.machine_learning_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
-
+  application_insights = {
+    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
+  }
+  container_registry = {
+    resource_id = azurerm_container_registry.example.id
+  }
+  enable_telemetry = var.enable_telemetry
+  key_vault = {
+    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+  }
   managed_identities = {
     system_assigned = true
   }
-
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
+  tags = local.tags
   workspace_managed_network = {
     isolation_mode = "Disabled"
     spark_ready    = true
   }
-
-  storage_account = {
-    resource_id = azurerm_storage_account.example.id
-  }
-
-  key_vault = {
-    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
-  }
-
-  container_registry = {
-    resource_id = azurerm_container_registry.example.id
-  }
-
-  application_insights = {
-    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
-  }
-
-  tags             = local.tags
-  enable_telemetry = var.enable_telemetry
 }

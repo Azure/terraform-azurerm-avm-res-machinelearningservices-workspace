@@ -49,17 +49,18 @@ locals {
 }
 
 module "ai_services" {
-  source                             = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version                            = "0.6.0"
-  resource_group_name                = azurerm_resource_group.this.name
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "0.6.0"
+
   kind                               = "AIServices"
-  name                               = module.naming.cognitive_account.name_unique
   location                           = var.location
-  enable_telemetry                   = var.enable_telemetry
+  name                               = module.naming.cognitive_account.name_unique
+  resource_group_name                = azurerm_resource_group.this.name
   sku_name                           = "S0"
-  public_network_access_enabled      = true # required for AI Foundry
+  enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
+  public_network_access_enabled      = true # required for AI Foundry
   tags                               = local.tags
 }
 
@@ -69,28 +70,27 @@ module "ai_services" {
 # with a data source.
 module "aihub" {
   source = "../../"
+
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
   location            = azurerm_resource_group.this.location
   name                = local.name
   resource_group_name = azurerm_resource_group.this.name
-  kind                = "Hub"
-  key_vault           = { use_microsoft_managed_key_vault = true }
-  storage_account = {
-    resource_id = azurerm_storage_account.example.id
-  }
-  workspace_friendly_name = "AI Studio Hub"
-  workspace_managed_network = {
-    isolation_mode = "Disabled"
-    spark_ready    = true
-  }
-
   aiservices = {
     resource_group_id         = azurerm_resource_group.this.id
     name                      = module.ai_services.name
     create_service_connection = true
   }
-
-  tags             = local.tags
   enable_telemetry = var.enable_telemetry
+  key_vault        = { use_microsoft_managed_key_vault = true }
+  kind             = "Hub"
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
+  tags                    = local.tags
+  workspace_friendly_name = "AI Studio Hub"
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
+  }
 }

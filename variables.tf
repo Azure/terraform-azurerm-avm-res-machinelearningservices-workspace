@@ -286,13 +286,6 @@ DESCRIPTION
   }
 }
 
-variable "private_endpoints_manage_dns_zone_group" {
-  type        = bool
-  default     = true
-  nullable    = false
-  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
-}
-
 # required AVM interface
 variable "private_endpoints" {
   type = map(object({
@@ -345,6 +338,13 @@ A map of private endpoints to create on this resource. The map key is deliberate
   - `name` - The name of the IP configuration.
   - `private_ip_address` - The private IP address of the IP configuration.
 DESCRIPTION
+  nullable    = false
+}
+
+variable "private_endpoints_manage_dns_zone_group" {
+  type        = bool
+  default     = true
+  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
   nullable    = false
 }
 

@@ -11,8 +11,8 @@ resource "azurerm_private_endpoint" "this" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azurerm_key_vault.this.id
-    subresource_names              = ["amlworkspace"]
+    private_connection_resource_id = local.aml_resource.id
+    subresource_names              = merge(["amlworkspace"], each.value.subresource_names)
   }
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
@@ -48,7 +48,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azurerm_key_vault.this.id
+    private_connection_resource_id = local.aml_resource.id
     subresource_names              = ["amlworkspace"]
   }
   dynamic "ip_configuration" {

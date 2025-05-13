@@ -16,7 +16,7 @@ resource "azapi_resource" "aiservice" {
   }
   location               = var.location
   name                   = "ai-svc-${var.name}"
-  parent_id              = data.azurerm_resource_group.current.id
+  parent_id              = local.resource_group_id
   response_export_values = ["*"]
   tags                   = var.aiservices.tags == null ? var.tags : var.aiservices.tags == {} ? {} : var.aiservices.tags
 
@@ -26,7 +26,7 @@ resource "azapi_resource" "aiservice" {
 
   lifecycle {
     ignore_changes = [
-      # When the service connection to the AI Studio Hub is created, 
+      # When the service connection to the AI Studio Hub is created,
       # tags are added to this resource
       tags,
     ]

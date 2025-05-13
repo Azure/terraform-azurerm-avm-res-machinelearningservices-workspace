@@ -1,3 +1,5 @@
+# This is required for most resource modules
+
 variable "location" {
   type        = string
   description = "Azure region where the resource should be deployed."
@@ -14,10 +16,9 @@ variable "name" {
   }
 }
 
-# This is required for most resource modules
-variable "resource_group_name" {
+variable "resource_group_id" {
   type        = string
-  description = "The resource group where the resources will be deployed."
+  description = "The resource group ID where the resources will be deployed."
 }
 
 variable "ai_studio_hub_id" {
@@ -268,6 +269,21 @@ variable "managed_identities" {
   - `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
   DESCRIPTION
   nullable    = false
+}
+
+variable "network_acls" {
+  type = object({
+    default_action = string,
+    ip_rules = list(object({
+      value = string
+    }))
+  })
+  default     = null
+  description = <<DESCRIPTION
+Specifies the network access control list (ACL) for the workspace. This includes the following properties:
+- `default_action`: The default action for the network ACL. Possible values are `Allow` and `Deny`.
+- `ip_rules`: A list of IP rules to apply to the network ACL. Each rule is an object with a `value` property that specifies the IP address or CIDR range.
+DESCRIPTION
 }
 
 variable "primary_user_assigned_identity" {

@@ -121,9 +121,9 @@ The following resources are used by this module:
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
 - [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
+- [azapi_resource.rg](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_key) (data source)
-- [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
@@ -143,9 +143,9 @@ Description: The name of the this resource.
 
 Type: `string`
 
-### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
+### <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id)
 
-Description: The resource group where the resources will be deployed.
+Description: The resource group ID where the resources will be deployed.
 
 Type: `string`
 
@@ -404,6 +404,25 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_network_acls"></a> [network\_acls](#input\_network\_acls)
+
+Description: Specifies the network access control list (ACL) for the workspace. This includes the following properties:
+- `default_action`: The default action for the network ACL. Possible values are `Allow` and `Deny`.
+- `ip_rules`: A list of IP rules to apply to the network ACL. Each rule is an object with a `value` property that specifies the IP address or CIDR range.
+
+Type:
+
+```hcl
+object({
+    default_action = string,
+    ip_rules = list(object({
+      value = string
+    }))
+  })
+```
+
+Default: `null`
 
 ### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
 

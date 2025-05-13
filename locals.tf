@@ -66,6 +66,8 @@ locals {
       }
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
+  resource_group_id                  = var.resource_group_id
+  resource_group_name                = data.azapi_resource.rg.name
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
 

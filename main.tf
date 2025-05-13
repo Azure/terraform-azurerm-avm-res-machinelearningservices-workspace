@@ -1,7 +1,7 @@
 resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  type = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
@@ -13,6 +13,10 @@ resource "azapi_resource" "this" {
       description              = var.workspace_description
       friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
       systemDatastoresAuthMode = var.storage_access_type
+      networkAcls = var.network_acls != null ? {
+        defaultAction = var.network_acls.default_action
+        ipRules       = var.network_acls.ip_rules
+      } : null
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -38,10 +42,10 @@ resource "azapi_resource" "this" {
   }
   location  = var.location
   name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
-  replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
-  ]
+  parent_id = local.resource_group_id
+  # replace_triggers_external_values = [
+  #   var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+  # ]
   tags = var.tags
 
   dynamic "identity" {
@@ -101,10 +105,10 @@ resource "azapi_resource" "hub" {
   }
   location  = var.location
   name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
-  replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
-  ]
+  parent_id = local.resource_group_id
+  # replace_triggers_external_values = [
+  #   var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+  # ]
   tags = var.tags
 
   dynamic "identity" {
@@ -139,7 +143,7 @@ resource "azapi_resource" "project" {
   }
   location  = var.location
   name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
+  parent_id = local.resource_group_id
 
   dynamic "identity" {
     for_each = local.managed_identities

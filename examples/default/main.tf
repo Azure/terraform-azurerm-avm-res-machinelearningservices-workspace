@@ -86,9 +86,9 @@ module "azureml" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.machine_learning_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+  location          = azurerm_resource_group.this.location
+  name              = module.naming.machine_learning_workspace.name_unique
+  resource_group_id = azurerm_resource_group.this.id
   application_insights = {
     resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
   }

@@ -287,9 +287,9 @@ module "aihub" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = local.name
-  resource_group_name = azurerm_resource_group.this.name
+  location          = azurerm_resource_group.this.location
+  name              = local.name
+  resource_group_id = azurerm_resource_group.this.id
   aiservices = {
     resource_group_id         = azurerm_resource_group.this.id
     name                      = module.ai_services.name

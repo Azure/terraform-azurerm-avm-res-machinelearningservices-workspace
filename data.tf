@@ -1,5 +1,6 @@
-data "azurerm_resource_group" "current" {
-  name = var.resource_group_name
+data "azapi_resource" "rg" {
+  type        = "Microsoft.Resources/resourceGroups@2024-11-01"
+  resource_id = var.resource_group_id
 }
 
 data "azurerm_key_vault_key" "cmk" {

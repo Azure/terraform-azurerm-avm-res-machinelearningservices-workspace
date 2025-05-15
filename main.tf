@@ -168,7 +168,7 @@ resource "azapi_resource" "aiserviceconnection" {
       }
     }
   }
-  name                   = "aiserviceconnection${var.name}"
+  name                   = "sc-${var.name}"
   parent_id              = local.aml_resource.id
   response_export_values = ["*"]
 }

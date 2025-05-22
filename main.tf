@@ -149,6 +149,13 @@ resource "azapi_resource" "project" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+
+  lifecycle {
+    ignore_changes = [
+      tags,     # When the service connections for CognitiveServices are created, tags are added to this resource
+      parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+    ]
+  }
 }
 
 # AzAPI AI Services Connection

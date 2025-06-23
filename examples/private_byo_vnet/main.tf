@@ -79,6 +79,8 @@ module "private_dns_aml_api" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_aml_notebooks" {
@@ -95,6 +97,8 @@ module "private_dns_aml_notebooks" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_keyvault_vault" {
@@ -111,6 +115,8 @@ module "private_dns_keyvault_vault" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_storageaccount_blob" {
@@ -127,6 +133,8 @@ module "private_dns_storageaccount_blob" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_storageaccount_file" {
@@ -143,6 +151,8 @@ module "private_dns_storageaccount_file" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_containerregistry_registry" {
@@ -159,6 +169,8 @@ module "private_dns_containerregistry_registry" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_monitor" {
@@ -175,6 +187,8 @@ module "private_dns_monitor" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_oms_opinsights" {
@@ -191,6 +205,8 @@ module "private_dns_oms_opinsights" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_ods_opinsights" {
@@ -207,6 +223,8 @@ module "private_dns_ods_opinsights" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_agentsvc" {
@@ -223,6 +241,8 @@ module "private_dns_agentsvc" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 resource "azurerm_monitor_private_link_scope" "example" {
@@ -361,7 +381,7 @@ module "avm_res_log_analytics_workspace" {
   log_analytics_workspace_internet_query_enabled     = true
   tags                                               = local.tags
 
-  depends_on = [azurerm_monitor_private_link_scope.example, azurerm_private_endpoint.privatelinkscope]
+  depends_on = [azurerm_monitor_private_link_scope.example]
 }
 
 module "avm_res_insights_component" {

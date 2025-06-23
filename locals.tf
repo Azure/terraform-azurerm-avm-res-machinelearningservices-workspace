@@ -1,9 +1,8 @@
 locals {
-  ai_services             = var.aiservices.create_new ? azapi_resource.aiservice[0].output : var.aiservices.create_service_connection ? data.azapi_resource.existing_aiservices[0].output : null
-  ai_services_id          = var.aiservices.create_new ? azapi_resource.aiservice[0].id : var.aiservices.create_service_connection ? data.azapi_resource.existing_aiservices[0].output.id : null
-  aml_resource            = var.kind == "Default" ? azapi_resource.this[0] : var.kind == "Hub" ? azapi_resource.hub[0] : azapi_resource.project[0]
-  application_insights_id = var.application_insights != null && var.application_insights.resource_id != null ? replace(var.application_insights.resource_id, "Microsoft.Insights", "Microsoft.insights") : null
-  key_vault_id            = var.key_vault.use_microsoft_managed_key_vault ? null : var.key_vault.resource_id != null ? replace(var.key_vault.resource_id, "Microsoft.KeyVault", "Microsoft.Keyvault") : null
+  aml_resource                 = var.kind == "Default" ? azapi_resource.this[0] : var.kind == "Hub" ? azapi_resource.hub[0] : azapi_resource.project[0]
+  application_insights_id      = var.application_insights != null && var.application_insights.resource_id != null ? replace(var.application_insights.resource_id, "Microsoft.Insights", "Microsoft.insights") : null
+  enable_public_network_access = var.is_private != null ? var.is_private == false : var.public_network_access_enabled
+  key_vault_id                 = var.key_vault.use_microsoft_managed_key_vault ? null : var.key_vault.resource_id != null ? replace(var.key_vault.resource_id, "Microsoft.KeyVault", "Microsoft.Keyvault") : null
   managed_identities = {
     this = {
       type                       = var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" : length(var.managed_identities.user_assigned_resource_ids) > 0 ? "UserAssigned" : "SystemAssigned"
@@ -67,5 +66,6 @@ locals {
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
+  system_identity_id                 = var.kind == "Project" ? null : var.managed_identities.system_assigned == true ? try(local.aml_resource.identity[0].principal_id, null) : null
 }
 

@@ -33,6 +33,7 @@ To support encryption with a customer-managed key, a Microsoft-managed resource 
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -245,6 +246,7 @@ module "azureml" {
   primary_user_assigned_identity = {
     resource_id = azurerm_user_assigned_identity.cmk.id
   }
+  public_network_access_enabled = true
   storage_account = {
     resource_id = module.avm_res_storage_storageaccount.resource_id
   }

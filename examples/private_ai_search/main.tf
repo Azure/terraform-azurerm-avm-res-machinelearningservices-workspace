@@ -1,6 +1,11 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -9,6 +14,7 @@ terraform {
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -19,17 +25,19 @@ provider "azurerm" {
   }
 }
 
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
+resource "random_string" "name" {
+  length  = 5
+  numeric = false
+  special = false
+  upper   = false
 }
 
-# This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.4"
+  version = "0.4.2"
+
+  unique-length = 5
+  unique-seed   = random_string.name.id
 }
 
 data "azurerm_client_config" "current" {}
@@ -46,6 +54,13 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
   tags     = local.tags
 }
+
+resource "azurerm_role_assignment" "connection_approver" {
+  principal_id       = data.azurerm_client_config.current.object_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
+}
+
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
@@ -177,7 +192,6 @@ module "private_dns_aisearch" {
     }
   }
 }
-
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
@@ -385,7 +399,6 @@ module "azureml" {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
   enable_telemetry = var.enable_telemetry
-  is_private       = true
   key_vault = {
     resource_id = module.avm_res_keyvault_vault.resource_id
   }
@@ -397,18 +410,37 @@ module "azureml" {
       inherit_lock                  = false
     }
   }
+  public_network_access_enabled = true
   storage_account = {
     resource_id = module.avm_res_storage_storageaccount.resource_id
   }
   tags = local.tags
   workspace_managed_network = {
-    isolation_mode = "AllowOnlyApprovedOutbound"
+    isolation_mode = "AllowInternetOutbound"
     outbound_rules = {
       private_endpoint = {
         aisearch = {
           resource_id         = module.aisearch.resource_id
           sub_resource_target = "searchService"
         }
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "search_connection" {
+  name      = "srch${random_string.name.id}"
+  parent_id = module.azureml.resource_id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  body = {
+    properties = {
+      category      = "CognitiveSearch"
+      target        = "https://${module.aisearch.resource.name}.search.windows.net"
+      authType      = "AAD"
+      isSharedToAll = true
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = module.aisearch.resource_id
       }
     }
   }

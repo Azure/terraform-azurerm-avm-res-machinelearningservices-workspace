@@ -1,21 +1,23 @@
 <!-- BEGIN_TF_DOCS -->
-# AML Workspace with Diagnostic Settings
+# AI Hub with managed Key Vault
 
-This deploys a public Azure Machine Learning Workspace configured with an Azure Monitor diagnostic setting collecting all metrics and all logs.
+This example demonstrates provisioning an AI Hub using a managed Key Vault instead of a user-managed instance.
 
 The following resources are included:
 
-- AML workspace
-- Storage Account
-- Key Vault
-- App Insights and Log Analytics workspace
-- Dedicated Log Analytics workspace for AML workspace diagnostics
+- A storage account
+- A publicly-accessible AI Hub
+- AI Services (AI Foundry) + a connection from Hub to instance
 
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
 
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -34,17 +36,23 @@ provider "azurerm" {
     }
   }
 }
-# This ensures we have unique CAF compliant names for our resources.
-module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+
+resource "random_string" "name" {
+  length  = 5
+  numeric = false
+  special = false
+  upper   = false
 }
 
-locals {
-  tags = {
-    scenario = "AML with Diagnostic Settings"
-  }
+module "naming" {
+  source  = "Azure/naming/azurerm"
+  version = "0.4.2"
+
+  unique-length = 5
+  unique-seed   = random_string.name.id
 }
+
+data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
@@ -52,8 +60,6 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
   tags     = local.tags
 }
-
-data "azurerm_client_config" "current" {}
 
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
@@ -64,76 +70,77 @@ resource "azurerm_storage_account" "example" {
   tags                     = local.tags
 }
 
-resource "azurerm_key_vault" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.key_vault.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  sku_name            = "standard"
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  tags                = local.tags
+locals {
+  tags = {
+    scenario = "AI Hub with Managed Key Vault"
+  }
 }
 
-resource "azurerm_container_registry" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.container_registry.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  sku                 = "Premium"
-  tags                = local.tags
+resource "azurerm_role_assignment" "connection_approver" {
+  principal_id       = data.azurerm_client_config.current.object_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
 }
 
-resource "azurerm_log_analytics_workspace" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  tags                = local.tags
-}
+module "ai_services" {
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "0.6.0"
 
-resource "azurerm_application_insights" "example" {
-  application_type    = "web"
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.application_insights.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  tags                = local.tags
-  workspace_id        = azurerm_log_analytics_workspace.example.id
-}
-
-resource "azurerm_log_analytics_workspace" "diag" {
-  location            = azurerm_resource_group.this.location
-  name                = "diag${module.naming.log_analytics_workspace.name_unique}"
-  resource_group_name = azurerm_resource_group.this.name
-  tags                = local.tags
+  kind                               = "AIServices"
+  location                           = var.location
+  name                               = module.naming.cognitive_account.name_unique
+  resource_group_name                = azurerm_resource_group.this.name
+  sku_name                           = "S0"
+  enable_telemetry                   = var.enable_telemetry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  public_network_access_enabled      = true
+  tags                               = local.tags
 }
 
 # This is the module call
-module "azureml" {
+# Do not specify location here due to the randomization above.
+# Leaving location as `null` will cause the module to use the resource group location
+# with a data source.
+module "aihub" {
   source = "../../"
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.machine_learning_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  application_insights = {
-    resource_id = azurerm_application_insights.example.id
-  }
-  container_registry = {
-    resource_id = azurerm_container_registry.example.id
-  }
-  diagnostic_settings = {
-    diag = {
-      name                  = "aml${module.naming.monitor_diagnostic_setting.name_unique}"
-      workspace_resource_id = azurerm_log_analytics_workspace.diag.id
-    }
-  }
-  enable_telemetry = var.enable_telemetry
-  key_vault = {
-    resource_id = azurerm_key_vault.example.id
-  }
+  location                      = azurerm_resource_group.this.location
+  name                          = "hub${random_string.name.id}"
+  resource_group_name           = azurerm_resource_group.this.name
+  enable_telemetry              = var.enable_telemetry
+  key_vault                     = { use_microsoft_managed_key_vault = true }
+  kind                          = "Hub"
   public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
   }
-  tags = local.tags
+  tags                    = local.tags
+  workspace_friendly_name = "AI Studio Hub"
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
+  }
+}
+
+resource "azapi_resource" "aiservices_connection" {
+  name      = "sc${random_string.name.id}"
+  parent_id = module.aihub.resource_id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  body = {
+    properties = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = module.ai_services.resource_id
+      }
+    }
+  }
 }
 ```
 
@@ -144,19 +151,19 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_application_insights.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) (resource)
-- [azurerm_container_registry.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry) (resource)
-- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
-- [azurerm_log_analytics_workspace.diag](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_log_analytics_workspace.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
+- [azapi_resource.aiservices_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
@@ -176,7 +183,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_location"></a> [location](#input\_location)
 
@@ -184,17 +191,27 @@ Description: The location for the resources.
 
 Type: `string`
 
-Default: `"uksouth"`
+Default: `"australiaeast"`
 
 ## Outputs
 
-No outputs.
+The following outputs are exported:
+
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: The AI Studio hub workspace.
 
 ## Modules
 
 The following Modules are called:
 
-### <a name="module_azureml"></a> [azureml](#module\_azureml)
+### <a name="module_ai_services"></a> [ai\_services](#module\_ai\_services)
+
+Source: Azure/avm-res-cognitiveservices-account/azurerm
+
+Version: 0.6.0
+
+### <a name="module_aihub"></a> [aihub](#module\_aihub)
 
 Source: ../../
 
@@ -204,7 +221,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: ~> 0.3
+Version: 0.4.2
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

@@ -1,19 +1,24 @@
 <!-- BEGIN_TF_DOCS -->
-# Default AI Foundry example
+# AI Hub with Projects example
 
-This example demonstrates provisioning a publicly-accessible AI Foundry hub with basic configuration.
+This example demonstrates provisioning a publicly-accessible AI Hub with basic configuration and two Projects.
 
 The following resources are included:
 
-- AI Foundry hub
+- AI Hub with 2 Projects
 - Storage Account
 - Key Vault
-- AI Services
+- AI Services (AI Foundry) + a connection from Hub to instance
 
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -22,6 +27,7 @@ terraform {
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -32,11 +38,22 @@ provider "azurerm" {
   }
 }
 
-# This ensures we have unique CAF compliant names for our resources.
+resource "random_string" "name" {
+  length  = 5
+  numeric = false
+  special = false
+  upper   = false
+}
+
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.2"
+
+  unique-length = 5
+  unique-seed   = random_string.name.id
 }
+
+data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
 resource "azurerm_resource_group" "example" {
@@ -45,14 +62,17 @@ resource "azurerm_resource_group" "example" {
   tags     = local.tags
 }
 
-locals {
-  name = module.naming.machine_learning_workspace.name_unique
-  tags = {
-    scenario = "default AI Foundry"
-  }
+resource "azurerm_role_assignment" "connection_approver" {
+  principal_id       = data.azurerm_client_config.current.object_id
+  scope              = azurerm_resource_group.example.id
+  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
 }
 
-data "azurerm_client_config" "current" {}
+locals {
+  tags = {
+    scenario = "AI Hub and Projects"
+  }
+}
 
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
@@ -82,32 +102,25 @@ module "ai_services" {
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
-  public_network_access_enabled      = true # required for AI Foundry
+  public_network_access_enabled      = true
   tags                               = local.tags
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
+# This is the module call 1
 module "aihub" {
   source = "../../"
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
   location            = azurerm_resource_group.example.location
-  name                = local.name
+  name                = "hub${random_string.name.id}"
   resource_group_name = azurerm_resource_group.example.name
-  aiservices = {
-    resource_group_id         = azurerm_resource_group.example.id
-    name                      = module.ai_services.name
-    create_service_connection = true
-  }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry    = var.enable_telemetry
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }
-  kind = "Hub"
+  kind                          = "Hub"
+  public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
   }
@@ -119,6 +132,54 @@ module "aihub" {
   }
 }
 
+resource "azapi_resource" "aiservices_connection" {
+  name      = "sc${random_string.name.id}"
+  parent_id = module.aihub.resource_id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  body = {
+    properties = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = module.ai_services.resource_id
+      }
+    }
+  }
+}
+
+locals {
+  projects = {
+    init = {
+      friendlyName = "First Project"
+    }
+    additional = {
+      friendlyName = "Another Project"
+    }
+  }
+}
+
+module "aiproject" {
+  source   = "../../"
+  for_each = local.projects
+
+  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
+  # ...
+  location            = azurerm_resource_group.example.location
+  name                = "proj${random_string.name.id}${each.key}"
+  resource_group_name = azurerm_resource_group.example.name
+  azure_ai_hub = {
+    resource_id = module.aihub.resource_id
+  }
+  enable_telemetry = var.enable_telemetry
+  kind             = "Project"
+  managed_identities = {
+    system_assigned = true
+  }
+  workspace_friendly_name = each.value.friendlyName
+}
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -128,15 +189,20 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 ## Resources
 
 The following resources are used by this module:
 
+- [azapi_resource.aiservices_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
 - [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
@@ -156,7 +222,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_location"></a> [location](#input\_location)
 
@@ -164,15 +230,11 @@ Description: The location for the resources.
 
 Type: `string`
 
-Default: `"australiaeast"`
+Default: `"eastus2"`
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The AI Studio hub workspace.
+No outputs.
 
 ## Modules
 
@@ -190,11 +252,17 @@ Source: ../../
 
 Version:
 
+### <a name="module_aiproject"></a> [aiproject](#module\_aiproject)
+
+Source: ../../
+
+Version:
+
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
 
-Version: ~> 0.3
+Version: 0.4.2
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

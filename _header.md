@@ -1,14 +1,11 @@
 # Azure Machine Learning Workspace Module
 
-> [!IMPORTANT]
-> This module no longer provisions supporting resources, e.g. Key Vault, Storage Account and Azure Container Registry. This change was made to align with [the definition of an AVM resource module](https://azure.github.io/Azure-Verified-Modules/specs/shared/module-classifications/). The included examples in the [examples directory](examples), e.g. [AI Foundry Hub](examples/default_ai_foundry_hub/README.md) and [AML Workspace](examples/default/README.md), can be used as reference for what is required to provision said resources outside of this module.
-
-This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Foundry, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision an AI Foundry Project for a Hub.
+This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Hub, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision an AI Project for a Hub.
 
 ## Functionality
 
 * **Azure Machine Learning Workspace:** The default behavior of this module is to create an Azure Machine Learning Workspace, which provides the environment and tools necessary for machine learning tasks.
-* **Azure AI Foundry:** If the `kind` variable is set to `Hub`, the module provisions an Azure AI Foundry Hub instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
+* **Azure AI Hub:** If the `kind` variable is set to `Hub`, the module provisions an Azure AI Hub instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
 
 ## Usage
 
@@ -50,7 +47,7 @@ module "ml_workspace" {
 
 This will create a publicly-accessible Azure Machine Learning Workspace.
 
-### Example - AI Foundry Hub
+### Example - AI Hub
 
 ```hcl
 module "hub" {
@@ -84,4 +81,4 @@ module "hub" {
 }
 ```
 
-This will create a publicly-accessible AI Foundry Hub.
+This will create a publicly-accessible AI Hub.

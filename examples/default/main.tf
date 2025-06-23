@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -9,6 +10,7 @@ terraform {
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -90,18 +92,19 @@ module "azureml" {
   name                = module.naming.machine_learning_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
   application_insights = {
-    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
+    resource_id = provider::azurerm::normalise_resource_id(azurerm_application_insights.example.id)
   }
   container_registry = {
     resource_id = azurerm_container_registry.example.id
   }
   enable_telemetry = var.enable_telemetry
   key_vault = {
-    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+    resource_id = provider::azurerm::normalise_resource_id(azurerm_key_vault.example.id)
   }
   managed_identities = {
     system_assigned = true
   }
+  public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
   }

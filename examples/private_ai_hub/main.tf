@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.2"
+    }
   }
 }
 
@@ -312,11 +316,6 @@ module "aihub" {
   location            = azurerm_resource_group.this.location
   name                = "hub${random_string.name.id}"
   resource_group_name = azurerm_resource_group.this.name
-  aiservices = {
-    resource_group_id         = azurerm_resource_group.this.id
-    name                      = module.ai_services.name
-    create_service_connection = true
-  }
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }

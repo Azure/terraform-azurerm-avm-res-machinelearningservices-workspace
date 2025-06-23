@@ -146,39 +146,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_ai_studio_hub_id"></a> [ai\_studio\_hub\_id](#input\_ai\_studio\_hub\_id)
-
-Description: DEPRECATED. Use variable `azure_ai_hub`.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
-
-Description: An object describing the AI Services resource to create or reference. This includes the following properties:
-- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
-- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
-- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
-- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags`: (Optional) Tags for the AI Services resource.
-- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
-
-Type:
-
-```hcl
-object({
-    create_new                = optional(bool, false)
-    analysis_services_sku     = optional(string, "S0")
-    name                      = optional(string, null)
-    resource_group_id         = optional(string, null)
-    tags                      = optional(map(string), null)
-    create_service_connection = optional(bool, false)
-  })
-```
-
-Default: `null`
-
 ### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
 Description: An object describing the Application Insights resource. This includes the following properties:
@@ -241,14 +208,6 @@ Default:
   "resource_id": null
 }
 ```
-
-### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
-
-Description: DEPRECATED: No compute instance created if true.
-
-Type: `bool`
-
-Default: `false`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 

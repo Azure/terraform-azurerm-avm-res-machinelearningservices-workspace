@@ -66,6 +66,5 @@ locals {
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
-  system_identity_id                 = var.kind == "Project" ? null : var.managed_identities.system_assigned == true ? try(local.aml_resource.identity[0].principal_id, null) : null
 }
 

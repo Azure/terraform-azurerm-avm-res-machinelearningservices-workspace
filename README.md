@@ -12,54 +12,60 @@ This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure 
 
 ### Example - AML Workspace
 
+This will create a publicly-accessible Azure Machine Learning Workspace.
+
 ```hcl
 module "ml_workspace" {
   source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
   version = "x.x.x"
 
+  location            = "<your_location>"
+  name                = "<workspace_name>"
   resource_group_name = "<resource_group_name>"
+  kind                = "Default" # Omitting this parameter will result in the same outcome
 
-  location = "<your_location>"
-  kind     = "Default" # Omitting this parameter will result in the same outcome
-
-  is_private = false # Omitting this parameter will result in the same outcome
-  workspace_managed_network = {
-    isolation_mode = "Disabled"
-    spark_ready    = true
+  application_insights = {
+    resource_id = "<app_insights_resource_id>"
   }
 
-  storage_account = {
-    resource_id = "<storage_account_resource_id>"
+  container_registry = {
+    resource_id = azurerm_container_registry.example.id
   }
 
   key_vault = {
     resource_id = "<key_vault_resource_id>"
   }
 
-  container_registry = {
-    resource_id = "<container_registry_id>"
+  managed_identities = {
+    system_assigned = true
   }
 
-  application_insights = {
-    resource_id = "<app_insights_resource_id>"
+  public_network_access_enabled = true
+
+  storage_account = {
+    resource_id = "<storage_account_resource_id>"
+  }
+
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
   }
 }
 ```
 
-This will create a publicly-accessible Azure Machine Learning Workspace.
-
 ### Example - AI Hub
+
+This will create a publicly-accessible AI Hub.
 
 ```hcl
 module "hub" {
   source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
   version = "x.x.x"
 
+  location            = "<your_location>"
+  name                = "<hub_name>"
   resource_group_name = "<resource_group_name>"
-
-  location   = "<your_location>"
-  kind       = "Hub"
-  is_private = false # Omitting this parameter will result in the same outcome
+  kind                = "Hub"
 
   workspace_managed_network = {
     isolation_mode = "Disabled"
@@ -73,16 +79,8 @@ module "hub" {
   key_vault = {
     resource_id = "<key_vault_resource_id>"
   }
-
-  aiservices = {
-    resource_group_id         = "<resource_group_id>"
-    name                      = "module.ai_services.name"
-    create_service_connection = true
-  }
 }
 ```
-
-This will create a publicly-accessible AI Hub.
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements
@@ -484,11 +482,11 @@ Default: `true`
 
 ### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
 
-Description: Whether (inbound) requests from the Internet / public network are allowed.
+Description: (Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 

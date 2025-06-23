@@ -2,10 +2,6 @@ terraform {
   required_version = ">= 1.9, < 2.0"
 
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -438,21 +434,6 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
   }
 
   depends_on = [azurerm_monitor_private_link_scoped_service.appinsights, azurerm_monitor_private_link_scoped_service.law]
-}
-
-ephemeral "azapi_resource_action" "update_monitor_private_link_scope" {
-  method      = "PUT"
-  resource_id = azurerm_monitor_private_link_scope.example.id
-  type        = "Microsoft.Insights/privateLinkScopes@2023-06-01-preview"
-  body = {
-    location = "Global"
-    properties = {
-      accessModeSettings = {
-        ingestionAccessMode = "PrivateOnly"
-        queryAccessMode     = "PrivateOnly"
-      }
-    }
-  }
 }
 
 # This is the module call

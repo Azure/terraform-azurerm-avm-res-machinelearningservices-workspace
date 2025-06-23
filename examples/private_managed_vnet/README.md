@@ -10,8 +10,28 @@ The following resources are included:
 - Storage Account (private) with associated private DNS zones
 - Key Vault (private) with associated private DNS zone
 - Azure Container Registry (private) with associated private DNS zone
-- Azure Monitor Private Link Scope (AMPLS) with associated private DNS zones
-- App Insights and Log Analytics workspace associated with the created AMPLS
+- Azure Monitor Private Link Scope (AMPLS) connected to the VNet with a private endpoint with required DNS zones
+- App Insights and AMPLS scoped service
+- Log Analytics Workspace and AMPLS scoped service
+
+\_**Note** AMPLS is configured for open ingestion and query access.\_ Best practice would have these updated to `PrivateOnly` after every relevant resource was added to it. This is not done in this example, but could be achieved with the following using the azapi Terraformed provider:
+
+```terraform
+ephemeral "azapi_resource_action" "update_monitor_private_link_scope" {
+  method      = "PUT"
+  resource_id = azurerm_monitor_private_link_scope.example.id
+  type        = "Microsoft.Insights/privateLinkScopes@2023-06-01-preview"
+  body = {
+    location = "Global"
+    properties = {
+      accessModeSettings = {
+        ingestionAccessMode = "PrivateOnly"
+        queryAccessMode     = "PrivateOnly"
+      }
+    }
+  }
+}
+```
 
 The managed VNet is not provisioned by default. In the unprovisioned state, you can see the outbound rules created in the Azure Portal or with the Azure CLI + machine learning extension `az ml workspace outbound-rule list --resource-group $RESOURCE_GROUP --workspace-name $WORKSPACE`. Since all possible provisioned resources are private, this collection should include one of type `PrivateEndpoint` for each of the following:
 
@@ -28,10 +48,6 @@ terraform {
   required_version = ">= 1.9, < 2.0"
 
   required_providers {
-    azapi = {
-      source  = "Azure/azapi"
-      version = "~> 2.0"
-    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
@@ -463,21 +479,6 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
   depends_on = [azurerm_monitor_private_link_scoped_service.appinsights, azurerm_monitor_private_link_scoped_service.law]
 }
 
-ephemeral "azapi_resource_action" "update_monitor_private_link_scope" {
-  method      = "PUT"
-  resource_id = azurerm_monitor_private_link_scope.example.id
-  type        = "Microsoft.Insights/privateLinkScopes@2023-06-01-preview"
-  body = {
-    location = "Global"
-    properties = {
-      accessModeSettings = {
-        ingestionAccessMode = "PrivateOnly"
-        queryAccessMode     = "PrivateOnly"
-      }
-    }
-  }
-}
-
 data "azurerm_role_definition" "contributor" {
   name = "Contributor"
 }
@@ -543,8 +544,6 @@ module "azureml" {
 The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
-
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 

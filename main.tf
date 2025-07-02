@@ -1,7 +1,10 @@
 resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  location  = var.location
+  name      = var.name
+  parent_id = data.azurerm_resource_group.current.id
+  type      = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
@@ -36,9 +39,6 @@ resource "azapi_resource" "this" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
@@ -64,7 +64,10 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "hub" {
   count = var.kind == "Hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  location  = var.location
+  name      = var.name
+  parent_id = data.azurerm_resource_group.current.id
+  type      = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
@@ -99,9 +102,6 @@ resource "azapi_resource" "hub" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
@@ -128,7 +128,10 @@ resource "azapi_resource" "hub" {
 resource "azapi_resource" "project" {
   count = var.kind == "Project" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  location  = var.location
+  name      = var.name
+  parent_id = data.azurerm_resource_group.current.id
+  type      = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
   body = {
     properties = {
       description   = var.workspace_description
@@ -137,9 +140,6 @@ resource "azapi_resource" "project" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -162,7 +162,9 @@ resource "azapi_resource" "project" {
 resource "azapi_resource" "aiserviceconnection" {
   count = var.aiservices.create_service_connection ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-10-01-preview"
+  name      = "sc-${var.name}"
+  parent_id = local.aml_resource.id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2024-10-01-preview"
   body = {
     properties = {
       category      = "AIServices"
@@ -175,8 +177,6 @@ resource "azapi_resource" "aiserviceconnection" {
       }
     }
   }
-  name                   = "sc-${var.name}"
-  parent_id              = local.aml_resource.id
   response_export_values = ["*"]
 }
 
@@ -184,7 +184,10 @@ resource "azapi_resource" "aiserviceconnection" {
 resource "azapi_resource" "computeinstance" {
   count = var.create_compute_instance ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-10-01-preview"
+  location  = local.aml_resource.location
+  name      = "ci-${var.name}"
+  parent_id = local.aml_resource.id
+  type      = "Microsoft.MachineLearningServices/workspaces/computes@2024-10-01-preview"
   body = {
     properties = {
       computeLocation  = local.aml_resource.location
@@ -196,9 +199,6 @@ resource "azapi_resource" "computeinstance" {
       }
     }
   }
-  location               = local.aml_resource.location
-  name                   = "ci-${var.name}"
-  parent_id              = local.aml_resource.id
   response_export_values = ["*"]
 
   identity {

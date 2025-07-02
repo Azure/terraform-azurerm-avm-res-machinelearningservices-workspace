@@ -33,6 +33,7 @@ To support encryption with a customer-managed key, a Microsoft-managed resource 
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"

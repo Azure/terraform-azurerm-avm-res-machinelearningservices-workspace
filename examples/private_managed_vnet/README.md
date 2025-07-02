@@ -10,8 +10,28 @@ The following resources are included:
 - Storage Account (private) with associated private DNS zones
 - Key Vault (private) with associated private DNS zone
 - Azure Container Registry (private) with associated private DNS zone
-- Azure Monitor Private Link Scope (AMPLS) with associated private DNS zones
-- App Insights and Log Analytics workspace associated with the created AMPLS
+- Azure Monitor Private Link Scope (AMPLS) connected to the VNet with a private endpoint with required DNS zones
+- App Insights and AMPLS scoped service
+- Log Analytics Workspace and AMPLS scoped service
+
+\_**Note** AMPLS is configured for open ingestion and query access.\_ Best practice would have these updated to `PrivateOnly` after every relevant resource was added to it. This is not done in this example, but could be achieved with the following using the azapi Terraformed provider:
+
+```terraform
+ephemeral "azapi_resource_action" "update_monitor_private_link_scope" {
+  method      = "PUT"
+  resource_id = azurerm_monitor_private_link_scope.example.id
+  type        = "Microsoft.Insights/privateLinkScopes@2023-06-01-preview"
+  body = {
+    location = "Global"
+    properties = {
+      accessModeSettings = {
+        ingestionAccessMode = "PrivateOnly"
+        queryAccessMode     = "PrivateOnly"
+      }
+    }
+  }
+}
+```
 
 The managed VNet is not provisioned by default. In the unprovisioned state, you can see the outbound rules created in the Azure Portal or with the Azure CLI + machine learning extension `az ml workspace outbound-rule list --resource-group $RESOURCE_GROUP --workspace-name $WORKSPACE`. Since all possible provisioned resources are private, this collection should include one of type `PrivateEndpoint` for each of the following:
 
@@ -26,6 +46,7 @@ After the network is provisioned (either by adding compute or manually provision
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -35,6 +56,7 @@ terraform {
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -43,13 +65,6 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
-}
-
-## Section to provide a random Azure region for the resource group
-# This allows us to randomize the region for the resource group.
-module "regions" {
-  source  = "Azure/regions/azurerm"
-  version = "~> 0.3"
 }
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -106,6 +121,8 @@ module "private_dns_aml_api" {
       vnetid       = module.virtual_network.resource.id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_aml_notebooks" {
@@ -122,6 +139,8 @@ module "private_dns_aml_notebooks" {
       vnetid       = module.virtual_network.resource.id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_keyvault_vault" {
@@ -138,6 +157,8 @@ module "private_dns_keyvault_vault" {
       vnetid       = module.virtual_network.resource.id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_storageaccount_blob" {
@@ -154,6 +175,8 @@ module "private_dns_storageaccount_blob" {
       vnetid       = module.virtual_network.resource.id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_storageaccount_file" {
@@ -170,6 +193,8 @@ module "private_dns_storageaccount_file" {
       vnetid       = module.virtual_network.resource.id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_containerregistry_registry" {
@@ -186,6 +211,8 @@ module "private_dns_containerregistry_registry" {
       vnetid       = module.virtual_network.resource.id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_monitor" {
@@ -202,6 +229,8 @@ module "private_dns_monitor" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_oms_opinsights" {
@@ -218,6 +247,8 @@ module "private_dns_oms_opinsights" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_ods_opinsights" {
@@ -234,6 +265,8 @@ module "private_dns_ods_opinsights" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "private_dns_agentsvc" {
@@ -250,6 +283,8 @@ module "private_dns_agentsvc" {
       vnetid       = module.virtual_network.resource_id
     }
   }
+
+  depends_on = [module.virtual_network]
 }
 
 module "avm_res_keyvault_vault" {
@@ -359,8 +394,62 @@ module "avm_res_containerregistry_registry" {
 resource "azurerm_monitor_private_link_scope" "example" {
   name                  = "example-ampls"
   resource_group_name   = azurerm_resource_group.this.name
-  ingestion_access_mode = "PrivateOnly"
-  query_access_mode     = "PrivateOnly"
+  ingestion_access_mode = "Open" # start Open and update to PrivateOnly after all resources are added
+  query_access_mode     = "Open" # start Open and update to PrivateOnly after all resources are added
+
+  lifecycle {
+    ignore_changes = [
+      ingestion_access_mode,
+      query_access_mode
+    ]
+  }
+}
+
+module "avm_res_log_analytics_workspace" {
+  source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
+  version = "~> 0.4"
+
+  location            = var.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
+  log_analytics_workspace_identity = {
+    type = "SystemAssigned"
+  }
+  log_analytics_workspace_internet_ingestion_enabled = false
+  log_analytics_workspace_internet_query_enabled     = true
+  tags                                               = local.tags
+
+  depends_on = [azurerm_monitor_private_link_scope.example]
+}
+
+module "avm_res_insights_component" {
+  source  = "Azure/avm-res-insights-component/azurerm"
+  version = "~> 0.1"
+
+  location                   = var.location
+  name                       = module.naming.application_insights.name_unique
+  resource_group_name        = azurerm_resource_group.this.name
+  workspace_id               = module.avm_res_log_analytics_workspace.resource_id
+  internet_ingestion_enabled = false
+  internet_query_enabled     = true
+  tags                       = local.tags
+
+  depends_on = [module.avm_res_log_analytics_workspace]
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "law" {
+  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
+  name                = "pls${module.avm_res_log_analytics_workspace.resource.name}"
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = azurerm_monitor_private_link_scope.example.name
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
+  linked_resource_id  = module.avm_res_insights_component.resource_id
+  name                = "plss${module.avm_res_insights_component.name}"
+  resource_group_name = azurerm_resource_group.this.name
+  scope_name          = azurerm_monitor_private_link_scope.example.name
 }
 
 resource "azurerm_private_endpoint" "privatelinkscope" {
@@ -386,49 +475,12 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
       module.private_dns_agentsvc.resource_id
     ]
   }
+
+  depends_on = [azurerm_monitor_private_link_scoped_service.appinsights, azurerm_monitor_private_link_scoped_service.law]
 }
 
-module "avm_res_log_analytics_workspace" {
-  source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "~> 0.4"
-
-  location            = var.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  log_analytics_workspace_identity = {
-    type = "SystemAssigned"
-  }
-  log_analytics_workspace_internet_ingestion_enabled = false
-  log_analytics_workspace_internet_query_enabled     = true
-  tags                                               = local.tags
-}
-
-resource "azurerm_monitor_private_link_scoped_service" "law" {
-  linked_resource_id  = module.avm_res_log_analytics_workspace.resource_id
-  name                = azurerm_monitor_private_link_scope.example.name
-  resource_group_name = azurerm_resource_group.this.name
-  scope_name          = "privatelinkscopedservice.loganalytics"
-}
-
-module "avm_res_insights_component" {
-  source  = "Azure/avm-res-insights-component/azurerm"
-  version = "~> 0.1"
-
-  location                   = var.location
-  name                       = module.naming.application_insights.name_unique
-  resource_group_name        = azurerm_resource_group.this.name
-  workspace_id               = module.avm_res_log_analytics_workspace.resource_id
-  internet_ingestion_enabled = false
-  internet_query_enabled     = true
-  tags                       = local.tags
-}
-
-resource "azurerm_monitor_private_link_scoped_service" "appinsights" {
-  linked_resource_id  = module.avm_res_insights_component.resource_id
-  name                = azurerm_monitor_private_link_scope.example.name
-  resource_group_name = azurerm_resource_group.this.name
-  scope_name          = "privatelinkscopedservice.appinsights"
+data "azurerm_role_definition" "contributor" {
+  name = "Contributor"
 }
 
 # This is the module call
@@ -450,9 +502,29 @@ module "azureml" {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
   enable_telemetry = var.enable_telemetry
-  is_private       = true
   key_vault = {
     resource_id = module.avm_res_keyvault_vault.resource_id
+  }
+  private_endpoints = {
+    api = {
+      name                           = "pe-api-aml"
+      subnet_resource_id             = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_name = module.private_dns_aml_api.name
+      inherit_lock                   = false
+    }
+    notebooks = {
+      name                           = "pe-notebooks-aml"
+      subnet_resource_id             = module.virtual_network.subnets["private_endpoints"].resource_id
+      private_dns_zone_resource_name = module.private_dns_aml_notebooks.name
+      inherit_lock                   = false
+    }
+  }
+  public_network_access_enabled = false
+  role_assignments = {
+    contributor = {
+      role_definition_id_or_name = data.azurerm_role_definition.contributor.id
+      principal_id               = data.azurerm_client_config.current.object_id
+    }
   }
   storage_account = {
     resource_id = module.avm_res_storage_storageaccount.resource_id
@@ -485,6 +557,7 @@ The following resources are used by this module:
 - [azurerm_private_endpoint.privatelinkscope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_role_definition.contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -626,12 +699,6 @@ Version: ~> 0.2
 Source: Azure/avm-res-network-privatednszone/azurerm
 
 Version: ~> 0.2
-
-### <a name="module_regions"></a> [regions](#module\_regions)
-
-Source: Azure/regions/azurerm
-
-Version: ~> 0.3
 
 ### <a name="module_virtual_network"></a> [virtual\_network](#module\_virtual\_network)
 

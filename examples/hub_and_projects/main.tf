@@ -1,14 +1,24 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.2"
     }
   }
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -19,11 +29,22 @@ provider "azurerm" {
   }
 }
 
-# This ensures we have unique CAF compliant names for our resources.
+resource "random_string" "name" {
+  length  = 5
+  numeric = false
+  special = false
+  upper   = false
+}
+
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.2"
+
+  unique-length = 5
+  unique-seed   = random_string.name.id
 }
+
+data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
 resource "azurerm_resource_group" "example" {
@@ -32,14 +53,17 @@ resource "azurerm_resource_group" "example" {
   tags     = local.tags
 }
 
-locals {
-  name = module.naming.machine_learning_workspace.name_unique
-  tags = {
-    scenario = "default AI Foundry"
-  }
+resource "azurerm_role_assignment" "connection_approver" {
+  principal_id       = data.azurerm_client_config.current.object_id
+  scope              = azurerm_resource_group.example.id
+  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
 }
 
-data "azurerm_client_config" "current" {}
+locals {
+  tags = {
+    scenario = "AI Hub and Projects"
+  }
+}
 
 resource "azurerm_storage_account" "example" {
   account_replication_type = "ZRS"
@@ -69,32 +93,25 @@ module "ai_services" {
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
-  public_network_access_enabled      = true # required for AI Foundry
+  public_network_access_enabled      = true
   tags                               = local.tags
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
+# This is the module call 1
 module "aihub" {
   source = "../../"
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
   location            = azurerm_resource_group.example.location
-  name                = local.name
+  name                = "hub${random_string.name.id}"
   resource_group_name = azurerm_resource_group.example.name
-  aiservices = {
-    resource_group_id         = azurerm_resource_group.example.id
-    name                      = module.ai_services.name
-    create_service_connection = true
-  }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry    = var.enable_telemetry
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }
-  kind = "Hub"
+  kind                          = "Hub"
+  public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
   }
@@ -106,3 +123,51 @@ module "aihub" {
   }
 }
 
+resource "azapi_resource" "aiservices_connection" {
+  name      = "sc${random_string.name.id}"
+  parent_id = module.aihub.resource_id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  body = {
+    properties = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = module.ai_services.resource_id
+      }
+    }
+  }
+}
+
+locals {
+  projects = {
+    init = {
+      friendlyName = "First Project"
+    }
+    additional = {
+      friendlyName = "Another Project"
+    }
+  }
+}
+
+module "aiproject" {
+  source   = "../../"
+  for_each = local.projects
+
+  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
+  # ...
+  location            = azurerm_resource_group.example.location
+  name                = "proj${random_string.name.id}${each.key}"
+  resource_group_name = azurerm_resource_group.example.name
+  azure_ai_hub = {
+    resource_id = module.aihub.resource_id
+  }
+  enable_telemetry = var.enable_telemetry
+  kind             = "Project"
+  managed_identities = {
+    system_assigned = true
+  }
+  workspace_friendly_name = each.value.friendlyName
+}

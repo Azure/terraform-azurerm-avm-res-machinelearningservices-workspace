@@ -1,17 +1,20 @@
 resource "azapi_resource" "this" {
   count = var.kind == "Default" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  location  = var.location
+  name      = var.name
+  parent_id = data.azurerm_resource_group.current.id
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
   body = {
     properties = {
-      publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
+      publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
       keyVault                 = local.key_vault_id
       storageAccount           = var.storage_account.resource_id
       containerRegistry        = try(var.container_registry.resource_id, null)
       description              = var.workspace_description
-      friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "AMLManagedVirtualNetwork" : "AMLPublic"))
+      friendlyName             = coalesce(var.workspace_friendly_name, (local.enable_public_network_access ? "Public AML" : "Private AML"))
       systemDatastoresAuthMode = var.storage_access_type
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
@@ -36,9 +39,7 @@ resource "azapi_resource" "this" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
+  ignore_casing = true
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
@@ -55,8 +56,8 @@ resource "azapi_resource" "this" {
 
   lifecycle {
     ignore_changes = [
-      tags,     # tags are occasionally added by Azure
-      parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
+      tags,      # tags are occasionally added by Azure
+      parent_id, # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
 }
@@ -64,17 +65,20 @@ resource "azapi_resource" "this" {
 resource "azapi_resource" "hub" {
   count = var.kind == "Hub" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  location  = var.location
+  name      = var.name
+  parent_id = data.azurerm_resource_group.current.id
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
   body = {
     properties = {
-      publicNetworkAccess      = var.is_private ? "Disabled" : "Enabled"
+      publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
       keyVault                 = local.key_vault_id
       storageAccount           = var.storage_account.resource_id
       containerRegistry        = try(var.container_registry.resource_id, null)
       description              = var.workspace_description
-      friendlyName             = coalesce(var.workspace_friendly_name, (var.is_private ? "HubManagedVirtualNetwork" : "PublicHub"))
+      friendlyName             = coalesce(var.workspace_friendly_name, (local.enable_public_network_access ? "Public Hub" : "Private Hub"))
       systemDatastoresAuthMode = var.storage_access_type
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
@@ -99,9 +103,7 @@ resource "azapi_resource" "hub" {
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
+  ignore_casing = true
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
@@ -128,18 +130,18 @@ resource "azapi_resource" "hub" {
 resource "azapi_resource" "project" {
   count = var.kind == "Project" ? 1 : 0
 
-  type = "Microsoft.MachineLearningServices/workspaces@2024-10-01-preview"
+  location  = var.location
+  name      = var.name
+  parent_id = data.azurerm_resource_group.current.id
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
   body = {
     properties = {
       description   = var.workspace_description
       friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
-      hubResourceId = var.ai_studio_hub_id
+      hubResourceId = var.azure_ai_hub.resource_id
     }
     kind = var.kind
   }
-  location  = var.location
-  name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -155,54 +157,6 @@ resource "azapi_resource" "project" {
       tags,     # When the service connections for CognitiveServices are created, tags are added to this resource
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
-  }
-}
-
-# AzAPI AI Services Connection
-resource "azapi_resource" "aiserviceconnection" {
-  count = var.aiservices.create_service_connection ? 1 : 0
-
-  type = "Microsoft.MachineLearningServices/workspaces/connections@2024-10-01-preview"
-  body = {
-    properties = {
-      category      = "AIServices"
-      target        = local.ai_services.properties.endpoint
-      authType      = "AAD"
-      isSharedToAll = true
-      metadata = {
-        ApiType    = "Azure",
-        ResourceId = local.ai_services_id
-      }
-    }
-  }
-  name                   = "sc-${var.name}"
-  parent_id              = local.aml_resource.id
-  response_export_values = ["*"]
-}
-
-# Azure Machine Learning Compute Instance
-resource "azapi_resource" "computeinstance" {
-  count = var.create_compute_instance ? 1 : 0
-
-  type = "Microsoft.MachineLearningServices/workspaces/computes@2024-10-01-preview"
-  body = {
-    properties = {
-      computeLocation  = local.aml_resource.location
-      computeType      = "ComputeInstance"
-      disableLocalAuth = true
-      properties = {
-        enableNodePublicIp = false
-        vmSize             = "STANDARD_DS2_V2"
-      }
-    }
-  }
-  location               = local.aml_resource.location
-  name                   = "ci-${var.name}"
-  parent_id              = local.aml_resource.id
-  response_export_values = ["*"]
-
-  identity {
-    type = "SystemAssigned"
   }
 }
 

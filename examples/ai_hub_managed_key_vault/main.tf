@@ -1,14 +1,24 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.2"
     }
   }
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -19,11 +29,22 @@ provider "azurerm" {
   }
 }
 
-# This ensures we have unique CAF compliant names for our resources.
+resource "random_string" "name" {
+  length  = 5
+  numeric = false
+  special = false
+  upper   = false
+}
+
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.2"
+
+  unique-length = 5
+  unique-seed   = random_string.name.id
 }
+
+data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
@@ -42,10 +63,15 @@ resource "azurerm_storage_account" "example" {
 }
 
 locals {
-  name = module.naming.machine_learning_workspace.name_unique
   tags = {
-    scenario = "AI Foundry with Managed Key Vault"
+    scenario = "AI Hub with Managed Key Vault"
   }
+}
+
+resource "azurerm_role_assignment" "connection_approver" {
+  principal_id       = data.azurerm_client_config.current.object_id
+  scope              = azurerm_resource_group.this.id
+  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
 }
 
 module "ai_services" {
@@ -60,7 +86,7 @@ module "ai_services" {
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
-  public_network_access_enabled      = true # required for AI Foundry
+  public_network_access_enabled      = true
   tags                               = local.tags
 }
 
@@ -73,17 +99,13 @@ module "aihub" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = local.name
-  resource_group_name = azurerm_resource_group.this.name
-  aiservices = {
-    resource_group_id         = azurerm_resource_group.this.id
-    name                      = module.ai_services.name
-    create_service_connection = true
-  }
-  enable_telemetry = var.enable_telemetry
-  key_vault        = { use_microsoft_managed_key_vault = true }
-  kind             = "Hub"
+  location                      = azurerm_resource_group.this.location
+  name                          = "hub${random_string.name.id}"
+  resource_group_name           = azurerm_resource_group.this.name
+  enable_telemetry              = var.enable_telemetry
+  key_vault                     = { use_microsoft_managed_key_vault = true }
+  kind                          = "Hub"
+  public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
   }
@@ -92,5 +114,23 @@ module "aihub" {
   workspace_managed_network = {
     isolation_mode = "Disabled"
     spark_ready    = true
+  }
+}
+
+resource "azapi_resource" "aiservices_connection" {
+  name      = "sc${random_string.name.id}"
+  parent_id = module.aihub.resource_id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  body = {
+    properties = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = module.ai_services.resource_id
+      }
+    }
   }
 }

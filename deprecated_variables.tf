@@ -1,7 +1,7 @@
-variable "create_compute_instance" {
+variable "is_private" {
   type        = bool
-  default     = false
-  description = "Specifies whether a compute instance should be created for the workspace to provision the managed vnet. **Due to the complexity of compute instances and to prevent setting precedent that compute provisioning will be included in this module, this will be deprecated in a future release."
+  default     = null
+  description = "DEPRECATED. Please use `var.public_network_access_enabled`."
 }
 
 variable "outbound_rules" {
@@ -11,23 +11,12 @@ variable "outbound_rules" {
   }))
   default     = {}
   description = <<DESCRIPTION
-  A map of private endpoints outbound rules for the managed network. **This will be deprecated in favor of the `var.workspace_managed_network.outbound_rules` in a future release. Until then, the final outbound rules of type 'PrivateEndpoint' will be a combination of this variable's value and that of `workspace_managed_network.outbound_rules.private_endpoint`.
+  DEPRECATED. Please use `var.workspace_managed_network.outbound_rules.private_endpoint` instead. It will be removed completely in a later release.
+  
+  A map of private endpoints outbound rules for the managed network.
 
   - `resource_id` - The resource id for the corresponding private endpoint.
   - `sub_resource_target` - The sub_resource_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
-  
+
   DESCRIPTION
-}
-
-variable "storage_access_type" {
-  type        = string
-  default     = "identity"
-  description = <<DESCRIPTION
-The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
-DESCRIPTION
-
-  validation {
-    condition     = contains(["accessKey", "identity"], var.storage_access_type)
-    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
-  }
 }

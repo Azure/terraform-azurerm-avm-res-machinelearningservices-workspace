@@ -1,15 +1,42 @@
 <!-- BEGIN_TF_DOCS -->
-# Private Workspace with AI Search
+# Azure AI Hub
 
-This provisions Azure AI Search Service and deploys a private Azure Machine Learning Workspace with an outbound rule allowing connection to the Search Service over private endpoint.
+This example deploys the core aspects of the architecture depicted in the image below.
 
-The following resources are included:
+![An architecture diagram. At the top, a Managed VNet containing a compute instance, serverless compute, a managed online endpoint and AI project is depicted. A private endpoint within the Managed VNet connects to the Azure AI Studio hub. There are also private endpoints connecting an Azure Storage Account, Azure Key Vault and Azure Container Registry to the Managed VNet. Azure AI Services, Azure Open AI and, optionally, Azure AI Search are accessible within the Managed VNet as well. In the middle left, there is an Azure VNet labeled 'Your Azure VNet' which serves as a bridge between an on-premise network and Azure resources with various private endpoints.](https://learn.microsoft.com/en-us/azure/ai-studio/media/how-to/network/azure-ai-network-outbound.png)
 
-- AML workspace
-- Storage Account
-- Key Vault
+This specifically includes:
+
+- 1 Azure VNet
+  - subnet named "private\_endpoints"
+- 6 private DNS zones linked to the VNet
+  - "privatelink.api.azureml.ms" for the AI Hub
+  - "privatelink.notebooks.azure.net" for the AI Hub
+  - "privatelink.vaultcore.azure.net" for Key Vault
+  - "privatelink.blob.core.windows.net" for Storage Account (blob)
+  - "privatelink.file.core.windows.net" for Storage Account (file)
+  - "privatelink.azurecr.io" for Container Registry
+- AI Hub workspace (private)
+  - 1 private endpoint in the "private\_endpoints" subnet referencing both "privatelink.api.azureml.ms" and "privatelink.notebooks.azure.net" DNS zones
+- Storage Account (private)
+  -  1 private endpoint in the "private\_endpoints" subnet referencing the "privatelink.blob.core.windows.net" DNS zone and
+  -  1 private endpoint in the "private\_endpoints" subnet referencing DNS zone "privatelink.file.core.windows.net"
+- Key Vault (private)
+  - 1 private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.vaultcore.azure.net" DNS zone
+- Azure Container Registry (private)
+  - 1 private endpoint in the "private\_endpoints" subnet, referencing the "privatelink.azurecr.io" DNS zone
 - App Insights and Log Analytics workspace
-- AI Search Service
+- AI Services (AI Foundry) + a connection from Hub to instance
+
+The managed VNet is not provisioned by default. In the unprovisioned state, you can see the outbound rules created in the Azure Portal or with the Azure CLI + machine learning extension `az ml workspace outbound-rule list --resource-group $RESOURCE_GROUP --workspace-name $WORKSPACE`. Since all possible provisioned resources are private, this collection should include one of type `PrivateEndpoint` for each of the following:
+
+- Key Vault
+- Storage Account: file (spark enabled)
+- Storage Account: blob (spark enabled)
+- Container Registry
+- The AI Hub Workspace (spark enabled)
+
+After the network is provisioned (either by adding compute or manually provisioning it with [the Azure CLI + machine learning extension](https://learn.microsoft.com/en-us/cli/azure/ml/workspace?view=azure-cli-latest#az-ml-workspace-provision-network)), the private endpoints themselves will be created internally for AI Studio.
 
 ```hcl
 terraform {
@@ -60,17 +87,17 @@ module "naming" {
 
 data "azurerm_client_config" "current" {}
 
-locals {
-  tags = {
-    scenario = "Private AML with AI Search"
-  }
-}
-
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
   location = var.location
   name     = module.naming.resource_group.name_unique
   tags     = local.tags
+}
+
+locals {
+  tags = {
+    scenario = "Private AI Hub"
+  }
 }
 
 resource "azurerm_role_assignment" "connection_approver" {
@@ -195,22 +222,6 @@ module "private_dns_containerregistry_registry" {
   }
 }
 
-module "private_dns_aisearch" {
-  source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
-
-  domain_name         = "privatelink.search.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
-  virtual_network_links = {
-    dnslink = {
-      vnetlinkname = "privatelink.search.windows.net"
-      vnetid       = module.virtual_network.resource.id
-    }
-  }
-}
-
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
   version = "~> 0.4"
@@ -230,7 +241,6 @@ module "avm_res_containerregistry_registry" {
   tags                          = local.tags
   zone_redundancy_enabled       = false
 }
-
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
@@ -315,104 +325,38 @@ module "avm_res_storage_storageaccount" {
     }
   }
   public_network_access_enabled = false
-  # for idempotency
-  share_properties = {
-    cors_rule = [{
-      allowed_headers = ["*", ]
-      allowed_methods = [
-        "GET",
-        "HEAD",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-        "POST",
-        "PATCH",
-      ]
-      allowed_origins = [
-        "https://mlworkspace.azure.ai",
-        "https://ml.azure.com",
-        "https://*.ml.azure.com",
-        "https://ai.azure.com",
-        "https://*.ai.azure.com",
-      ]
-      exposed_headers = [
-        "*",
-      ]
-      max_age_in_seconds = 1800
-    }]
-  }
-  shared_access_key_enabled = true
-  tags                      = local.tags
-}
-
-module "aisearch" {
-  source  = "Azure/avm-res-search-searchservice/azurerm"
-  version = "0.1.5"
-
-  location                     = var.location
-  name                         = module.naming.search_service.name_unique
-  resource_group_name          = azurerm_resource_group.this.name
-  enable_telemetry             = var.enable_telemetry
-  local_authentication_enabled = false
-  managed_identities = {
-    system_assigned = true
-  }
-  private_endpoints = {
-    primary = {
-      subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
-      private_dns_zone_resource_ids = [module.private_dns_aisearch.resource_id]
-      tags                          = local.tags
-    }
-  }
-  public_network_access_enabled = false
+  shared_access_key_enabled     = true
   tags                          = local.tags
 }
 
-module "avm_res_log_analytics_workspace" {
-  source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "~> 0.4"
+module "ai_services" {
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "0.6.0"
 
-  location            = var.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  log_analytics_workspace_identity = {
-    type = "SystemAssigned"
-  }
-  log_analytics_workspace_internet_ingestion_enabled = true
-  log_analytics_workspace_internet_query_enabled     = true
-  tags                                               = local.tags
+  kind                               = "AIServices"
+  location                           = var.location
+  name                               = module.naming.cognitive_account.name_unique
+  resource_group_name                = azurerm_resource_group.this.name
+  sku_name                           = "S0"
+  enable_telemetry                   = var.enable_telemetry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  public_network_access_enabled      = true
+  tags                               = local.tags
 }
-
-module "avm_res_insights_component" {
-  source  = "Azure/avm-res-insights-component/azurerm"
-  version = "~> 0.1"
-
-  location                   = var.location
-  name                       = module.naming.application_insights.name_unique
-  resource_group_name        = azurerm_resource_group.this.name
-  workspace_id               = module.avm_res_log_analytics_workspace.resource_id
-  internet_ingestion_enabled = true
-  internet_query_enabled     = true
-  tags                       = local.tags
-}
-
 
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
 # with a data source.
-module "azureml" {
+module "aihub" {
   source = "../../"
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = var.location
-  name                = module.naming.machine_learning_workspace.name_unique
+  location            = azurerm_resource_group.this.location
+  name                = "hub${random_string.name.id}"
   resource_group_name = azurerm_resource_group.this.name
-  application_insights = {
-    resource_id = module.avm_res_insights_component.resource_id
-  }
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
@@ -420,45 +364,39 @@ module "azureml" {
   key_vault = {
     resource_id = module.avm_res_keyvault_vault.resource_id
   }
+  kind = "Hub"
   private_endpoints = {
-    primary = {
-      name                          = "pe-aml-workspace"
+    hub = {
+      name                          = "pe-hub-${random_string.name.id}"
       subnet_resource_id            = module.virtual_network.subnets["private_endpoints"].resource_id
       private_dns_zone_resource_ids = [module.private_dns_aml_api.resource_id, module.private_dns_aml_notebooks.resource_id]
       inherit_lock                  = false
     }
   }
-  public_network_access_enabled = true
+  public_network_access_enabled = false
   storage_account = {
     resource_id = module.avm_res_storage_storageaccount.resource_id
   }
-  tags = local.tags
+  workspace_friendly_name = "Private AI Studio Hub"
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
-    outbound_rules = {
-      private_endpoint = {
-        aisearch = {
-          resource_id         = module.aisearch.resource_id
-          sub_resource_target = "searchService"
-        }
-      }
-    }
+    isolation_mode = "AllowOnlyApprovedOutbound"
   }
 }
 
-resource "azapi_resource" "search_connection" {
-  name      = "srch${random_string.name.id}"
-  parent_id = module.azureml.resource_id
+
+resource "azapi_resource" "aiservices_connection" {
+  name      = "sc${random_string.name.id}"
+  parent_id = module.aihub.resource_id
   type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
   body = {
     properties = {
-      category      = "CognitiveSearch"
-      target        = "https://${module.aisearch.resource.name}.search.windows.net"
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
       authType      = "AAD"
       isSharedToAll = true
       metadata = {
         ApiType    = "Azure",
-        ResourceId = module.aisearch.resource_id
+        ResourceId = module.ai_services.resource_id
       }
     }
   }
@@ -482,7 +420,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.search_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.aiservices_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/string) (resource)
@@ -513,7 +451,7 @@ Description: The location for the resources.
 
 Type: `string`
 
-Default: `"eastus2"`
+Default: `"australiaeast"`
 
 ## Outputs
 
@@ -521,17 +459,23 @@ The following outputs are exported:
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
-Description: Relevant properties of the machine learning workspace and supporting resources.
+Description: The AI Studio hub workspace.
 
 ## Modules
 
 The following Modules are called:
 
-### <a name="module_aisearch"></a> [aisearch](#module\_aisearch)
+### <a name="module_ai_services"></a> [ai\_services](#module\_ai\_services)
 
-Source: Azure/avm-res-search-searchservice/azurerm
+Source: Azure/avm-res-cognitiveservices-account/azurerm
 
-Version: 0.1.5
+Version: 0.6.0
+
+### <a name="module_aihub"></a> [aihub](#module\_aihub)
+
+Source: ../../
+
+Version:
 
 ### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
 
@@ -539,23 +483,11 @@ Source: Azure/avm-res-containerregistry-registry/azurerm
 
 Version: ~> 0.4
 
-### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
-
-Source: Azure/avm-res-insights-component/azurerm
-
-Version: ~> 0.1
-
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
 Version: ~> 0.9
-
-### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
-
-Source: Azure/avm-res-operationalinsights-workspace/azurerm
-
-Version: ~> 0.4
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
@@ -563,23 +495,11 @@ Source: Azure/avm-res-storage-storageaccount/azurerm
 
 Version: ~> 0.4
 
-### <a name="module_azureml"></a> [azureml](#module\_azureml)
-
-Source: ../../
-
-Version:
-
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
 
 Version: 0.4.2
-
-### <a name="module_private_dns_aisearch"></a> [private\_dns\_aisearch](#module\_private\_dns\_aisearch)
-
-Source: Azure/avm-res-network-privatednszone/azurerm
-
-Version: ~> 0.2
 
 ### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
 

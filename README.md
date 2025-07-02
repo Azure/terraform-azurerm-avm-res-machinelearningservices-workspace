@@ -1,68 +1,71 @@
 <!-- BEGIN_TF_DOCS -->
 # Azure Machine Learning Workspace Module
 
-> [!IMPORTANT]
-> This module no longer provisions supporting resources, e.g. Key Vault, Storage Account and Azure Container Registry. This change was made to align with [the definition of an AVM resource module](https://azure.github.io/Azure-Verified-Modules/specs/shared/module-classifications/). The included examples in the [examples directory](examples), e.g. [AI Foundry Hub](examples/default\_ai\_foundry\_hub/README.md) and [AML Workspace](examples/default/README.md), can be used as reference for what is required to provision said resources outside of this module.
-
-This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Foundry, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision an AI Foundry Project for a Hub.
+This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure Machine Learning Workspace, which is a core resource for developing, training, and deploying machine learning models on Azure. Additionally, by setting the `kind` variable to `Hub`, this module can also provision an Azure AI Hub, which is an enhanced experience built on top of the Azure Machine Learning Workspace specifically for Generative AI use cases. Finally, if the `kind` variable is set to `Project`, this module can provision an AI Project for a Hub.
 
 ## Functionality
 
 * **Azure Machine Learning Workspace:** The default behavior of this module is to create an Azure Machine Learning Workspace, which provides the environment and tools necessary for machine learning tasks.
-* **Azure AI Foundry:** If the `kind` variable is set to `Hub`, the module provisions an Azure AI Foundry Hub instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
+* **Azure AI Hub:** If the `kind` variable is set to `Hub`, the module provisions an Azure AI Hub instead, offering additional AI capabilities while still leveraging the underlying Azure Machine Learning infrastructure.
 
 ## Usage
 
 ### Example - AML Workspace
+
+This will create a publicly-accessible Azure Machine Learning Workspace.
 
 ```hcl
 module "ml_workspace" {
   source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
   version = "x.x.x"
 
+  location            = "<your_location>"
+  name                = "<workspace_name>"
   resource_group_name = "<resource_group_name>"
+  kind                = "Default" # Omitting this parameter will result in the same outcome
 
-  location = "<your_location>"
-  kind     = "Default" # Omitting this parameter will result in the same outcome
-
-  is_private = false # Omitting this parameter will result in the same outcome
-  workspace_managed_network = {
-    isolation_mode = "Disabled"
-    spark_ready    = true
+  application_insights = {
+    resource_id = "<app_insights_resource_id>"
   }
 
-  storage_account = {
-    resource_id = "<storage_account_resource_id>"
+  container_registry = {
+    resource_id = azurerm_container_registry.example.id
   }
 
   key_vault = {
     resource_id = "<key_vault_resource_id>"
   }
 
-  container_registry = {
-    resource_id = "<container_registry_id>"
+  managed_identities = {
+    system_assigned = true
   }
 
-  application_insights = {
-    resource_id = "<app_insights_resource_id>"
+  public_network_access_enabled = true
+
+  storage_account = {
+    resource_id = "<storage_account_resource_id>"
+  }
+
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = true
   }
 }
 ```
 
-This will create a publicly-accessible Azure Machine Learning Workspace.
+### Example - AI Hub
 
-### Example - AI Foundry Hub
+This will create a publicly-accessible AI Hub.
 
 ```hcl
 module "hub" {
   source  = "Azure/avm-res-machinelearningservices-workspace/azurerm"
   version = "x.x.x"
 
+  location            = "<your_location>"
+  name                = "<hub_name>"
   resource_group_name = "<resource_group_name>"
-
-  location   = "<your_location>"
-  kind       = "Hub"
-  is_private = false # Omitting this parameter will result in the same outcome
+  kind                = "Hub"
 
   workspace_managed_network = {
     isolation_mode = "Disabled"
@@ -76,16 +79,8 @@ module "hub" {
   key_vault = {
     resource_id = "<key_vault_resource_id>"
   }
-
-  aiservices = {
-    resource_group_id         = "<resource_group_id>"
-    name                      = "module.ai_services.name"
-    create_service_connection = true
-  }
 }
 ```
-
-This will create a publicly-accessible AI Foundry Hub.
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements
@@ -106,9 +101,6 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azapi_resource.aiservice](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.aiserviceconnection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azapi_resource.computeinstance](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
@@ -120,7 +112,6 @@ The following resources are used by this module:
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/uuid) (resource)
-- [azapi_resource.existing_aiservices](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
 - [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_key) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
@@ -153,34 +144,16 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_ai_studio_hub_id"></a> [ai\_studio\_hub\_id](#input\_ai\_studio\_hub\_id)
+### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
-Description: The AI Studio Hub ID for which to create a Project
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_aiservices"></a> [aiservices](#input\_aiservices)
-
-Description: An object describing the AI Services resource to create or reference. This includes the following properties:
-- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
-- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
-- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
-- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags`: (Optional) Tags for the AI Services resource.
-- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
+Description: An object describing the Application Insights resource. This includes the following properties:
+- `resource_id` - (Optional) The resource ID of an Application Insights resource.
 
 Type:
 
 ```hcl
 object({
-    create_new                = optional(bool, false)
-    analysis_services_sku     = optional(string, "S0")
-    name                      = optional(string, null)
-    resource_group_id         = optional(string, null)
-    tags                      = optional(map(string), null)
-    create_service_connection = optional(bool, false)
+    resource_id = optional(string)
   })
 ```
 
@@ -188,14 +161,14 @@ Default:
 
 ```json
 {
-  "create_new": false
+  "resource_id": null
 }
 ```
 
-### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
+### <a name="input_azure_ai_hub"></a> [azure\_ai\_hub](#input\_azure\_ai\_hub)
 
-Description: An object describing the Application Insights resource to use for monitoring inference endpoints. This includes the following properties:
-- `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
+Description:  An object describing the Azure AI Hub resource for which to create a Project. This includes the following properties:
+ - `resource_id` - (Optional) The resource ID for an Azure AI Hub
 
 Type:
 
@@ -233,14 +206,6 @@ Default:
   "resource_id": null
 }
 ```
-
-### <a name="input_create_compute_instance"></a> [create\_compute\_instance](#input\_create\_compute\_instance)
-
-Description: Specifies whether a compute instance should be created for the workspace to provision the managed vnet. **Due to the complexity of compute instances and to prevent setting precedent that compute provisioning will be included in this module, this will be deprecated in a future release.
-
-Type: `bool`
-
-Default: `false`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 
@@ -328,17 +293,17 @@ Default: `[]`
 
 ### <a name="input_is_private"></a> [is\_private](#input\_is\_private)
 
-Description: Specifies if every provisioned resource should be private and inaccessible from the Internet.
+Description: DEPRECATED. Please use `var.public_network_access_enabled`.
 
 Type: `bool`
 
-Default: `false`
+Default: `null`
 
 ### <a name="input_key_vault"></a> [key\_vault](#input\_key\_vault)
 
 Description: An object describing the Key Vault required for the workspace. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
-- `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Foundry (Hub).
+- `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Hub.
 
 Type:
 
@@ -407,7 +372,9 @@ Default: `{}`
 
 ### <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules)
 
-Description:   A map of private endpoints outbound rules for the managed network. **This will be deprecated in favor of the `var.workspace_managed_network.outbound_rules` in a future release. Until then, the final outbound rules of type 'PrivateEndpoint' will be a combination of this variable's value and that of `workspace_managed_network.outbound_rules.private_endpoint`.
+Description:   DEPRECATED. Please use `var.workspace_managed_network.outbound_rules.private_endpoint` instead. It will be removed completely in a later release.  
+
+  A map of private endpoints outbound rules for the managed network.
 
   - `resource_id` - The resource id for the corresponding private endpoint.
   - `sub_resource_target` - The sub\_resource\_target is target for the private endpoint. e.g. account for Openai, searchService for Azure Ai Search
@@ -513,18 +480,28 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
+
+Description: (Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
-Description: A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+Description:   A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
-- `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
-- `principal_id` - The ID of the principal to assign the role to.
-- `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
-- `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+  - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
+  - `principal_id` - The ID of the principal to assign the role to.
+  - `description` - (Optional) The description of the role assignment.
+  - `skip_service_principal_aad_check` - (Optional) If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+  - `condition` - (Optional) The condition which will be used to scope the role assignment.
+  - `condition_version` - (Optional) The version of the condition syntax. Leave as `null` if you are not using a condition, if you are then valid values are '2.0'.
+  - `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
+  - `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
 
-> Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
+  > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 
 Type:
 
@@ -664,11 +641,11 @@ The following outputs are exported:
 
 ### <a name="output_ai_services"></a> [ai\_services](#output\_ai\_services)
 
-Description: The AI Services resource, if created.
+Description: DEPRECATED. Will always be null.
 
 ### <a name="output_ai_services_service_connection"></a> [ai\_services\_service\_connection](#output\_ai\_services\_service\_connection)
 
-Description: The service connection between the AIServices and the workspace, if created.
+Description: DEPRECATED. Will always be null.
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
@@ -676,11 +653,15 @@ Description: A map of the private endpoints created.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
-Description: The machine learning workspace.
+Description: DEPRECATED. Use `workspace` or other outputs instead. If additional fields are required, open a bug. Note: the only input value that should be output too is `name`
 
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The ID of the machine learning workspace.
+
+### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
+
+Description: The system-assigned managed identity for the created workspace, if applicable.
 
 ### <a name="output_workspace"></a> [workspace](#output\_workspace)
 
@@ -688,7 +669,7 @@ Description: The machine learning workspace created.
 
 ### <a name="output_workspace_identity"></a> [workspace\_identity](#output\_workspace\_identity)
 
-Description: The identity for the created workspace.
+Description: DEPRECATED. Use `system_assigned_mi_principal_id` instead, if the workspace was configured for system-assigned managed identity.
 
 ## Modules
 

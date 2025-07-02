@@ -14,6 +14,7 @@ The following resources are included:
 ```hcl
 terraform {
   required_version = ">= 1.9, < 2.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -23,6 +24,7 @@ terraform {
 }
 
 provider "azurerm" {
+  storage_use_azuread = true
   features {
     key_vault {
       purge_soft_delete_on_destroy = false
@@ -40,7 +42,7 @@ module "naming" {
 
 locals {
   tags = {
-    scenario = "diagnostic settings"
+    scenario = "AML with Diagnostic Settings"
   }
 }
 
@@ -79,6 +81,13 @@ resource "azurerm_container_registry" "example" {
   tags                = local.tags
 }
 
+resource "azurerm_log_analytics_workspace" "example" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  tags                = local.tags
+}
+
 resource "azurerm_application_insights" "example" {
   application_type    = "web"
   location            = azurerm_resource_group.this.location
@@ -86,13 +95,6 @@ resource "azurerm_application_insights" "example" {
   resource_group_name = azurerm_resource_group.this.name
   tags                = local.tags
   workspace_id        = azurerm_log_analytics_workspace.example.id
-}
-
-resource "azurerm_log_analytics_workspace" "example" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  tags                = local.tags
 }
 
 resource "azurerm_log_analytics_workspace" "diag" {
@@ -112,7 +114,7 @@ module "azureml" {
   name                = module.naming.machine_learning_workspace.name_unique
   resource_group_name = azurerm_resource_group.this.name
   application_insights = {
-    resource_id = replace(azurerm_application_insights.example.id, "Microsoft.Insights", "Microsoft.insights")
+    resource_id = azurerm_application_insights.example.id
   }
   container_registry = {
     resource_id = azurerm_container_registry.example.id
@@ -125,8 +127,9 @@ module "azureml" {
   }
   enable_telemetry = var.enable_telemetry
   key_vault = {
-    resource_id = replace(azurerm_key_vault.example.id, "Microsoft.KeyVault", "Microsoft.Keyvault")
+    resource_id = azurerm_key_vault.example.id
   }
+  public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
   }
@@ -173,7 +176,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_location"></a> [location](#input\_location)
 

@@ -20,45 +20,6 @@ variable "resource_group_name" {
   description = "The resource group where the resources will be deployed."
 }
 
-variable "ai_studio_hub_id" {
-  type        = string
-  default     = null
-  description = "The AI Studio Hub ID for which to create a Project"
-
-  validation {
-    condition     = var.kind != "Project" || var.ai_studio_hub_id != null
-    error_message = "The Hub ID is required when `var.kind` equals 'Project'"
-  }
-}
-
-variable "aiservices" {
-  type = object({
-    create_new                = optional(bool, false)
-    analysis_services_sku     = optional(string, "S0")
-    name                      = optional(string, null)
-    resource_group_id         = optional(string, null)
-    tags                      = optional(map(string), null)
-    create_service_connection = optional(bool, false)
-  })
-  default = {
-    create_new = false
-  }
-  description = <<DESCRIPTION
-An object describing the AI Services resource to create or reference. This includes the following properties:
-- `create_new`: (Optional) A flag indicating if a new resource must be created. If set to 'false', both `name` and `resource_group_id` must be provided.
-- `analysis_services_sku`: (Optional) When creating a new resource, this specifies the SKU of the Azure Analysis Services server. Possible values are: `D1`, `B1`, `B2`, `S0`, `S1`, `S2`, `S4`, `S8`, `S9`. Availability may be impacted by region; see https://learn.microsoft.com/en-us/azure/analysis-services/analysis-services-overview#availability-by-region
-- `name`: (Optional) If providing an existing resource, the name of the AI Services to reference
-- `resource_group_id`: (Optional) If providing an existing resource, the id of the resource group where the AI Services resource resides
-- `tags`: (Optional) Tags for the AI Services resource.
-- `create_service_connection`: (Optional) Whether or not to create a service connection between the Workspace resource and AI Services resource.
-DESCRIPTION
-
-  validation {
-    condition     = !(var.aiservices.create_new && var.aiservices.resource_group_id != null && var.aiservices.name != null)
-    error_message = "When creating new AI Services resource, `name` and `resource_group_id` must be null."
-  }
-}
-
 variable "application_insights" {
   type = object({
     resource_id = optional(string)
@@ -67,13 +28,35 @@ variable "application_insights" {
     resource_id = null
   }
   description = <<DESCRIPTION
-An object describing the Application Insights resource to use for monitoring inference endpoints. This includes the following properties:
-- `resource_id` - (Optional) The resource ID of an existing Application Insights resource.
+An object describing the Application Insights resource. This includes the following properties:
+- `resource_id` - (Optional) The resource ID of an Application Insights resource.
 DESCRIPTION
 
   validation {
     condition     = var.kind != "Project" || var.application_insights.resource_id == null
-    error_message = "Application Insights resource ID is not used when provisioning AI Foundry Projects."
+    error_message = "Application Insights resource ID is not used when provisioning AI Projects."
+  }
+}
+
+variable "azure_ai_hub" {
+  type = object({
+    resource_id = optional(string)
+  })
+  default = {
+    resource_id = null
+  }
+  description = <<DESCRIPTION
+ An object describing the Azure AI Hub resource for which to create a Project. This includes the following properties:
+ - `resource_id` - (Optional) The resource ID for an Azure AI Hub
+ DESCRIPTION
+
+  validation {
+    condition     = var.kind == "Project" || var.azure_ai_hub.resource_id == null
+    error_message = "An Azure AI Hub resource is only required when creating a Project."
+  }
+  validation {
+    condition     = var.kind != "Project" || var.azure_ai_hub.resource_id != null
+    error_message = "An Azure AI Hub resource ID is required when creating a project."
   }
 }
 
@@ -91,7 +74,7 @@ DESCRIPTION
 
   validation {
     condition     = var.kind != "Project" || var.container_registry.resource_id == null
-    error_message = "Container Registry resource ID is not used when provisioning AI Foundry Projects."
+    error_message = "Container Registry resource ID is not used when provisioning AI Projects."
   }
 }
 
@@ -185,12 +168,6 @@ variable "ip_allowlist" {
   description = "The list of IPv4 addresses that are allowed to access the workspace."
 }
 
-variable "is_private" {
-  type        = bool
-  default     = false
-  description = "Specifies if every provisioned resource should be private and inaccessible from the Internet."
-}
-
 variable "key_vault" {
   type = object({
     resource_id                     = optional(string)
@@ -202,7 +179,7 @@ variable "key_vault" {
   description = <<DESCRIPTION
 An object describing the Key Vault required for the workspace. This includes the following properties:
 - `resource_id` - The resource ID of an existing Key Vault.
-- `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Foundry (Hub).
+- `use_microsoft_managed_key_vault` -  A flag indicating if a microsoft managed key value should be used, no new key vault will be created (preview), flag only applicable to AI Hub.
 DESCRIPTION
 
   validation {
@@ -359,6 +336,12 @@ variable "private_endpoints_manage_dns_zone_group" {
   nullable    = false
 }
 
+variable "public_network_access_enabled" {
+  type        = bool
+  default     = false
+  description = "(Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`"
+}
+
 # required AVM interface
 variable "role_assignments" {
   type = map(object({
@@ -373,18 +356,33 @@ variable "role_assignments" {
   }))
   default     = {}
   description = <<DESCRIPTION
-A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+  A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
-- `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
-- `principal_id` - The ID of the principal to assign the role to.
-- `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
-- `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+  - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
+  - `principal_id` - The ID of the principal to assign the role to.
+  - `description` - (Optional) The description of the role assignment.
+  - `skip_service_principal_aad_check` - (Optional) If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+  - `condition` - (Optional) The condition which will be used to scope the role assignment.
+  - `condition_version` - (Optional) The version of the condition syntax. Leave as `null` if you are not using a condition, if you are then valid values are '2.0'.
+  - `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
+  - `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
 
-> Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
+  > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
+}
+
+variable "storage_access_type" {
+  type        = string
+  default     = "identity"
+  description = <<DESCRIPTION
+The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.
+DESCRIPTION
+
+  validation {
+    condition     = contains(["accessKey", "identity"], var.storage_access_type)
+    error_message = "Valid options for storage access auth mode are 'accessKey' or 'identity'."
+  }
 }
 
 variable "storage_account" {

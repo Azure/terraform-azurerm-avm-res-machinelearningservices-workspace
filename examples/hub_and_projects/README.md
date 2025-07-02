@@ -1,0 +1,277 @@
+<!-- BEGIN_TF_DOCS -->
+# AI Hub with Projects example
+
+This example demonstrates provisioning a publicly-accessible AI Hub with basic configuration and two Projects.
+
+The following resources are included:
+
+- AI Hub with 2 Projects
+- Storage Account
+- Key Vault
+- AI Services (AI Foundry) + a connection from Hub to instance
+
+```hcl
+terraform {
+  required_version = ">= 1.9, < 2.0"
+
+  required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.0"
+    }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.2"
+    }
+  }
+}
+
+provider "azurerm" {
+  storage_use_azuread = true
+  features {
+    key_vault {
+      purge_soft_delete_on_destroy = false
+    }
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
+}
+
+resource "random_string" "name" {
+  length  = 5
+  numeric = false
+  special = false
+  upper   = false
+}
+
+module "naming" {
+  source  = "Azure/naming/azurerm"
+  version = "0.4.2"
+
+  unique-length = 5
+  unique-seed   = random_string.name.id
+}
+
+data "azurerm_client_config" "current" {}
+
+# This is required for resource modules
+resource "azurerm_resource_group" "example" {
+  location = var.location
+  name     = module.naming.resource_group.name_unique
+  tags     = local.tags
+}
+
+resource "azurerm_role_assignment" "connection_approver" {
+  principal_id       = data.azurerm_client_config.current.object_id
+  scope              = azurerm_resource_group.example.id
+  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
+}
+
+locals {
+  tags = {
+    scenario = "AI Hub and Projects"
+  }
+}
+
+resource "azurerm_storage_account" "example" {
+  account_replication_type = "ZRS"
+  account_tier             = "Standard"
+  location                 = azurerm_resource_group.example.location
+  name                     = module.naming.storage_account.name_unique
+  resource_group_name      = azurerm_resource_group.example.name
+}
+
+resource "azurerm_key_vault" "example" {
+  location            = azurerm_resource_group.example.location
+  name                = module.naming.key_vault.name_unique
+  resource_group_name = azurerm_resource_group.example.name
+  sku_name            = "standard"
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+}
+
+module "ai_services" {
+  source  = "Azure/avm-res-cognitiveservices-account/azurerm"
+  version = "0.6.0"
+
+  kind                               = "AIServices"
+  location                           = var.location
+  name                               = module.naming.cognitive_account.name_unique
+  resource_group_name                = azurerm_resource_group.example.name
+  sku_name                           = "S0"
+  enable_telemetry                   = var.enable_telemetry
+  local_auth_enabled                 = true
+  outbound_network_access_restricted = false
+  public_network_access_enabled      = true
+  tags                               = local.tags
+}
+
+# This is the module call 1
+module "aihub" {
+  source = "../../"
+
+  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
+  # ...
+  location            = azurerm_resource_group.example.location
+  name                = "hub${random_string.name.id}"
+  resource_group_name = azurerm_resource_group.example.name
+  enable_telemetry    = var.enable_telemetry
+  key_vault = {
+    resource_id = azurerm_key_vault.example.id
+  }
+  kind                          = "Hub"
+  public_network_access_enabled = true
+  storage_account = {
+    resource_id = azurerm_storage_account.example.id
+  }
+  tags                    = local.tags
+  workspace_friendly_name = "AI Studio Hub"
+  workspace_managed_network = {
+    isolation_mode = "Disabled"
+    spark_ready    = false
+  }
+}
+
+resource "azapi_resource" "aiservices_connection" {
+  name      = "sc${random_string.name.id}"
+  parent_id = module.aihub.resource_id
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  body = {
+    properties = {
+      category      = "AIServices"
+      target        = module.ai_services.endpoint
+      authType      = "AAD"
+      isSharedToAll = true
+      metadata = {
+        ApiType    = "Azure",
+        ResourceId = module.ai_services.resource_id
+      }
+    }
+  }
+}
+
+locals {
+  projects = {
+    init = {
+      friendlyName = "First Project"
+    }
+    additional = {
+      friendlyName = "Another Project"
+    }
+  }
+}
+
+module "aiproject" {
+  source   = "../../"
+  for_each = local.projects
+
+  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
+  # ...
+  location            = azurerm_resource_group.example.location
+  name                = "proj${random_string.name.id}${each.key}"
+  resource_group_name = azurerm_resource_group.example.name
+  azure_ai_hub = {
+    resource_id = module.aihub.resource_id
+  }
+  enable_telemetry = var.enable_telemetry
+  kind             = "Project"
+  managed_identities = {
+    system_assigned = true
+  }
+  workspace_friendly_name = each.value.friendlyName
+}
+```
+
+<!-- markdownlint-disable MD033 -->
+## Requirements
+
+The following requirements are needed by this module:
+
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
+
+- <a name="requirement_random"></a> [random](#requirement\_random) (3.6.2)
+
+## Resources
+
+The following resources are used by this module:
+
+- [azapi_resource.aiservices_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azurerm_key_vault.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
+- [azurerm_resource_group.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
+- [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
+- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/string) (resource)
+- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+
+<!-- markdownlint-disable MD013 -->
+## Required Inputs
+
+No required inputs.
+
+## Optional Inputs
+
+The following input variables are optional (have default values):
+
+### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
+
+Description: This variable controls whether or not telemetry is enabled for the module.  
+For more information see <https://aka.ms/avm/telemetryinfo>.  
+If it is set to false, then no telemetry will be collected.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The location for the resources.
+
+Type: `string`
+
+Default: `"eastus2"`
+
+## Outputs
+
+No outputs.
+
+## Modules
+
+The following Modules are called:
+
+### <a name="module_ai_services"></a> [ai\_services](#module\_ai\_services)
+
+Source: Azure/avm-res-cognitiveservices-account/azurerm
+
+Version: 0.6.0
+
+### <a name="module_aihub"></a> [aihub](#module\_aihub)
+
+Source: ../../
+
+Version:
+
+### <a name="module_aiproject"></a> [aiproject](#module\_aiproject)
+
+Source: ../../
+
+Version:
+
+### <a name="module_naming"></a> [naming](#module\_naming)
+
+Source: Azure/naming/azurerm
+
+Version: 0.4.2
+
+<!-- markdownlint-disable-next-line MD041 -->
+## Data Collection
+
+The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft’s privacy statement. Our privacy statement is located at <https://go.microsoft.com/fwlink/?LinkID=824704>. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+<!-- END_TF_DOCS -->

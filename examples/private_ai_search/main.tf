@@ -90,8 +90,8 @@ module "private_dns_aml_api" {
   version = "0.3.5"
 
   domain_name         = "privatelink.api.azureml.ms"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -106,8 +106,8 @@ module "private_dns_aml_notebooks" {
   version = "0.3.5"
 
   domain_name         = "privatelink.notebooks.azure.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -122,8 +122,8 @@ module "private_dns_keyvault_vault" {
   version = "0.3.5"
 
   domain_name         = "privatelink.vaultcore.azure.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -138,8 +138,8 @@ module "private_dns_storageaccount_blob" {
   version = "0.3.5"
 
   domain_name         = "privatelink.blob.core.windows.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -154,8 +154,8 @@ module "private_dns_storageaccount_file" {
   version = "0.3.5"
 
   domain_name         = "privatelink.file.core.windows.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -170,8 +170,8 @@ module "private_dns_containerregistry_registry" {
   version = "0.3.5"
 
   domain_name         = "privatelink.azurecr.io"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -186,8 +186,8 @@ module "private_dns_aisearch" {
   version = "0.3.5"
 
   domain_name         = "privatelink.search.windows.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {

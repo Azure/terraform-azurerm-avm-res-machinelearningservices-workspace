@@ -131,8 +131,8 @@ module "private_dns_aml_api" {
   version = "0.3.5"
 
   domain_name         = "privatelink.api.azureml.ms"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -147,8 +147,8 @@ module "private_dns_aml_notebooks" {
   version = "0.3.5"
 
   domain_name         = "privatelink.notebooks.azure.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -163,8 +163,8 @@ module "private_dns_keyvault_vault" {
   version = "0.3.5"
 
   domain_name         = "privatelink.vaultcore.azure.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -179,8 +179,8 @@ module "private_dns_storageaccount_blob" {
   version = "0.3.5"
 
   domain_name         = "privatelink.blob.core.windows.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -195,8 +195,8 @@ module "private_dns_storageaccount_file" {
   version = "0.3.5"
 
   domain_name         = "privatelink.file.core.windows.net"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -211,8 +211,8 @@ module "private_dns_containerregistry_registry" {
   version = "0.3.5"
 
   domain_name         = "privatelink.azurecr.io"
-  enable_telemetry    = var.enable_telemetry
   resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -437,8 +437,8 @@ The following input variables are optional (have default values):
 
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
-Description: This variable controls whether or not telemetry is enabled for the module.
-For more information see <https://aka.ms/avm/telemetryinfo>.
+Description: This variable controls whether or not telemetry is enabled for the module.  
+For more information see <https://aka.ms/avm/telemetryinfo>.  
 If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
@@ -505,37 +505,37 @@ Version: 0.4.2
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_containerregistry_registry"></a> [private\_dns\_containerregistry\_registry](#module\_private\_dns\_containerregistry\_registry)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_keyvault_vault"></a> [private\_dns\_keyvault\_vault](#module\_private\_dns\_keyvault\_vault)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_storageaccount_blob"></a> [private\_dns\_storageaccount\_blob](#module\_private\_dns\_storageaccount\_blob)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_storageaccount_file"></a> [private\_dns\_storageaccount\_file](#module\_private\_dns\_storageaccount\_file)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_virtual_network"></a> [virtual\_network](#module\_virtual\_network)
 

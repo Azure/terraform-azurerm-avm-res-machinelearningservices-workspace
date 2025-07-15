@@ -63,7 +63,7 @@ module "virtual_network" {
 
 module "private_dns_aml_api" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.api.azureml.ms"
   enable_telemetry    = var.enable_telemetry
@@ -81,7 +81,7 @@ module "private_dns_aml_api" {
 
 module "private_dns_aml_notebooks" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.notebooks.azure.net"
   enable_telemetry    = var.enable_telemetry
@@ -99,7 +99,7 @@ module "private_dns_aml_notebooks" {
 
 module "private_dns_keyvault_vault" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.vaultcore.azure.net"
   enable_telemetry    = var.enable_telemetry
@@ -117,7 +117,7 @@ module "private_dns_keyvault_vault" {
 
 module "private_dns_storageaccount_blob" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.blob.core.windows.net"
   enable_telemetry    = var.enable_telemetry
@@ -135,7 +135,7 @@ module "private_dns_storageaccount_blob" {
 
 module "private_dns_storageaccount_file" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.file.core.windows.net"
   enable_telemetry    = var.enable_telemetry
@@ -153,7 +153,7 @@ module "private_dns_storageaccount_file" {
 
 module "private_dns_containerregistry_registry" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.azurecr.io"
   enable_telemetry    = var.enable_telemetry
@@ -171,7 +171,7 @@ module "private_dns_containerregistry_registry" {
 
 module "private_dns_monitor" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.monitor.azure.com"
   enable_telemetry    = var.enable_telemetry
@@ -189,7 +189,7 @@ module "private_dns_monitor" {
 
 module "private_dns_oms_opinsights" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.oms.opinsights.azure.com"
   enable_telemetry    = var.enable_telemetry
@@ -207,7 +207,7 @@ module "private_dns_oms_opinsights" {
 
 module "private_dns_ods_opinsights" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.ods.opinsights.azure.com"
   enable_telemetry    = var.enable_telemetry
@@ -225,7 +225,7 @@ module "private_dns_ods_opinsights" {
 
 module "private_dns_agentsvc" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.agentsvc.azure-automation.net"
   enable_telemetry    = var.enable_telemetry

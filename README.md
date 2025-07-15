@@ -283,6 +283,14 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_image_build_compute"></a> [image\_build\_compute](#input\_image\_build\_compute)
+
+Description: The name of the compute resource to use for image building. If not specified, the default compute will be used.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_ip_allowlist"></a> [ip\_allowlist](#input\_ip\_allowlist)
 
 Description: The list of IPv4 addresses that are allowed to access the workspace.

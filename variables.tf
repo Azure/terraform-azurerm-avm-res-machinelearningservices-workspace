@@ -500,3 +500,17 @@ DESCRIPTION
     error_message = "The only valid options for `firewall_sku` are 'Basic' or 'Standard'."
   }
 }
+
+variable "image_build_compute_name" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+The name of the compute resource to use for image building. If not specified, the default compute will be used.
+This parameter allows you to specify a compute cluster for building environments.
+DESCRIPTION
+
+  validation {
+    condition     = var.kind != "Project" || var.image_build_compute_name == null
+    error_message = "Image build compute name is not supported for Project workspace type."
+  }
+}

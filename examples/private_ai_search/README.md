@@ -101,7 +101,7 @@ module "virtual_network" {
 
 module "private_dns_aml_api" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
@@ -117,7 +117,7 @@ module "private_dns_aml_api" {
 
 module "private_dns_aml_notebooks" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -133,7 +133,7 @@ module "private_dns_aml_notebooks" {
 
 module "private_dns_keyvault_vault" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -149,7 +149,7 @@ module "private_dns_keyvault_vault" {
 
 module "private_dns_storageaccount_blob" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -165,7 +165,7 @@ module "private_dns_storageaccount_blob" {
 
 module "private_dns_storageaccount_file" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.file.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -181,7 +181,7 @@ module "private_dns_storageaccount_file" {
 
 module "private_dns_containerregistry_registry" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.azurecr.io"
   resource_group_name = azurerm_resource_group.this.name
@@ -197,7 +197,7 @@ module "private_dns_containerregistry_registry" {
 
 module "private_dns_aisearch" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "~> 0.2"
+  version = "0.3.5"
 
   domain_name         = "privatelink.search.windows.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -579,43 +579,43 @@ Version: 0.4.2
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_containerregistry_registry"></a> [private\_dns\_containerregistry\_registry](#module\_private\_dns\_containerregistry\_registry)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_keyvault_vault"></a> [private\_dns\_keyvault\_vault](#module\_private\_dns\_keyvault\_vault)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_storageaccount_blob"></a> [private\_dns\_storageaccount\_blob](#module\_private\_dns\_storageaccount\_blob)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_private_dns_storageaccount_file"></a> [private\_dns\_storageaccount\_file](#module\_private\_dns\_storageaccount\_file)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: ~> 0.2
+Version: 0.3.5
 
 ### <a name="module_virtual_network"></a> [virtual\_network](#module\_virtual\_network)
 

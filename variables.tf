@@ -162,6 +162,15 @@ variable "hbi_workspace" {
   description = "Specifies if the resource is a High Business Impact (HBI) workspace."
 }
 
+variable "image_build_compute" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+The name of the compute resource to use for image building. If not specified, the default compute will be used.
+
+DESCRIPTION
+}
+
 variable "ip_allowlist" {
   type        = set(string)
   default     = []

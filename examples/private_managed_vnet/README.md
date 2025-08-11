@@ -91,7 +91,7 @@ locals {
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "~> 0.7"
+  version = "v0.10.0"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location

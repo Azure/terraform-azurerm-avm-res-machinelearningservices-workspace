@@ -168,7 +168,7 @@ module "avm_res_storage_storageaccount" {
 
 module "avm_res_containerregistry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.3.1"
+  version = "0.4.0"
 
   location            = azurerm_resource_group.this.location
   name                = module.naming.container_registry.name_unique

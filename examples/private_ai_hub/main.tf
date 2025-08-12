@@ -183,7 +183,7 @@ module "private_dns_containerregistry_registry" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.3.1"
+  version = "0.4.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")

@@ -59,6 +59,8 @@ module "naming" {
   unique-seed   = random_string.name.id
 }
 
+data "azurerm_subscription" "primary" {}
+
 data "azurerm_client_config" "current" {}
 
 locals {
@@ -74,16 +76,20 @@ resource "azurerm_resource_group" "this" {
   tags     = local.tags
 }
 
+data "azurerm_role_definition" "connection_approver" {
+  name = "Azure AI Enterprise Network Connection Approver"
+}
+
 resource "azurerm_role_assignment" "connection_approver" {
   principal_id       = data.azurerm_client_config.current.object_id
   scope              = azurerm_resource_group.this.id
-  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
+  role_definition_id = "${data.azurerm_subscription.primary.id}${data.azurerm_role_definition.connection_approver.id}"
 }
 
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "~> 0.7"
+  version = "0.10.0"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location
@@ -214,7 +220,7 @@ module "private_dns_aisearch" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "~> 0.4"
+  version = "0.4.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -235,7 +241,7 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "~> 0.9"
+  version = "0.10.1"
 
   location            = var.location
   name                = module.naming.key_vault.name_unique
@@ -260,7 +266,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.4"
+  version = "0.6.4"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")
@@ -371,7 +377,7 @@ module "aisearch" {
 
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "~> 0.4"
+  version = "0.4.2"
 
   location            = var.location
   name                = module.naming.log_analytics_workspace.name_unique
@@ -387,7 +393,7 @@ module "avm_res_log_analytics_workspace" {
 
 module "avm_res_insights_component" {
   source  = "Azure/avm-res-insights-component/azurerm"
-  version = "~> 0.1"
+  version = "0.2.0"
 
   location                   = var.location
   name                       = module.naming.application_insights.name_unique
@@ -488,6 +494,8 @@ The following resources are used by this module:
 - [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_role_definition.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
+- [azurerm_subscription.primary](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -538,31 +546,31 @@ Version: 0.1.5
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: ~> 0.4
+Version: 0.4.0
 
 ### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
 
 Source: Azure/avm-res-insights-component/azurerm
 
-Version: ~> 0.1
+Version: 0.2.0
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: ~> 0.9
+Version: 0.10.1
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 
 Source: Azure/avm-res-operationalinsights-workspace/azurerm
 
-Version: ~> 0.4
+Version: 0.4.2
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: ~> 0.4
+Version: 0.6.4
 
 ### <a name="module_azureml"></a> [azureml](#module\_azureml)
 
@@ -622,7 +630,7 @@ Version: 0.3.5
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: ~> 0.7
+Version: 0.10.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

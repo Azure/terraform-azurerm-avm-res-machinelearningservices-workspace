@@ -225,7 +225,7 @@ module "private_dns_containerregistry_registry" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.3.1"
+  version = "0.4.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -482,7 +482,7 @@ Version:
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: 0.3.1
+Version: 0.4.0
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 

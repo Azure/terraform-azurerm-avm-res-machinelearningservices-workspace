@@ -295,7 +295,7 @@ resource "azurerm_monitor_private_link_scope" "example" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.3.1"
+  version = "0.4.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -584,7 +584,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: 0.3.1
+Version: 0.4.0
 
 ### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
 

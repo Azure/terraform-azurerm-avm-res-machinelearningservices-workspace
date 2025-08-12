@@ -228,7 +228,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.10.1"
+  version = "0.6.4"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")

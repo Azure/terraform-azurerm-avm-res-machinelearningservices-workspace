@@ -203,7 +203,7 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "~> 0.9"
+  version = "0.10.1"
 
   location            = var.location
   name                = module.naming.key_vault.name_unique

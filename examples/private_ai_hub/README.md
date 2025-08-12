@@ -494,7 +494,7 @@ Version: ~> 0.9
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.10.1
+Version: 0.6.4
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 

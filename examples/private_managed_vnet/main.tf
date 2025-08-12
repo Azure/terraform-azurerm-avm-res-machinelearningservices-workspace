@@ -24,7 +24,7 @@ provider "azurerm" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.2"
 }
 
 data "azurerm_client_config" "current" {}
@@ -44,7 +44,7 @@ locals {
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "~> 0.7"
+  version = "0.10.0"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location
@@ -243,7 +243,7 @@ module "private_dns_agentsvc" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "~> 0.9"
+  version = "0.10.1"
 
   location            = var.location
   name                = module.naming.key_vault.name_unique
@@ -267,7 +267,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.4"
+  version = "0.6.4"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")
@@ -328,7 +328,7 @@ module "avm_res_storage_storageaccount" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "~> 0.4"
+  version = "0.3.1"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -361,7 +361,7 @@ resource "azurerm_monitor_private_link_scope" "example" {
 
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "~> 0.4"
+  version = "0.4.2"
 
   location            = var.location
   name                = module.naming.log_analytics_workspace.name_unique
@@ -379,7 +379,7 @@ module "avm_res_log_analytics_workspace" {
 
 module "avm_res_insights_component" {
   source  = "Azure/avm-res-insights-component/azurerm"
-  version = "~> 0.1"
+  version = "0.2.0"
 
   location                   = var.location
   name                       = module.naming.application_insights.name_unique

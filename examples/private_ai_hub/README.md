@@ -110,7 +110,7 @@ resource "azurerm_role_assignment" "connection_approver" {
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "~> 0.7"
+  version = "0.10.0"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location
@@ -225,7 +225,7 @@ module "private_dns_containerregistry_registry" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "~> 0.4"
+  version = "0.3.1"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -270,7 +270,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.4"
+  version = "0.10.1"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")
@@ -482,7 +482,7 @@ Version:
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: ~> 0.4
+Version: 0.3.1
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
@@ -494,7 +494,7 @@ Version: ~> 0.9
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: ~> 0.4
+Version: 0.10.1
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
@@ -542,7 +542,7 @@ Version: 0.3.5
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: ~> 0.7
+Version: 0.10.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

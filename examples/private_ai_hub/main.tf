@@ -44,6 +44,8 @@ module "naming" {
   unique-seed   = random_string.name.id
 }
 
+data "azurerm_subscription" "primary" {}
+
 data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
@@ -59,16 +61,20 @@ locals {
   }
 }
 
+data "azurerm_role_definition" "connection_approver" {
+  name = "Azure AI Enterprise Network Connection Approver"
+}
+
 resource "azurerm_role_assignment" "connection_approver" {
   principal_id       = data.azurerm_client_config.current.object_id
   scope              = azurerm_resource_group.this.id
-  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
+  role_definition_id = "${data.azurerm_subscription.primary.id}${data.azurerm_role_definition.connection_approver.id}"
 }
 
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "~> 0.7"
+  version = "0.10.0"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location
@@ -183,7 +189,7 @@ module "private_dns_containerregistry_registry" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "~> 0.4"
+  version = "0.4.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -203,7 +209,7 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "~> 0.9"
+  version = "0.10.1"
 
   location            = var.location
   name                = module.naming.key_vault.name_unique
@@ -228,7 +234,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.4"
+  version = "0.6.4"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")

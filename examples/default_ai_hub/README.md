@@ -58,6 +58,8 @@ module "naming" {
   unique-seed   = random_string.name.id
 }
 
+data "azurerm_subscription" "primary" {}
+
 data "azurerm_client_config" "current" {}
 
 # This is required for resource modules
@@ -67,10 +69,14 @@ resource "azurerm_resource_group" "example" {
   tags     = local.tags
 }
 
+data "azurerm_role_definition" "connection_approver" {
+  name = "Azure AI Enterprise Network Connection Approver"
+}
+
 resource "azurerm_role_assignment" "connection_approver" {
   principal_id       = data.azurerm_client_config.current.object_id
   scope              = azurerm_resource_group.example.id
-  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/b556d68e-0be0-4f35-a333-ad7ee1ce17ea" #  Azure AI Enterprise Network Connection Approver
+  role_definition_id = "${data.azurerm_subscription.primary.id}${data.azurerm_role_definition.connection_approver.id}"
 }
 
 locals {
@@ -184,6 +190,8 @@ The following resources are used by this module:
 - [azurerm_storage_account.example](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) (resource)
 - [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
+- [azurerm_role_definition.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
+- [azurerm_subscription.primary](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

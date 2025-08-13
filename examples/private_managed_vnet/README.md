@@ -71,7 +71,7 @@ provider "azurerm" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.2"
 }
 
 data "azurerm_client_config" "current" {}
@@ -91,7 +91,7 @@ locals {
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "~> 0.7"
+  version = "0.10.0"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location
@@ -290,7 +290,7 @@ module "private_dns_agentsvc" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "~> 0.9"
+  version = "0.10.1"
 
   location            = var.location
   name                = module.naming.key_vault.name_unique
@@ -314,7 +314,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.4"
+  version = "0.6.4"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")
@@ -375,7 +375,7 @@ module "avm_res_storage_storageaccount" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "~> 0.4"
+  version = "0.4.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -408,7 +408,7 @@ resource "azurerm_monitor_private_link_scope" "example" {
 
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "~> 0.4"
+  version = "0.4.2"
 
   location            = var.location
   name                = module.naming.log_analytics_workspace.name_unique
@@ -426,7 +426,7 @@ module "avm_res_log_analytics_workspace" {
 
 module "avm_res_insights_component" {
   source  = "Azure/avm-res-insights-component/azurerm"
-  version = "~> 0.1"
+  version = "0.2.0"
 
   location                   = var.location
   name                       = module.naming.application_insights.name_unique
@@ -603,31 +603,31 @@ The following Modules are called:
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: ~> 0.4
+Version: 0.4.0
 
 ### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
 
 Source: Azure/avm-res-insights-component/azurerm
 
-Version: ~> 0.1
+Version: 0.2.0
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: ~> 0.9
+Version: 0.10.1
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 
 Source: Azure/avm-res-operationalinsights-workspace/azurerm
 
-Version: ~> 0.4
+Version: 0.4.2
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: ~> 0.4
+Version: 0.6.4
 
 ### <a name="module_azureml"></a> [azureml](#module\_azureml)
 
@@ -639,7 +639,7 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: ~> 0.3
+Version: 0.4.2
 
 ### <a name="module_private_dns_agentsvc"></a> [private\_dns\_agentsvc](#module\_private\_dns\_agentsvc)
 
@@ -705,7 +705,7 @@ Version: 0.3.5
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: ~> 0.7
+Version: 0.10.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

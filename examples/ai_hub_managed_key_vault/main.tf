@@ -126,7 +126,7 @@ module "aihub" {
 resource "azapi_resource" "aiservices_connection" {
   name      = "sc${random_string.name.id}"
   parent_id = module.aihub.resource_id
-  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-07-01-preview"
   body = {
     properties = {
       category      = "AIServices"
@@ -139,4 +139,6 @@ resource "azapi_resource" "aiservices_connection" {
       }
     }
   }
+
+  schema_validation_enabled = false
 }

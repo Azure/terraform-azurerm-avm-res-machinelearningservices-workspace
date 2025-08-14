@@ -4,7 +4,7 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
@@ -61,6 +61,8 @@ resource "azapi_resource" "this" {
       parent_id, # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
+
+  schema_validation_enabled = false
 }
 
 resource "azapi_resource" "hub" {
@@ -69,7 +71,7 @@ resource "azapi_resource" "hub" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
@@ -126,6 +128,8 @@ resource "azapi_resource" "hub" {
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
+
+  schema_validation_enabled = false
 }
 
 # Azure AI Project
@@ -135,7 +139,7 @@ resource "azapi_resource" "project" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
       description   = var.workspace_description
@@ -160,6 +164,8 @@ resource "azapi_resource" "project" {
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
+
+  schema_validation_enabled = false
 }
 
 resource "azurerm_management_lock" "this" {

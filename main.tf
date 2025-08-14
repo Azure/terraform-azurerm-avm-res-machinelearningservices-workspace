@@ -44,7 +44,8 @@ resource "azapi_resource" "this" {
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
-  tags = var.tags
+  schema_validation_enabled = false
+  tags                      = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -61,8 +62,6 @@ resource "azapi_resource" "this" {
       parent_id, # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
-
-  schema_validation_enabled = false
 }
 
 resource "azapi_resource" "hub" {
@@ -111,7 +110,8 @@ resource "azapi_resource" "hub" {
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
-  tags = var.tags
+  schema_validation_enabled = false
+  tags                      = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -128,8 +128,6 @@ resource "azapi_resource" "hub" {
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
-
-  schema_validation_enabled = false
 }
 
 # Azure AI Project
@@ -148,6 +146,7 @@ resource "azapi_resource" "project" {
     }
     kind = var.kind
   }
+  schema_validation_enabled = false
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -164,8 +163,6 @@ resource "azapi_resource" "project" {
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
-
-  schema_validation_enabled = false
 }
 
 resource "azurerm_management_lock" "this" {

@@ -456,7 +456,7 @@ module "azureml" {
 resource "azapi_resource" "search_connection" {
   name      = "srch${random_string.name.id}"
   parent_id = module.azureml.resource_id
-  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-07-01-preview"
   body = {
     properties = {
       category      = "CognitiveSearch"
@@ -469,6 +469,7 @@ resource "azapi_resource" "search_connection" {
       }
     }
   }
+  schema_validation_enabled = false
 }
 ```
 

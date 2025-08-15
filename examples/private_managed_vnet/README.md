@@ -523,7 +523,7 @@ module "azureml" {
   public_network_access_enabled = false
   role_assignments = {
     contributor = {
-      role_definition_id_or_name = data.azurerm_role_definition.contributor.id
+      role_definition_id_or_name = "/subscriptions/${data.azurerm_client_config.current.subscription_id}${data.azurerm_role_definition.contributor.id}"
       principal_id               = data.azurerm_client_config.current.object_id
     }
   }

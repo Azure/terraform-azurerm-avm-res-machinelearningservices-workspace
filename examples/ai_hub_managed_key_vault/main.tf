@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azapi = {
       source  = "Azure/azapi"
-      version = "~> 2.0"
+      version = "~> 2.6"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -82,7 +82,7 @@ resource "azurerm_role_assignment" "connection_approver" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.6.0"
+  version = "0.10.0"
 
   kind                               = "AIServices"
   location                           = var.location

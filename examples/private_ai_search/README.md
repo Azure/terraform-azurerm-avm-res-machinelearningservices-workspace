@@ -463,7 +463,6 @@ resource "azapi_resource" "search_connection" {
       }
     }
   }
-  schema_validation_enabled = false
 }
 ```
 

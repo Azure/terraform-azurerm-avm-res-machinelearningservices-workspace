@@ -162,7 +162,6 @@ resource "azapi_resource" "aiservices_connection" {
       }
     }
   }
-  schema_validation_enabled = false
 }
 
 ```

@@ -44,8 +44,7 @@ resource "azapi_resource" "this" {
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
-  schema_validation_enabled = false
-  tags                      = var.tags
+  tags = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -110,8 +109,7 @@ resource "azapi_resource" "hub" {
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
-  schema_validation_enabled = false
-  tags                      = var.tags
+  tags = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -146,7 +144,6 @@ resource "azapi_resource" "project" {
     }
     kind = var.kind
   }
-  schema_validation_enabled = false
 
   dynamic "identity" {
     for_each = local.managed_identities

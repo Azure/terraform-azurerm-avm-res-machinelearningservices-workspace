@@ -426,15 +426,9 @@ module "azureml" {
   }
   tags = local.tags
   workspace_managed_network = {
-    isolation_mode = "AllowInternetOutbound"
-    outbound_rules = {
-      private_endpoint = {
-        aisearch = {
-          resource_id         = module.aisearch.resource_id
-          sub_resource_target = "searchService"
-        }
-      }
-    }
+    isolation_mode = "AllowOnlyApprovedOutbound"
+    spark_ready    = false
+    firewall_sku   = "Basic"
   }
 }
 

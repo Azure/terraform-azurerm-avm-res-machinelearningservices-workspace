@@ -84,7 +84,7 @@ resource "azurerm_user_assigned_identity" "cmk" {
 resource "azurerm_role_assignment" "crypto" {
   principal_id       = azurerm_user_assigned_identity.cmk.principal_id
   scope              = azurerm_resource_group.this.id
-  role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b7-41b4-b07b-48a6ebf60603" # Key Vault Crypto Officer
+  role_definition_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b7-41b4-b07b-48a6ebf60603" # Key Vault Crypto Officer
 }
 
 # create a keyvault for storing the credential with RBAC for the deployment user
@@ -102,18 +102,18 @@ module "avm_res_keyvault_vault" {
   public_network_access_enabled = true
   role_assignments = {
     deployment_user_secrets = {
-      role_definition_id_or_name = "/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483" # Key Vault Administrator
+      role_definition_id_or_name = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/00482a5a-887f-4fb3-b363-3b7fe8e74483" # Key Vault Administrator
       principal_id               = data.azurerm_client_config.current.object_id
     }
 
     cosmos_db = {
-      role_definition_id_or_name       = "/providers/Microsoft.Authorization/roleDefinitions/e147488a-f6f5-4113-8e2d-b22465e65bf6" # Key Vault Crypto Service Encryption User
-      principal_id                     = "a232010e-820c-4083-83bb-3ace5fc29d0b"                                                    # CosmosDB **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
-      skip_service_principal_aad_check = true                                                                                      # because it isn't a traditional SP
+      role_definition_id_or_name       = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/e147488a-f6f5-4113-8e2d-b22465e65bf6" # Key Vault Crypto Service Encryption User
+      principal_id                     = "a232010e-820c-4083-83bb-3ace5fc29d0b"                                                                                                                        # CosmosDB **FOR AZURE GOV** use "57506a73-e302-42a9-b869-6f12d9ec29e9"
+      skip_service_principal_aad_check = true                                                                                                                                                          # because it isn't a traditional SP
     }
 
     uai = {
-      role_definition_id_or_name = "/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b7-41b4-b07b-48a6ebf60603" # Key Vault Crypto Officer
+      role_definition_id_or_name = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b7-41b4-b07b-48a6ebf60603" # Key Vault Crypto Officer
       principal_id               = azurerm_user_assigned_identity.cmk.principal_id
     }
   }
@@ -237,6 +237,7 @@ module "azureml" {
     }
   }
   enable_telemetry = var.enable_telemetry
+  hbi_workspace    = true
   key_vault = {
     resource_id = azurerm_key_vault.this.id
   }

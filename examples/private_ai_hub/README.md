@@ -332,8 +332,30 @@ module "avm_res_storage_storageaccount" {
     }
   }
   public_network_access_enabled = false
-  shared_access_key_enabled     = true
-  tags                          = local.tags
+  share_properties = {
+    cors_rule = [{
+      allowed_headers = ["*"]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers    = ["*"]
+      max_age_in_seconds = 1800
+    }]
+  }
+  shared_access_key_enabled = true
+  tags                      = local.tags
 }
 
 module "ai_services" {
@@ -346,6 +368,7 @@ module "ai_services" {
   resource_group_name                = azurerm_resource_group.this.name
   sku_name                           = "S0"
   enable_telemetry                   = var.enable_telemetry
+  fqdns                              = []
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
   public_network_access_enabled      = true
@@ -388,6 +411,10 @@ module "aihub" {
   workspace_managed_network = {
     isolation_mode = "AllowOnlyApprovedOutbound"
   }
+
+  depends_on = [
+    module.virtual_network,
+  ]
 }
 
 
@@ -407,6 +434,8 @@ resource "azapi_resource" "aiservices_connection" {
       }
     }
   }
+
+  depends_on = [module.aihub]
 }
 ```
 

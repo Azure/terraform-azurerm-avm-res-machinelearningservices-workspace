@@ -200,7 +200,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.6)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
@@ -259,7 +259,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-cognitiveservices-account/azurerm
 
-Version: 0.6.0
+Version: 0.10.0
 
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 

@@ -4,7 +4,7 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
@@ -69,7 +69,7 @@ resource "azapi_resource" "hub" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
@@ -135,7 +135,7 @@ resource "azapi_resource" "project" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
       description   = var.workspace_description

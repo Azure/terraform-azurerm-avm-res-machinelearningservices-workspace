@@ -18,7 +18,7 @@ terraform {
   required_providers {
     azapi = {
       source  = "Azure/azapi"
-      version = "~> 2.0"
+      version = "~> 2.6"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -103,7 +103,7 @@ resource "azurerm_key_vault" "example" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.6.0"
+  version = "0.10.1"
 
   kind                               = "AIServices"
   location                           = var.location
@@ -149,7 +149,7 @@ module "aihub" {
 resource "azapi_resource" "aiservices_connection" {
   name      = "sc${random_string.name.id}"
   parent_id = module.aihub.resource_id
-  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-07-01-preview"
   body = {
     properties = {
       category      = "AIServices"
@@ -173,7 +173,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.6)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
@@ -236,7 +236,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-cognitiveservices-account/azurerm
 
-Version: 0.6.0
+Version: 0.10.1
 
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 

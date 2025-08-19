@@ -95,7 +95,7 @@ resource "azurerm_role_assignment" "connection_approver" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.10.0"
+  version = "0.10.1"
 
   kind                               = "AIServices"
   location                           = var.location
@@ -224,7 +224,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-cognitiveservices-account/azurerm
 
-Version: 0.10.0
+Version: 0.10.1
 
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 

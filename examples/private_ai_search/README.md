@@ -19,7 +19,7 @@ terraform {
   required_providers {
     azapi = {
       source  = "Azure/azapi"
-      version = "~> 2.0"
+      version = "~> 2.6"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -450,7 +450,7 @@ module "azureml" {
 resource "azapi_resource" "search_connection" {
   name      = "srch${random_string.name.id}"
   parent_id = module.azureml.resource_id
-  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-01-01-preview"
+  type      = "Microsoft.MachineLearningServices/workspaces/connections@2025-07-01-preview"
   body = {
     properties = {
       category      = "CognitiveSearch"
@@ -473,7 +473,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.6)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 

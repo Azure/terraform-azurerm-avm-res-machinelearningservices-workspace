@@ -352,6 +352,12 @@ variable "public_network_access_enabled" {
   description = "(Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`"
 }
 
+variable "public_access_when_behind_vnet_enabled" {
+  type        = bool
+  default     = false
+  description = "(Optional) Whether to allow public access when behind VNet. Default is `false`"
+}
+
 # required AVM interface
 variable "role_assignments" {
   type = map(object({

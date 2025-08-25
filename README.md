@@ -489,6 +489,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_public_access_when_behind_vnet_enabled"></a> [public\_access\_when\_behind\_vnet\_enabled](#input\_public\_access\_when\_behind\_vnet\_enabled)
+
+Description: (Optional) Whether to allow public access when behind VNet. Default is `false`
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
 
 Description: (Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`

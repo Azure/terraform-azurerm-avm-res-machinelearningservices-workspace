@@ -352,6 +352,12 @@ variable "public_network_access_enabled" {
   description = "(Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`"
 }
 
+variable "provision_network_now_enabled" {
+  type        = bool
+  default     = false
+  description = "(Optional) Whether sets to trigger the provisioning of the managed VNet with the default Options when creating a Workspace with the managed VNet enabled, or else it does nothing. Default is `false`"
+}
+
 # required AVM interface
 variable "role_assignments" {
   type = map(object({

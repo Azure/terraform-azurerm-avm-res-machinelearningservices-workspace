@@ -76,6 +76,7 @@ resource "azapi_resource" "hub" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
+      provisionNetworkNow      = var.provision_network_now_enabled
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
@@ -114,7 +115,8 @@ resource "azapi_resource" "hub" {
   ignore_casing  = true
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.provision_network_now_enabled
   ]
   tags           = var.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -146,9 +148,10 @@ resource "azapi_resource" "project" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
-      description   = var.workspace_description
-      friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
-      hubResourceId = var.azure_ai_hub.resource_id
+      description         = var.workspace_description
+      friendlyName        = coalesce(var.workspace_friendly_name, "AI Project")
+      hubResourceId       = var.azure_ai_hub.resource_id
+      provisionNetworkNow = var.provision_network_now_enabled
     }
     kind = var.kind
   }
@@ -172,6 +175,9 @@ resource "azapi_resource" "project" {
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
+  replace_triggers_external_values = [
+    var.provision_network_now_enabled
+  ]
 }
 
 resource "azurerm_management_lock" "this" {

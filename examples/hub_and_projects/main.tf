@@ -127,6 +127,7 @@ module "aihub" {
     isolation_mode = "Disabled"
     spark_ready    = false
   }
+  provision_network_now_enabled = true
 }
 
 resource "azapi_resource" "aiservices_connection" {
@@ -175,5 +176,6 @@ module "aiproject" {
   managed_identities = {
     system_assigned = true
   }
-  workspace_friendly_name = each.value.friendlyName
+  workspace_friendly_name       = each.value.friendlyName
+  provision_network_now_enabled = true
 }

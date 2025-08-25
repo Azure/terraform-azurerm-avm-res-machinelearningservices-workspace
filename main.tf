@@ -158,6 +158,9 @@ resource "azapi_resource" "project" {
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  replace_triggers_external_values = [
+    var.provision_network_now_enabled
+  ]
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "identity" {
@@ -175,9 +178,6 @@ resource "azapi_resource" "project" {
       parent_id # because this comes from data, the azapi provider doesn't know it ahead of time which leads to destroy/recreate instead of update
     ]
   }
-  replace_triggers_external_values = [
-    var.provision_network_now_enabled
-  ]
 }
 
 resource "azurerm_management_lock" "this" {

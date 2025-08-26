@@ -175,5 +175,6 @@ module "aiproject" {
   managed_identities = {
     system_assigned = true
   }
-  workspace_friendly_name = each.value.friendlyName
+  public_access_when_behind_vnet_enabled = true
+  workspace_friendly_name                = each.value.friendlyName
 }

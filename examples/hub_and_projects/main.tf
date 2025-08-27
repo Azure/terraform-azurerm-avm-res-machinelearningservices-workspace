@@ -176,4 +176,5 @@ module "aiproject" {
     system_assigned = true
   }
   workspace_friendly_name = each.value.friendlyName
+  image_build_compute     = "terraformCompute"
 }

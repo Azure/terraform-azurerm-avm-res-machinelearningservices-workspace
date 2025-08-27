@@ -146,9 +146,10 @@ resource "azapi_resource" "project" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
-      description   = var.workspace_description
-      friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
-      hubResourceId = var.azure_ai_hub.resource_id
+      description                 = var.workspace_description
+      friendlyName                = coalesce(var.workspace_friendly_name, "AI Project")
+      hubResourceId               = var.azure_ai_hub.resource_id
+      primaryUserAssignedIdentity = var.managed_identities.system_assigned == true ? "" : var.primary_user_assigned_identity.resource_id
     }
     kind = var.kind
   }

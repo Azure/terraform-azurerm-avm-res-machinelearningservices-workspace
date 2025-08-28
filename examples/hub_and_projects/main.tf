@@ -172,9 +172,9 @@ module "aiproject" {
     resource_id = module.aihub.resource_id
   }
   enable_telemetry    = var.enable_telemetry
+  hbi_workspace       = false
   image_build_compute = "terraformCompute"
   kind                = "Project"
-  hbi_workspace    = false
   managed_identities = {
     system_assigned = true
   }

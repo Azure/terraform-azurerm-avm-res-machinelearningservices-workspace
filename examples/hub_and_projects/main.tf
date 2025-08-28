@@ -117,6 +117,7 @@ module "aihub" {
     resource_id = azurerm_key_vault.example.id
   }
   kind                          = "Hub"
+  provision_network_now_enabled = false
   public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
@@ -170,10 +171,14 @@ module "aiproject" {
   azure_ai_hub = {
     resource_id = module.aihub.resource_id
   }
-  enable_telemetry = var.enable_telemetry
-  kind             = "Project"
+  enable_telemetry    = var.enable_telemetry
+  hbi_workspace       = false
+  image_build_compute = "terraformCompute"
+  kind                = "Project"
   managed_identities = {
     system_assigned = true
   }
-  workspace_friendly_name = each.value.friendlyName
+  provision_network_now_enabled          = false
+  public_access_when_behind_vnet_enabled = true
+  workspace_friendly_name                = each.value.friendlyName
 }

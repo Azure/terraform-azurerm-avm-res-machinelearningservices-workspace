@@ -529,6 +529,14 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_service_side_cmk_encryption_enabled"></a> [service\_side\_cmk\_encryption\_enabled](#input\_service\_side\_cmk\_encryption\_enabled)
+
+Description: Specifies if the resource is using customer-managed keys for encryption.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
 
 Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.

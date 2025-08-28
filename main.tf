@@ -78,7 +78,7 @@ resource "azapi_resource" "hub" {
     properties = {
       serverlessComputeSettings = var.serverless_compute != null ? {
         serverlessComputeCustomSubnet = var.serverless_compute.subnet_id
-        serverlessComputeNoPublicIP   = var.serverless_compute.public_ip_enabled != null ? !var.serverless_compute.public_ip_enabled : null
+        serverlessComputeNoPublicIP   = !var.serverless_compute.public_ip_enabled
       } : null
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
       applicationInsights      = local.application_insights_id

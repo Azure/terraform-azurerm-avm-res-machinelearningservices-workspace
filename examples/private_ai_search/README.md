@@ -520,11 +520,7 @@ Default: `"eastus2"`
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: Relevant properties of the machine learning workspace and supporting resources.
+No outputs.
 
 ## Modules
 

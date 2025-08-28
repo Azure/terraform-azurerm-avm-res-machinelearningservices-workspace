@@ -191,6 +191,11 @@ module "aiproject" {
   managed_identities = {
     system_assigned = true
   }
+  provision_network_now_enabled          = false
+  public_access_when_behind_vnet_enabled = true
+  workspace_friendly_name                = each.value.friendlyName
+}
+```
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements

@@ -148,10 +148,10 @@ resource "azapi_resource" "project" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
-      description         = var.workspace_description
-      friendlyName        = coalesce(var.workspace_friendly_name, "AI Project")
-      hubResourceId       = var.azure_ai_hub.resource_id
-      provisionNetworkNow = var.provision_network_now_enabled
+      description                     = var.workspace_description
+      friendlyName                    = coalesce(var.workspace_friendly_name, "AI Project")
+      hubResourceId                   = var.azure_ai_hub.resource_id
+      provisionNetworkNow             = var.provision_network_now_enabled
       allowPublicAccessWhenBehindVnet = var.public_access_when_behind_vnet_enabled
       hbiWorkspace                    = var.hbi_workspace
     }

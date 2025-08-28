@@ -150,6 +150,7 @@ resource "azapi_resource" "project" {
       description                     = var.workspace_description
       friendlyName                    = coalesce(var.workspace_friendly_name, "AI Project")
       hubResourceId                   = var.azure_ai_hub.resource_id
+      hbiWorkspace                    = var.hbi_workspace
     }
     kind = var.kind
   }

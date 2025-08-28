@@ -76,6 +76,10 @@ resource "azapi_resource" "hub" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
+      serverlessComputeSettings = var.serverless_compute != null ? {
+        serverlessComputeCustomSubnet = var.serverless_compute.subnet_id
+        serverlessComputeNoPublicIP   = var.serverless_compute.public_ip_enabled != null ? !var.serverless_compute.public_ip_enabled : null
+      } : null
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
@@ -146,6 +150,10 @@ resource "azapi_resource" "project" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
+      serverlessComputeSettings = var.serverless_compute != null ? {
+        serverlessComputeCustomSubnet = var.serverless_compute.subnet_id
+        serverlessComputeNoPublicIP   = !var.serverless_compute.public_ip_enabled
+      } : null
       description   = var.workspace_description
       friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
       hubResourceId = var.azure_ai_hub.resource_id

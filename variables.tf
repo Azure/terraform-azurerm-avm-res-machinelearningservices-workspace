@@ -346,6 +346,12 @@ variable "private_endpoints_manage_dns_zone_group" {
   nullable    = false
 }
 
+variable "public_access_when_behind_vnet_enabled" {
+  type        = bool
+  default     = false
+  description = "(Optional) Whether to allow public access when behind VNet. Default is `false`"
+}
+
 variable "public_network_access_enabled" {
   type        = bool
   default     = false

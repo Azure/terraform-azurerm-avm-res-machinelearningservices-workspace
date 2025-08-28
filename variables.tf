@@ -163,6 +163,12 @@ variable "hbi_workspace" {
   description = "Specifies if the resource is a High Business Impact (HBI) workspace."
 }
 
+variable "service_side_cmk_encryption_enabled" {
+  type        = bool
+  default     = false
+  description = "Specifies if the resource is using customer-managed keys for encryption."
+}
+
 variable "image_build_compute" {
   type        = string
   default     = null

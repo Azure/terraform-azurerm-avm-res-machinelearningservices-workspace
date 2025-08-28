@@ -131,6 +131,7 @@ module "aihub" {
     resource_id = azurerm_key_vault.example.id
   }
   kind                          = "Hub"
+  provision_network_now_enabled = false
   public_network_access_enabled = true
   storage_account = {
     resource_id = azurerm_storage_account.example.id
@@ -190,6 +191,7 @@ module "aiproject" {
   managed_identities = {
     system_assigned = true
   }
+  provision_network_now_enabled          = false
   public_access_when_behind_vnet_enabled = true
   workspace_friendly_name                = each.value.friendlyName
 }

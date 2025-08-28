@@ -151,6 +151,7 @@ resource "azapi_resource" "project" {
       description                     = var.workspace_description
       friendlyName                    = coalesce(var.workspace_friendly_name, "AI Project")
       hubResourceId                   = var.azure_ai_hub.resource_id
+      imageBuildCompute               = var.image_build_compute
       provisionNetworkNow             = var.provision_network_now_enabled
       allowPublicAccessWhenBehindVnet = var.public_access_when_behind_vnet_enabled
       hbiWorkspace                    = var.hbi_workspace

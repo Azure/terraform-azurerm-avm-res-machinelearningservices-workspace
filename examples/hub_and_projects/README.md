@@ -185,9 +185,10 @@ module "aiproject" {
   azure_ai_hub = {
     resource_id = module.aihub.resource_id
   }
-  enable_telemetry = var.enable_telemetry
-  hbi_workspace    = false
-  kind             = "Project"
+  enable_telemetry    = var.enable_telemetry
+  hbi_workspace       = false
+  image_build_compute = "terraformCompute"
+  kind                = "Project"
   managed_identities = {
     system_assigned = true
   }

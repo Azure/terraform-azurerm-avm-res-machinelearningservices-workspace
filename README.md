@@ -489,10 +489,6 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_provision_network_now_enabled"></a> [provision\_network\_now\_enabled](#input\_provision\_network\_now\_enabled)
-
-Description: (Optional) Whether sets to trigger the provisioning of the managed VNet with the default Options when creating a Workspace with the managed VNet enabled, or else it does nothing. Default is `false`
-
 Type: `bool`
 
 Default: `false`

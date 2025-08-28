@@ -172,10 +172,12 @@ module "aiproject" {
     resource_id = module.aihub.resource_id
   }
   enable_telemetry = var.enable_telemetry
+  hbi_workspace    = false
   kind             = "Project"
   managed_identities = {
     system_assigned = true
   }
   provision_network_now_enabled = false
   workspace_friendly_name       = each.value.friendlyName
+  public_access_when_behind_vnet_enabled = true
 }

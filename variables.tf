@@ -257,20 +257,6 @@ variable "managed_identities" {
   nullable    = false
 }
 
-variable "serverless_compute" {
-  type = object({
-    subnet_id         = optional(string, null)
-    public_ip_enabled = optional(bool, false)
-  })
-  default     = null
-  description = <<DESCRIPTION
-  Controls the Serverless Compute Settings on this resource. The following properties can be specified:
-
-  - `subnet_id` - (Optional) Specifies the resource ID of an existing virtual network subnet in which serverless compute nodes should be deployed.
-  - `public_ip_enabled` - (Optional) Specifies if serverless compute nodes deployed in custom Virtual Network would have no public IP addresses for a workspace with private endpoint. Defaults to `false`.
-  DESCRIPTION
-}
-
 variable "primary_user_assigned_identity" {
   type = object({
     resource_id = optional(string, null)
@@ -394,6 +380,20 @@ variable "role_assignments" {
   > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
   nullable    = false
+}
+
+variable "serverless_compute" {
+  type = object({
+    subnet_id         = optional(string, null)
+    public_ip_enabled = optional(bool, false)
+  })
+  default     = null
+  description = <<DESCRIPTION
+  Controls the Serverless Compute Settings on this resource. The following properties can be specified:
+
+  - `subnet_id` - (Optional) Specifies the resource ID of an existing virtual network subnet in which serverless compute nodes should be deployed.
+  - `public_ip_enabled` - (Optional) Specifies if serverless compute nodes deployed in custom Virtual Network would have no public IP addresses for a workspace with private endpoint. Defaults to `false`.
+  DESCRIPTION
 }
 
 variable "storage_access_type" {

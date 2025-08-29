@@ -529,6 +529,24 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_serverless_compute"></a> [serverless\_compute](#input\_serverless\_compute)
+
+Description:   Controls the Serverless Compute Settings on this resource. The following properties can be specified:
+
+  - `subnet_id` - (Optional) Specifies the resource ID of an existing virtual network subnet in which serverless compute nodes should be deployed.
+  - `public_ip_enabled` - (Optional) Specifies if serverless compute nodes deployed in custom Virtual Network would have no public IP addresses for a workspace with private endpoint. Defaults to `false`.
+
+Type:
+
+```hcl
+object({
+    subnet_id         = optional(string, null)
+    public_ip_enabled = optional(bool, false)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
 
 Description: The authentication mode used for accessing the system datastores of the workspace. Valid options include 'accessKey' and 'identity'. **This will be deprecated once the version of ARM used with the azapi provider is updated from 2024-07-01-preview as it was removed from the schema.

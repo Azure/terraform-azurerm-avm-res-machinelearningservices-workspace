@@ -394,6 +394,12 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "service_side_cmk_encryption_enabled" {
+  type        = bool
+  default     = false
+  description = "Specifies if the resource is using customer-managed keys for encryption."
+}
+
 variable "storage_access_type" {
   type        = string
   default     = "identity"

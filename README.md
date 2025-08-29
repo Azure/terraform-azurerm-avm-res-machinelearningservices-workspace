@@ -556,7 +556,7 @@ Type:
 
 ```hcl
 object({
-    subnet_id         = optional(string, null)
+    subnet_id         = optional(string)
     public_ip_enabled = optional(bool, false)
   })
 ```

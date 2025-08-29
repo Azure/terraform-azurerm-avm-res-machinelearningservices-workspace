@@ -76,14 +76,11 @@ resource "azapi_resource" "hub" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
-<<<<<<< HEAD
       serverlessComputeSettings = var.serverless_compute != null ? {
         serverlessComputeCustomSubnet = var.serverless_compute.subnet_id
         serverlessComputeNoPublicIP   = !var.serverless_compute.public_ip_enabled
       } : null
-=======
       provisionNetworkNow      = var.provision_network_now_enabled
->>>>>>> upstream/main
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
       applicationInsights      = local.application_insights_id
       hbiWorkspace             = var.hbi_workspace
@@ -155,7 +152,7 @@ resource "azapi_resource" "project" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
-    serverlessComputeSettings = var.serverless_compute != null ? {
+      serverlessComputeSettings = var.serverless_compute != null ? {
         serverlessComputeCustomSubnet = var.serverless_compute.subnet_id
         serverlessComputeNoPublicIP   = !var.serverless_compute.public_ip_enabled
       } : null

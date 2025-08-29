@@ -545,6 +545,24 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_serverless_compute"></a> [serverless\_compute](#input\_serverless\_compute)
+
+Description:   Controls the Serverless Compute Settings on this resource. The following properties can be specified:
+
+  - `subnet_id` - (Optional) Specifies the resource ID of an existing virtual network subnet in which serverless compute nodes should be deployed.
+  - `public_ip_enabled` - (Optional) Specifies if serverless compute nodes deployed in custom Virtual Network would have no public IP addresses for a workspace with private endpoint. Defaults to `false`.
+
+Type:
+
+```hcl
+object({
+    subnet_id         = optional(string)
+    public_ip_enabled = optional(bool, false)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_service_side_cmk_encryption_enabled"></a> [service\_side\_cmk\_encryption\_enabled](#input\_service\_side\_cmk\_encryption\_enabled)
 
 Description: Specifies if the resource is using customer-managed keys for encryption.

@@ -493,11 +493,7 @@ Default: `"australiaeast"`
 
 ## Outputs
 
-The following outputs are exported:
-
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The AI Studio hub workspace.
+No outputs.
 
 ## Modules
 

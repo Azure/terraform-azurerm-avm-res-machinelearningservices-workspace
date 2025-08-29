@@ -86,6 +86,7 @@ resource "azapi_resource" "hub" {
       description                    = var.workspace_description
       friendlyName                   = coalesce(var.workspace_friendly_name, (local.enable_public_network_access ? "Public Hub" : "Private Hub"))
       systemDatastoresAuthMode       = var.storage_access_type
+      provisionNetworkNow      = var.provision_network_now_enabled
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {
@@ -115,7 +116,8 @@ resource "azapi_resource" "hub" {
   ignore_casing  = true
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    var.provision_network_now_enabled
   ]
   tags           = var.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -147,15 +149,23 @@ resource "azapi_resource" "project" {
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
-      description   = var.workspace_description
-      friendlyName  = coalesce(var.workspace_friendly_name, "AI Project")
-      hubResourceId = var.azure_ai_hub.resource_id
+      description                     = var.workspace_description
+      friendlyName                    = coalesce(var.workspace_friendly_name, "AI Project")
+      hubResourceId                   = var.azure_ai_hub.resource_id
+      primaryUserAssignedIdentity     = var.managed_identities.system_assigned == true ? "" : var.primary_user_assigned_identity.resource_id
+      imageBuildCompute               = var.image_build_compute
+      provisionNetworkNow             = var.provision_network_now_enabled
+      allowPublicAccessWhenBehindVnet = var.public_access_when_behind_vnet_enabled
+      hbiWorkspace                    = var.hbi_workspace
     }
     kind = var.kind
   }
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  replace_triggers_external_values = [
+    var.provision_network_now_enabled
+  ]
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
 
   dynamic "identity" {

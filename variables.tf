@@ -394,7 +394,6 @@ DESCRIPTION
   nullable    = false
 }
 
-<<<<<<< HEAD
 variable "serverless_compute" {
   type = object({
     subnet_id         = optional(string, null)
@@ -407,12 +406,12 @@ variable "serverless_compute" {
   - `subnet_id` - (Optional) Specifies the resource ID of an existing virtual network subnet in which serverless compute nodes should be deployed.
   - `public_ip_enabled` - (Optional) Specifies if serverless compute nodes deployed in custom Virtual Network would have no public IP addresses for a workspace with private endpoint. Defaults to `false`.
   DESCRIPTION
-=======
+}
+
 variable "service_side_cmk_encryption_enabled" {
   type        = bool
   default     = false
   description = "Specifies if the resource is using customer-managed keys for encryption."
->>>>>>> upstream/main
 }
 
 variable "storage_access_type" {

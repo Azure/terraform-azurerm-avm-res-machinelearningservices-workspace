@@ -545,7 +545,6 @@ map(object({
 
 Default: `{}`
 
-<<<<<<< HEAD
 ### <a name="input_serverless_compute"></a> [serverless\_compute](#input\_serverless\_compute)
 
 Description:   Controls the Serverless Compute Settings on this resource. The following properties can be specified:
@@ -563,7 +562,7 @@ object({
 ```
 
 Default: `null`
-=======
+
 ### <a name="input_service_side_cmk_encryption_enabled"></a> [service\_side\_cmk\_encryption\_enabled](#input\_service\_side\_cmk\_encryption\_enabled)
 
 Description: Specifies if the resource is using customer-managed keys for encryption.
@@ -571,7 +570,6 @@ Description: Specifies if the resource is using customer-managed keys for encryp
 Type: `bool`
 
 Default: `false`
->>>>>>> upstream/main
 
 ### <a name="input_storage_access_type"></a> [storage\_access\_type](#input\_storage\_access\_type)
 

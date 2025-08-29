@@ -86,7 +86,7 @@ resource "azapi_resource" "hub" {
       description                    = var.workspace_description
       friendlyName                   = coalesce(var.workspace_friendly_name, (local.enable_public_network_access ? "Public Hub" : "Private Hub"))
       systemDatastoresAuthMode       = var.storage_access_type
-      provisionNetworkNow      = var.provision_network_now_enabled
+      provisionNetworkNow            = var.provision_network_now_enabled
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {

@@ -80,16 +80,17 @@ resource "azapi_resource" "hub" {
         serverlessComputeCustomSubnet = var.serverless_compute.subnet_id
         serverlessComputeNoPublicIP   = !var.serverless_compute.public_ip_enabled
       } : null
-      provisionNetworkNow      = var.provision_network_now_enabled
-      publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
-      applicationInsights      = local.application_insights_id
-      hbiWorkspace             = var.hbi_workspace
-      keyVault                 = local.key_vault_id
-      storageAccount           = var.storage_account.resource_id
-      containerRegistry        = try(var.container_registry.resource_id, null)
-      description              = var.workspace_description
-      friendlyName             = coalesce(var.workspace_friendly_name, (local.enable_public_network_access ? "Public Hub" : "Private Hub"))
-      systemDatastoresAuthMode = var.storage_access_type
+      enableServiceSideCMKEncryption = var.service_side_cmk_encryption_enabled
+      publicNetworkAccess            = local.enable_public_network_access ? "Enabled" : "Disabled"
+      applicationInsights            = local.application_insights_id
+      hbiWorkspace                   = var.hbi_workspace
+      keyVault                       = local.key_vault_id
+      storageAccount                 = var.storage_account.resource_id
+      containerRegistry              = try(var.container_registry.resource_id, null)
+      description                    = var.workspace_description
+      friendlyName                   = coalesce(var.workspace_friendly_name, (local.enable_public_network_access ? "Public Hub" : "Private Hub"))
+      systemDatastoresAuthMode       = var.storage_access_type
+      provisionNetworkNow            = var.provision_network_now_enabled
       managedNetwork = {
         isolationMode = var.workspace_managed_network.isolation_mode
         status = {

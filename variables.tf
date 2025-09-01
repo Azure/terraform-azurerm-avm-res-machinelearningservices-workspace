@@ -453,6 +453,20 @@ variable "tags" {
   description = "(Optional) Tags of the resource."
 }
 
+variable "timeouts" {
+  type = object({
+    create = optional(string, "30m")
+    delete = optional(string, "30m")
+    read   = optional(string, "5m")
+  })
+  default     = null
+  description = <<-EOT
+ - `create` - (Defaults to 30 minutes) Used when creating the azure resource.
+ - `delete` - (Defaults to 30 minutes) Used when deleting the Resource Group.
+ - `read` - (Defaults to 5 minutes) Used when retrieving the Resource Group.
+EOT
+}
+
 variable "workspace_description" {
   type        = string
   default     = ""

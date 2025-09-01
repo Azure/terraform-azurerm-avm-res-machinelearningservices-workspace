@@ -609,6 +609,24 @@ Type: `map(string)`
 
 Default: `null`
 
+### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
+
+Description: - `create` - (Defaults to 30 minutes) Used when creating the azure resource.
+- `delete` - (Defaults to 30 minutes) Used when deleting the Resource Group.
+- `read` - (Defaults to 5 minutes) Used when retrieving the Resource Group.
+
+Type:
+
+```hcl
+object({
+    create = optional(string, "30m")
+    delete = optional(string, "30m")
+    read   = optional(string, "5m")
+  })
+```
+
+Default: `null`
+
 ### <a name="input_workspace_description"></a> [workspace\_description](#input\_workspace\_description)
 
 Description: The description of this workspace.

@@ -58,6 +58,15 @@ resource "azapi_resource" "this" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : ["timeouts"]
+
+    content {
+      create = var.timeouts.create
+      delete = var.timeouts.delete
+      read   = var.timeouts.read
+    }
+  }
 
   lifecycle {
     ignore_changes = [
@@ -134,6 +143,15 @@ resource "azapi_resource" "hub" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : ["timeouts"]
+
+    content {
+      create = var.timeouts.create
+      delete = var.timeouts.delete
+      read   = var.timeouts.read
+    }
+  }
 
   lifecycle {
     ignore_changes = [
@@ -182,6 +200,15 @@ resource "azapi_resource" "project" {
     content {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids
+    }
+  }
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : ["timeouts"]
+
+    content {
+      create = var.timeouts.create
+      delete = var.timeouts.delete
+      read   = var.timeouts.read
     }
   }
 

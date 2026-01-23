@@ -1,7 +1,3 @@
-data "azurerm_resource_group" "current" {
-  name = var.resource_group_name
-}
-
 data "azurerm_key_vault_key" "cmk" {
   count = var.customer_managed_key == null ? 0 : 1
 

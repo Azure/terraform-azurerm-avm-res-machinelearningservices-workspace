@@ -3,7 +3,7 @@ resource "azapi_resource" "this" {
 
   location  = var.location
   name      = var.name
-  parent_id = var.resource_group_name
+  parent_id = var.parent_id
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
@@ -81,7 +81,7 @@ resource "azapi_resource" "hub" {
 
   location  = var.location
   name      = var.name
-  parent_id = var.resource_group_name
+  parent_id = var.parent_id
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
@@ -167,7 +167,7 @@ resource "azapi_resource" "project" {
 
   location  = var.location
   name      = var.name
-  parent_id = var.resource_group_name
+  parent_id = var.parent_id
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {

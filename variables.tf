@@ -14,6 +14,18 @@ variable "name" {
   }
 }
 
+variable "parent_id" {
+  type        = string
+  description = <<DESCRIPTION
+(Optional) The ID of the resource group where the ML workspace will be deployed.
+DESCRIPTION
+
+  validation {
+    condition     = can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+$", var.parent_id))
+    error_message = "parent_id must be a valid resource group ID."
+  }
+}
+
 # This is required for most resource modules
 variable "resource_group_name" {
   type        = string

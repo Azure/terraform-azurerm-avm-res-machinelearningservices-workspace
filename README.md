@@ -134,6 +134,12 @@ Description: The name of the this resource.
 
 Type: `string`
 
+### <a name="input_parent_id"></a> [parent\_id](#input\_parent\_id)
+
+Description: (Optional) The ID of the resource group where the ML workspace will be deployed.
+
+Type: `string`
+
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
 Description: The resource group where the resources will be deployed.

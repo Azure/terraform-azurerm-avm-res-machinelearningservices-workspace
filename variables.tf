@@ -26,12 +26,6 @@ DESCRIPTION
   }
 }
 
-# This is required for most resource modules
-variable "resource_group_name" {
-  type        = string
-  description = "The resource group where the resources will be deployed."
-}
-
 variable "application_insights" {
   type = object({
     resource_id = optional(string)

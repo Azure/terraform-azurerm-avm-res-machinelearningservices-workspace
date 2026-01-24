@@ -446,9 +446,9 @@ module "azureml" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = local.name
-  resource_group_name = azurerm_resource_group.this.name
+  location  = azurerm_resource_group.this.location
+  name      = local.name
+  parent_id = azurerm_resource_group.this.id
   application_insights = {
     resource_id = module.avm_res_insights_component.resource_id
   }

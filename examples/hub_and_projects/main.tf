@@ -109,10 +109,10 @@ module "aihub" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.example.location
-  name                = "hub${random_string.name.id}"
-  resource_group_name = azurerm_resource_group.example.name
-  enable_telemetry    = var.enable_telemetry
+  location         = azurerm_resource_group.example.location
+  name             = "hub${random_string.name.id}"
+  parent_id        = azurerm_resource_group.example.id
+  enable_telemetry = var.enable_telemetry
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }
@@ -165,9 +165,9 @@ module "aiproject" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.example.location
-  name                = "proj${random_string.name.id}${each.key}"
-  resource_group_name = azurerm_resource_group.example.name
+  location  = azurerm_resource_group.example.location
+  name      = "proj${random_string.name.id}${each.key}"
+  parent_id = azurerm_resource_group.example.id
   azure_ai_hub = {
     resource_id = module.aihub.resource_id
   }

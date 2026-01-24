@@ -17,7 +17,7 @@ variable "name" {
 variable "parent_id" {
   type        = string
   description = <<DESCRIPTION
-(Optional) The ID of the resource group where the ML workspace will be deployed.
+(Required) The ID of the resource group where the ML workspace will be deployed.
 DESCRIPTION
 
   validation {

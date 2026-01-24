@@ -136,7 +136,7 @@ Type: `string`
 
 ### <a name="input_parent_id"></a> [parent\_id](#input\_parent\_id)
 
-Description: (Optional) The ID of the resource group where the ML workspace will be deployed.
+Description: (Required) The ID of the resource group where the ML workspace will be deployed.
 
 Type: `string`
 

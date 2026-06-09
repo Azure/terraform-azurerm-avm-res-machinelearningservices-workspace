@@ -257,7 +257,7 @@ resource "azurerm_monitor_private_link_scope" "example" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.4.0"
+  version = "0.5.1"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")

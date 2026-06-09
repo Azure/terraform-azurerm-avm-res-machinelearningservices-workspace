@@ -318,7 +318,7 @@ module "avm_res_storage_storageaccount" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.10.1"
+  version = "0.11.0"
 
   kind                               = "AIServices"
   location                           = var.location

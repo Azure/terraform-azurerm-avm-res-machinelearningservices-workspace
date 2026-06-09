@@ -38,7 +38,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 
   unique-length = 5
   unique-seed   = random_string.name.id

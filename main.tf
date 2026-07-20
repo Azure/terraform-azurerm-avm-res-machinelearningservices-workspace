@@ -3,7 +3,7 @@ resource "azapi_resource" "this" {
 
   location  = var.location
   name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
+  parent_id = var.parent_id
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
@@ -45,7 +45,7 @@ resource "azapi_resource" "this" {
   ignore_casing  = true
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   replace_triggers_external_values = [
-    var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    local.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
   tags           = var.tags
   update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -81,7 +81,7 @@ resource "azapi_resource" "hub" {
 
   location  = var.location
   name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
+  parent_id = var.parent_id
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {
@@ -129,7 +129,7 @@ resource "azapi_resource" "hub" {
   ignore_casing  = true
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   replace_triggers_external_values = [
-    var.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
+    local.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
     var.provision_network_now_enabled
   ]
   tags           = var.tags
@@ -167,7 +167,7 @@ resource "azapi_resource" "project" {
 
   location  = var.location
   name      = var.name
-  parent_id = data.azurerm_resource_group.current.id
+  parent_id = var.parent_id
   type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
   body = {
     properties = {

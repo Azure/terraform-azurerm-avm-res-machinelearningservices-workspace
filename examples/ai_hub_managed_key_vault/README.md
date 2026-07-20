@@ -120,7 +120,7 @@ module "aihub" {
   # ...
   location                      = azurerm_resource_group.this.location
   name                          = "hub${random_string.name.id}"
-  resource_group_name           = azurerm_resource_group.this.name
+  parent_id                     = azurerm_resource_group.this.id
   enable_telemetry              = var.enable_telemetry
   key_vault                     = { use_microsoft_managed_key_vault = true }
   kind                          = "Hub"

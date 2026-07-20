@@ -12,7 +12,7 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.6.2"
+      version = "3.9.0"
     }
   }
 }
@@ -38,7 +38,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 
   unique-length = 5
   unique-seed   = random_string.name.id
@@ -89,7 +89,7 @@ resource "azurerm_key_vault" "example" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.10.1"
+  version = "0.11.1"
 
   kind                               = "AIServices"
   location                           = var.location

@@ -58,6 +58,7 @@ resource "azapi_resource" "this" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+
   dynamic "timeouts" {
     for_each = var.timeouts == null ? [] : ["timeouts"]
 
@@ -143,6 +144,7 @@ resource "azapi_resource" "hub" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+
   dynamic "timeouts" {
     for_each = var.timeouts == null ? [] : ["timeouts"]
 
@@ -202,6 +204,7 @@ resource "azapi_resource" "project" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+
   dynamic "timeouts" {
     for_each = var.timeouts == null ? [] : ["timeouts"]
 

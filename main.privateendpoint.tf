@@ -14,6 +14,7 @@ resource "azurerm_private_endpoint" "this" {
     private_connection_resource_id = local.aml_resource.id
     subresource_names              = ["amlworkspace"]
   }
+
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
 
@@ -24,6 +25,7 @@ resource "azurerm_private_endpoint" "this" {
       subresource_name   = "amlworkspace"
     }
   }
+
   dynamic "private_dns_zone_group" {
     for_each = length(each.value.private_dns_zone_resource_ids) > 0 ? ["this"] : []
 
@@ -51,6 +53,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
     private_connection_resource_id = local.aml_resource.id
     subresource_names              = ["amlworkspace"]
   }
+
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
 
@@ -61,6 +64,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
       subresource_name   = "amlworkspace"
     }
   }
+
   dynamic "private_dns_zone_group" {
     for_each = length(each.value.private_dns_zone_resource_ids) > 0 ? ["this"] : []
 
@@ -81,4 +85,3 @@ resource "azurerm_private_endpoint_application_security_group_association" "this
   application_security_group_id = each.value.asg_resource_id
   private_endpoint_id           = azurerm_private_endpoint.this[each.value.pe_key].id
 }
-

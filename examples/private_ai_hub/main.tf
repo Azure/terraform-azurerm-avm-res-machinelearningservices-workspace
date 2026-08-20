@@ -342,9 +342,9 @@ module "aihub" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = "hub${random_string.name.id}"
-  resource_group_name = azurerm_resource_group.this.name
+  location  = azurerm_resource_group.this.location
+  name      = "hub${random_string.name.id}"
+  parent_id = azurerm_resource_group.this.id
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }

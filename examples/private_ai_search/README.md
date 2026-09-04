@@ -86,7 +86,6 @@ resource "azurerm_role_assignment" "connection_approver" {
   role_definition_id = "${data.azurerm_subscription.primary.id}${data.azurerm_role_definition.connection_approver.id}"
 }
 
-
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.10.0"
@@ -237,7 +236,6 @@ module "avm_res_containerregistry_registry" {
   tags                          = local.tags
   zone_redundancy_enabled       = false
 }
-
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
@@ -403,7 +401,6 @@ module "avm_res_insights_component" {
   internet_query_enabled     = true
   tags                       = local.tags
 }
-
 
 # This is the module call
 # Do not specify location here due to the randomization above.

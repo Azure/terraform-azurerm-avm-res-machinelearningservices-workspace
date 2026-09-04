@@ -422,6 +422,7 @@ resource "azurerm_private_endpoint" "privatelinkscope" {
     private_connection_resource_id = azurerm_monitor_private_link_scope.example.id
     subresource_names              = ["azuremonitor"]
   }
+
   private_dns_zone_group {
     name = "azuremonitor-dns-zone-group"
     private_dns_zone_ids = [

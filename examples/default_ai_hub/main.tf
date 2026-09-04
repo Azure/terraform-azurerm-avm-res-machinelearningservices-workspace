@@ -149,4 +149,3 @@ resource "azapi_resource" "aiservices_connection" {
     }
   }
 }
-

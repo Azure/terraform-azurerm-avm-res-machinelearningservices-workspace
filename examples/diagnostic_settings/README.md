@@ -35,6 +35,7 @@ provider "azurerm" {
     }
   }
 }
+
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"

@@ -163,7 +163,6 @@ resource "azapi_resource" "aiservices_connection" {
     }
   }
 }
-
 ```
 
 <!-- markdownlint-disable MD033 -->

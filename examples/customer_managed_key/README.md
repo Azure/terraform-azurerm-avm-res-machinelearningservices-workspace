@@ -213,7 +213,6 @@ resource "azurerm_key_vault" "this" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
 }
 
-
 # This is the module call
 module "azureml" {
   source = "../../"

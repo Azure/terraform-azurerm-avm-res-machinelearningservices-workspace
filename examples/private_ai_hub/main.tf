@@ -71,7 +71,6 @@ resource "azurerm_role_assignment" "connection_approver" {
   role_definition_id = "${data.azurerm_subscription.primary.id}${data.azurerm_role_definition.connection_approver.id}"
 }
 
-
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.10.0"
@@ -374,7 +373,6 @@ module "aihub" {
     module.virtual_network,
   ]
 }
-
 
 resource "azapi_resource" "aiservices_connection" {
   name      = "sc${random_string.name.id}"

@@ -8,11 +8,11 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.0"
+      version = "~> 5.2"
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.6.2"
+      version = "3.9.0"
     }
   }
 }
@@ -38,7 +38,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 
   unique-length = 5
   unique-seed   = random_string.name.id
@@ -73,7 +73,7 @@ resource "azurerm_role_assignment" "connection_approver" {
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.10.0"
+  version = "0.22.1"
 
   address_space       = ["192.168.0.0/24"]
   location            = var.location
@@ -92,7 +92,7 @@ module "virtual_network" {
 
 module "private_dns_aml_api" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
@@ -108,7 +108,7 @@ module "private_dns_aml_api" {
 
 module "private_dns_aml_notebooks" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -124,7 +124,7 @@ module "private_dns_aml_notebooks" {
 
 module "private_dns_keyvault_vault" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -140,7 +140,7 @@ module "private_dns_keyvault_vault" {
 
 module "private_dns_storageaccount_blob" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -156,7 +156,7 @@ module "private_dns_storageaccount_blob" {
 
 module "private_dns_storageaccount_file" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.file.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -172,7 +172,7 @@ module "private_dns_storageaccount_file" {
 
 module "private_dns_containerregistry_registry" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.azurecr.io"
   resource_group_name = azurerm_resource_group.this.name
@@ -188,7 +188,7 @@ module "private_dns_containerregistry_registry" {
 
 module "private_dns_aisearch" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.5.0"
 
   domain_name         = "privatelink.search.windows.net"
   resource_group_name = azurerm_resource_group.this.name
@@ -204,7 +204,7 @@ module "private_dns_aisearch" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.4.0"
+  version = "0.8.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -224,7 +224,7 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "0.10.1"
+  version = "0.11.0"
 
   location            = var.location
   name                = module.naming.key_vault.name_unique
@@ -249,7 +249,7 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.6.4"
+  version = "0.9.0"
 
   location            = var.location
   name                = replace(module.naming.storage_account.name_unique, "-", "")
@@ -337,7 +337,7 @@ module "avm_res_storage_storageaccount" {
 
 module "aisearch" {
   source  = "Azure/avm-res-search-searchservice/azurerm"
-  version = "0.1.5"
+  version = "0.3.0"
 
   location                     = var.location
   name                         = module.naming.search_service.name_unique
@@ -360,7 +360,7 @@ module "aisearch" {
 
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "0.4.2"
+  version = "0.5.1"
 
   location            = var.location
   name                = module.naming.log_analytics_workspace.name_unique
@@ -376,7 +376,7 @@ module "avm_res_log_analytics_workspace" {
 
 module "avm_res_insights_component" {
   source  = "Azure/avm-res-insights-component/azurerm"
-  version = "0.2.0"
+  version = "0.4.0"
 
   location                   = var.location
   name                       = module.naming.application_insights.name_unique

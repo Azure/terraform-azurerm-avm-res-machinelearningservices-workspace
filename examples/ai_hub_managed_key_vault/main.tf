@@ -8,11 +8,11 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.0"
+      version = "~> 5.4"
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.6.2"
+      version = "3.9.0"
     }
   }
 }
@@ -38,7 +38,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 
   unique-length = 5
   unique-seed   = random_string.name.id
@@ -82,18 +82,18 @@ resource "azurerm_role_assignment" "connection_approver" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.10.1"
+  version = "0.11.1"
 
   kind                               = "AIServices"
   location                           = var.location
   name                               = module.naming.cognitive_account.name_unique
-  resource_group_name                = azurerm_resource_group.this.name
   sku_name                           = "S0"
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
   public_network_access_enabled      = true
   tags                               = local.tags
+  resource_group_name                = azurerm_resource_group.this.name
 }
 
 # This is the module call

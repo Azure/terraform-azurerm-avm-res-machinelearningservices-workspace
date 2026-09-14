@@ -46,10 +46,9 @@ module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.22.2"
 
-  address_space       = ["192.168.0.0/24"]
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  name                = module.naming.virtual_network.name_unique
+  location      = var.location
+  address_space = ["192.168.0.0/24"]
+  name          = module.naming.virtual_network.name_unique
   subnets = {
     private_endpoints = {
       name                              = "private_endpoints"
@@ -58,23 +57,24 @@ module "virtual_network" {
       service_endpoints                 = null
     }
   }
-  tags = local.tags
+  tags                = local.tags
+  resource_group_name = azurerm_resource_group.this.name
 }
 
 module "private_dns_aml_api" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.api.azureml.ms"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.api.azureml.ms"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.api.azureml.ms"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -83,16 +83,16 @@ module "private_dns_aml_notebooks" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.notebooks.azure.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.notebooks.azure.net"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.notebooks.azureml.ms"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -101,16 +101,16 @@ module "private_dns_keyvault_vault" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.vaultcore.azure.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.vaultcore.azure.net"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.notebooks.azureml.ms"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -119,16 +119,16 @@ module "private_dns_storageaccount_blob" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.blob.core.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.blob.core.windows.net"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.blob.core.windows.net"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -137,16 +137,16 @@ module "private_dns_storageaccount_file" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.file.core.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.file.core.windows.net"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.file.core.windows.net"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -155,16 +155,16 @@ module "private_dns_containerregistry_registry" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.azurecr.io"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.azurecr.io"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.azurecr.io"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -173,16 +173,16 @@ module "private_dns_monitor" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.monitor.azure.com"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.monitor.azure.com"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.monitor.azure.com"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -191,16 +191,16 @@ module "private_dns_oms_opinsights" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.oms.opinsights.azure.com"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.oms.opinsights.azure.com"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.oms.opinsights.azure.com"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -209,16 +209,16 @@ module "private_dns_ods_opinsights" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.ods.opinsights.azure.com"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.ods.opinsights.azure.com"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.ods.opinsights.azure.com"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -227,16 +227,16 @@ module "private_dns_agentsvc" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.5.0"
 
-  domain_name         = "privatelink.agentsvc.azure-automation.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.agentsvc.azure-automation.net"
+  enable_telemetry = var.enable_telemetry
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.agentsvc.azure-automation.net"
       vnetid       = module.virtual_network.resource_id
     }
   }
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -304,9 +304,8 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.10.0"
 
-  location            = var.location
-  name                = replace(module.naming.storage_account.name_unique, "-", "")
-  resource_group_name = azurerm_resource_group.this.name
+  location = var.location
+  name     = replace(module.naming.storage_account.name_unique, "-", "")
   # for idempotency
   blob_properties = {
     cors_rule = [{
@@ -360,6 +359,7 @@ module "avm_res_storage_storageaccount" {
   public_network_access_enabled = false
   shared_access_key_enabled     = true
   tags                          = local.tags
+  resource_group_name           = azurerm_resource_group.this.name
 }
 
 module "avm_res_log_analytics_workspace" {

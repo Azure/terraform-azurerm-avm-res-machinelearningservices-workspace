@@ -111,9 +111,8 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.10.0"
 
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.storage_account.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+  location = azurerm_resource_group.this.location
+  name     = module.naming.storage_account.name_unique
   customer_managed_key = {
     key_name              = azurerm_key_vault_key.cmk.name
     key_vault_resource_id = module.avm_res_keyvault_vault.resource_id
@@ -128,6 +127,7 @@ module "avm_res_storage_storageaccount" {
   }
   public_network_access_enabled = true
   tags                          = local.tags
+  resource_group_name           = azurerm_resource_group.this.name
 
   depends_on = [azurerm_key_vault_key.cmk]
 }

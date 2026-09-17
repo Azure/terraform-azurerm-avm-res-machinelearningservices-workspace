@@ -89,7 +89,7 @@ module "ai_services" {
   name                               = module.naming.cognitive_account.name_unique
   resource_group_name                = azurerm_resource_group.this.name
   sku_name                           = "S0"
-  enable_telemetry                   = var.enable_telemetry
+  enable_telemetry                   = false
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
   public_network_access_enabled      = true
@@ -108,7 +108,7 @@ module "aihub" {
   location                      = azurerm_resource_group.this.location
   name                          = "hub${random_string.name.id}"
   resource_group_name           = azurerm_resource_group.this.name
-  enable_telemetry              = var.enable_telemetry
+  enable_telemetry              = false
   key_vault                     = { use_microsoft_managed_key_vault = true }
   kind                          = "Hub"
   public_network_access_enabled = true

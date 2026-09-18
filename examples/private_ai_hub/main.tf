@@ -78,7 +78,7 @@ module "virtual_network" {
   address_space       = ["192.168.0.0/24"]
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   name                = module.naming.virtual_network.name_unique
   subnets = {
     private_endpoints = {
@@ -97,7 +97,7 @@ module "private_dns_aml_api" {
 
   domain_name         = "privatelink.api.azureml.ms"
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -113,7 +113,7 @@ module "private_dns_aml_notebooks" {
 
   domain_name         = "privatelink.notebooks.azure.net"
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -129,7 +129,7 @@ module "private_dns_keyvault_vault" {
 
   domain_name         = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -145,7 +145,7 @@ module "private_dns_storageaccount_blob" {
 
   domain_name         = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -161,7 +161,7 @@ module "private_dns_storageaccount_file" {
 
   domain_name         = "privatelink.file.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -177,7 +177,7 @@ module "private_dns_containerregistry_registry" {
 
   domain_name         = "privatelink.azurecr.io"
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   tags                = local.tags
   virtual_network_links = {
     dnslink = {
@@ -194,7 +194,7 @@ module "avm_res_containerregistry_registry" {
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   private_endpoints = {
     registry = {
       name                          = "pe-containerregistry-regsitry"
@@ -216,7 +216,7 @@ module "avm_res_keyvault_vault" {
   name                = module.naming.key_vault.name_unique
   resource_group_name = azurerm_resource_group.this.name
   tenant_id           = data.azurerm_client_config.current.tenant_id
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   network_acls = {
     bypass         = "AzureServices"
     default_action = "Deny"
@@ -266,7 +266,7 @@ module "avm_res_storage_storageaccount" {
       max_age_in_seconds = 1800
     }]
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   managed_identities = {
     system_assigned = true
   }
@@ -326,7 +326,7 @@ module "ai_services" {
   name                               = module.naming.cognitive_account.name_unique
   resource_group_name                = azurerm_resource_group.this.name
   sku_name                           = "S0"
-  enable_telemetry                   = false
+  enable_telemetry                   = var.enable_telemetry
   fqdns                              = []
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
@@ -349,7 +349,7 @@ module "aihub" {
   container_registry = {
     resource_id = module.avm_res_containerregistry_registry.resource_id
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   key_vault = {
     resource_id = module.avm_res_keyvault_vault.resource_id
   }

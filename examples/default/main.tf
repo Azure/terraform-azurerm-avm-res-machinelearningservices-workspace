@@ -98,7 +98,7 @@ module "azureml" {
   container_registry = {
     resource_id = azurerm_container_registry.example.id
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   key_vault = {
     resource_id = provider::azurerm::normalise_resource_id(azurerm_key_vault.example.id)
   }

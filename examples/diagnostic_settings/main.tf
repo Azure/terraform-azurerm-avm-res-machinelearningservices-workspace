@@ -112,7 +112,7 @@ module "azureml" {
       workspace_resource_id = azurerm_log_analytics_workspace.diag.id
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }

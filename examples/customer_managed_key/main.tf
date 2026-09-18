@@ -62,7 +62,7 @@ module "avm_res_keyvault_vault" {
   name                = "${module.naming.key_vault.name_unique}cmk"
   resource_group_name = azurerm_resource_group.this.name
   tenant_id           = data.azurerm_client_config.current.tenant_id
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   network_acls = {
     default_action = "Allow"
   }
@@ -122,7 +122,7 @@ module "avm_res_storage_storageaccount" {
       resource_id = azurerm_user_assigned_identity.cmk.id
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   managed_identities = {
     system_assigned            = false
     user_assigned_resource_ids = [azurerm_user_assigned_identity.cmk.id]
@@ -147,7 +147,7 @@ module "avm_res_containerregistry" {
       resource_id = azurerm_user_assigned_identity.cmk.id
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   managed_identities = {
     system_assigned            = false
     user_assigned_resource_ids = [azurerm_user_assigned_identity.cmk.id]
@@ -202,7 +202,7 @@ module "azureml" {
       resource_id = azurerm_user_assigned_identity.cmk.id
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   hbi_workspace    = true
   key_vault = {
     resource_id = azurerm_key_vault.this.id

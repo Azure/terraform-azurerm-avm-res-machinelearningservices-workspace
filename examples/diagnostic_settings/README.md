@@ -127,7 +127,7 @@ module "azureml" {
       workspace_resource_id = azurerm_log_analytics_workspace.diag.id
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   key_vault = {
     resource_id = azurerm_key_vault.example.id
   }
@@ -178,7 +178,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_location"></a> [location](#input\_location)
 

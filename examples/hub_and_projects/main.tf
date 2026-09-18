@@ -94,13 +94,13 @@ module "ai_services" {
   kind                               = "AIServices"
   location                           = var.location
   name                               = module.naming.cognitive_account.name_unique
-  resource_group_name                = azurerm_resource_group.example.name
   sku_name                           = "S0"
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
   public_network_access_enabled      = true
   tags                               = local.tags
+  resource_group_name                = azurerm_resource_group.example.name
 }
 
 # This is the module call 1

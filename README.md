@@ -19,6 +19,8 @@ When `private_endpoints_manage_dns_zone_group` is `false`, DNS zone groups must 
 
 Previously ignored endpoint `role_assignments` and `lock` settings now create the requested resources. Review those settings before upgrading. Existing workspace and endpoint resource addresses are unchanged; changing DNS-management mode still changes the endpoint resource address.
 
+Endpoint locks and role assignments use AzAPI. Role names are resolved at the endpoint scope; omitted assignment names receive a random UUID. AzAPI performs no separate client-side Microsoft Entra ID check, so `skip_service_principal_aad_check` is retained for compatibility but does not change its behavior. Specify `principal_type`, especially for newly created service principals.
+
 ### Example - AML Workspace
 
 This will create a publicly-accessible Azure Machine Learning Workspace.
@@ -111,19 +113,21 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azapi_resource.hub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.private_endpoint_locks](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.private_endpoint_role_assignments](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.project](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
-- [azurerm_management_lock.private_endpoints](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint.this_unmanaged_dns_zone_groups](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
-- [azurerm_role_assignment.private_endpoints](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/resources/telemetry) (resource)
+- [random_uuid.private_endpoint_role_assignment_name](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
+- [azapi_resource_list.private_endpoint_role_definitions](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_list) (data source)
 - [azurerm_key_vault_key.cmk](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_key) (data source)
 - [azurerm_resource_group.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
 - [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/data-sources/module_source) (data source)
@@ -293,6 +297,26 @@ Description: Specifies if the resource is a High Business Impact (HBI) workspace
 Type: `bool`
 
 Default: `false`
+
+### <a name="input_ignore_body_changes"></a> [ignore\_body\_changes](#input\_ignore\_body\_changes)
+
+Description: Body-relative dot-notation paths to ignore per AzAPI resource type. Changes take effect only after apply. Ignored configuration is not sent to Azure until the path is removed. Non-empty values require Terraform 1.11 or later.
+
+- `authorization_locks` - Paths ignored on private endpoint locks.
+- `authorization_role_assignments` - Paths ignored on private endpoint role assignments.
+- `machinelearningservices_workspaces` - Paths ignored on workspaces, hubs, and projects.
+
+Type:
+
+```hcl
+object({
+    authorization_locks                = optional(list(string), [])
+    authorization_role_assignments     = optional(list(string), [])
+    machinelearningservices_workspaces = optional(list(string), [])
+  })
+```
+
+Default: `{}`
 
 ### <a name="input_image_build_compute"></a> [image\_build\_compute](#input\_image\_build\_compute)
 
@@ -530,6 +554,46 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_resource_types"></a> [resource\_types](#input\_resource\_types)
+
+Description: AzAPI resource types and API versions used by the module.
+
+- `authorization_locks` - Private endpoint management locks.
+- `authorization_role_assignments` - Private endpoint role assignments.
+- `machinelearningservices_workspaces` - Workspaces, hubs, and projects; preserves the existing preview API default.
+
+Type:
+
+```hcl
+object({
+    authorization_locks                = optional(string, "Microsoft.Authorization/locks@2020-05-01")
+    authorization_role_assignments     = optional(string, "Microsoft.Authorization/roleAssignments@2022-04-01")
+    machinelearningservices_workspaces = optional(string, "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview")
+  })
+```
+
+Default: `{}`
+
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: Retry configuration applied to every AzAPI resource. Defaults to null (no custom retry).
+
+- `error_message_regex` - Optional error-message patterns that trigger retries.
+- `interval_seconds` - Optional initial interval between retries in seconds.
+- `max_interval_seconds` - Optional maximum interval between retries in seconds.
+
+Type:
+
+```hcl
+object({
+    error_message_regex  = optional(list(string))
+    interval_seconds     = optional(number)
+    max_interval_seconds = optional(number)
+  })
+```
+
+Default: `null`
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description:   A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -628,9 +692,12 @@ Default: `null`
 
 ### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
 
-Description: - `create` - (Defaults to 30 minutes) Used when creating the azure resource.
-- `delete` - (Defaults to 30 minutes) Used when deleting the Resource Group.
-- `read` - (Defaults to 5 minutes) Used when retrieving the Resource Group.
+Description: Per-operation timeouts for all AzAPI resources. Defaults to null (provider defaults).
+
+ - `create` - Defaults to 30 minutes when a timeout object is supplied.
+ - `delete` - Defaults to 30 minutes when a timeout object is supplied.
+ - `read` - Defaults to 5 minutes when a timeout object is supplied.
+ - `update` - Optional update timeout; defaults to the provider default.
 
 Type:
 
@@ -639,6 +706,7 @@ object({
     create = optional(string, "30m")
     delete = optional(string, "30m")
     read   = optional(string, "5m")
+    update = optional(string)
   })
 ```
 

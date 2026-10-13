@@ -163,6 +163,23 @@ variable "hbi_workspace" {
   description = "Specifies if the resource is a High Business Impact (HBI) workspace."
 }
 
+variable "ignore_body_changes" {
+  type = object({
+    authorization_locks                = optional(list(string), [])
+    authorization_role_assignments     = optional(list(string), [])
+    machinelearningservices_workspaces = optional(list(string), [])
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Body-relative dot-notation paths to ignore per AzAPI resource type. Changes take effect only after apply. Ignored configuration is not sent to Azure until the path is removed. Non-empty values require Terraform 1.11 or later.
+
+- `authorization_locks` - Paths ignored on private endpoint locks.
+- `authorization_role_assignments` - Paths ignored on private endpoint role assignments.
+- `machinelearningservices_workspaces` - Paths ignored on workspaces, hubs, and projects.
+DESCRIPTION
+  nullable    = false
+}
+
 variable "image_build_compute" {
   type        = string
   default     = null
@@ -406,6 +423,39 @@ variable "public_network_access_enabled" {
   description = "(Optional) Whether (inbound) requests from the Internet / public network are allowed. Default is `false`"
 }
 
+variable "resource_types" {
+  type = object({
+    authorization_locks                = optional(string, "Microsoft.Authorization/locks@2020-05-01")
+    authorization_role_assignments     = optional(string, "Microsoft.Authorization/roleAssignments@2022-04-01")
+    machinelearningservices_workspaces = optional(string, "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview")
+  })
+  default     = {}
+  description = <<DESCRIPTION
+AzAPI resource types and API versions used by the module.
+
+- `authorization_locks` - Private endpoint management locks.
+- `authorization_role_assignments` - Private endpoint role assignments.
+- `machinelearningservices_workspaces` - Workspaces, hubs, and projects; preserves the existing preview API default.
+DESCRIPTION
+  nullable    = false
+}
+
+variable "retry" {
+  type = object({
+    error_message_regex  = optional(list(string))
+    interval_seconds     = optional(number)
+    max_interval_seconds = optional(number)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Retry configuration applied to every AzAPI resource. Defaults to null (no custom retry).
+
+- `error_message_regex` - Optional error-message patterns that trigger retries.
+- `interval_seconds` - Optional initial interval between retries in seconds.
+- `max_interval_seconds` - Optional maximum interval between retries in seconds.
+DESCRIPTION
+}
+
 # required AVM interface
 variable "role_assignments" {
   type = map(object({
@@ -500,12 +550,16 @@ variable "timeouts" {
     create = optional(string, "30m")
     delete = optional(string, "30m")
     read   = optional(string, "5m")
+    update = optional(string)
   })
   default     = null
   description = <<-EOT
- - `create` - (Defaults to 30 minutes) Used when creating the azure resource.
- - `delete` - (Defaults to 30 minutes) Used when deleting the Resource Group.
- - `read` - (Defaults to 5 minutes) Used when retrieving the Resource Group.
+Per-operation timeouts for all AzAPI resources. Defaults to null (provider defaults).
+
+ - `create` - Defaults to 30 minutes when a timeout object is supplied.
+ - `delete` - Defaults to 30 minutes when a timeout object is supplied.
+ - `read` - Defaults to 5 minutes when a timeout object is supplied.
+ - `update` - Optional update timeout; defaults to the provider default.
 EOT
 }
 

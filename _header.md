@@ -17,6 +17,8 @@ When `private_endpoints_manage_dns_zone_group` is `false`, DNS zone groups must 
 
 Previously ignored endpoint `role_assignments` and `lock` settings now create the requested resources. Review those settings before upgrading. Existing workspace and endpoint resource addresses are unchanged; changing DNS-management mode still changes the endpoint resource address.
 
+Endpoint locks and role assignments use AzAPI. Role names are resolved at the endpoint scope; omitted assignment names receive a random UUID. AzAPI performs no separate client-side Microsoft Entra ID check, so `skip_service_principal_aad_check` is retained for compatibility but does not change its behavior. Specify `principal_type`, especially for newly created service principals.
+
 ### Example - AML Workspace
 
 This will create a publicly-accessible Azure Machine Learning Workspace.

@@ -77,32 +77,92 @@ resource "azurerm_private_endpoint_application_security_group_association" "this
   private_endpoint_id           = local.private_endpoints[each.value.pe_key].id
 }
 
-resource "azurerm_role_assignment" "private_endpoints" {
-  for_each = local.private_endpoint_role_assignments
+data "azapi_resource_list" "private_endpoint_role_definitions" {
+  for_each = { for k, v in local.private_endpoint_role_assignments : k => v if !strcontains(lower(v.role_assignment.role_definition_id_or_name), lower(local.role_definition_resource_substring)) }
 
-  principal_id                           = each.value.role_assignment.principal_id
-  scope                                  = local.private_endpoints[each.value.pe_key].id
-  condition                              = each.value.role_assignment.condition
-  condition_version                      = each.value.role_assignment.condition_version
-  delegated_managed_identity_resource_id = each.value.role_assignment.delegated_managed_identity_resource_id
-  description                            = each.value.role_assignment.description
-  name                                   = each.value.role_assignment.name
-  principal_type                         = each.value.role_assignment.principal_type
-  role_definition_id                     = strcontains(lower(each.value.role_assignment.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_assignment.role_definition_id_or_name : null
-  role_definition_name                   = strcontains(lower(each.value.role_assignment.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? null : each.value.role_assignment.role_definition_id_or_name
-  skip_service_principal_aad_check       = each.value.role_assignment.skip_service_principal_aad_check
+  parent_id = local.private_endpoints[each.value.pe_key].id
+  type      = "Microsoft.Authorization/roleDefinitions@2022-04-01"
+  response_export_values = {
+    results = "value[].{id: id, role_name: properties.roleName}"
+  }
 }
 
-resource "azurerm_management_lock" "private_endpoints" {
+resource "random_uuid" "private_endpoint_role_assignment_name" {
+  for_each = local.private_endpoint_role_assignments
+}
+
+resource "azapi_resource" "private_endpoint_role_assignments" {
+  for_each = local.private_endpoint_role_assignments
+
+  name      = coalesce(each.value.role_assignment.name, random_uuid.private_endpoint_role_assignment_name[each.key].result)
+  parent_id = local.private_endpoints[each.value.pe_key].id
+  type      = var.resource_types.authorization_role_assignments
+  body = {
+    properties = {
+      principalId                        = each.value.role_assignment.principal_id
+      roleDefinitionId                   = strcontains(lower(each.value.role_assignment.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_assignment.role_definition_id_or_name : one([for definition in data.azapi_resource_list.private_endpoint_role_definitions[each.key].output.results : definition.id if definition.role_name == each.value.role_assignment.role_definition_id_or_name])
+      conditionVersion                   = each.value.role_assignment.condition_version
+      condition                          = each.value.role_assignment.condition
+      description                        = each.value.role_assignment.description
+      principalType                      = each.value.role_assignment.principal_type
+      delegatedManagedIdentityResourceId = each.value.role_assignment.delegated_managed_identity_resource_id
+    }
+  }
+  ignore_body_changes = length(var.ignore_body_changes.authorization_role_assignments) > 0 ? var.ignore_body_changes.authorization_role_assignments : null
+  replace_triggers_refs = [
+    "properties.principalId",
+    "properties.roleDefinitionId",
+    "properties.delegatedManagedIdentityResourceId",
+  ]
+  response_export_values = []
+  retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : [var.timeouts]
+    content {
+      create = timeouts.value.create
+      read   = timeouts.value.read
+      update = timeouts.value.update
+      delete = timeouts.value.delete
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = strcontains(lower(each.value.role_assignment.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? true : length([for definition in data.azapi_resource_list.private_endpoint_role_definitions[each.key].output.results : definition.id if definition.role_name == each.value.role_assignment.role_definition_id_or_name]) == 1
+      error_message = "The endpoint role definition name must resolve to exactly one role definition at the endpoint scope."
+    }
+  }
+}
+
+resource "azapi_resource" "private_endpoint_locks" {
   for_each = { for k, v in var.private_endpoints : k => v.lock if v.lock != null }
 
-  lock_level = each.value.kind
-  name       = coalesce(each.value.name, "lock-${each.value.kind}")
-  scope      = local.private_endpoints[each.key].id
-  notes      = each.value.notes != null ? each.value.notes : each.value.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
+  name      = coalesce(each.value.name, "lock-${each.value.kind}")
+  parent_id = local.private_endpoints[each.key].id
+  type      = var.resource_types.authorization_locks
+  body = {
+    properties = {
+      level = each.value.kind
+      notes = each.value.notes != null ? each.value.notes : each.value.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
+    }
+  }
+  ignore_body_changes    = length(var.ignore_body_changes.authorization_locks) > 0 ? var.ignore_body_changes.authorization_locks : null
+  response_export_values = []
+  retry                  = var.retry
+
+  dynamic "timeouts" {
+    for_each = var.timeouts == null ? [] : [var.timeouts]
+    content {
+      create = timeouts.value.create
+      read   = timeouts.value.read
+      update = timeouts.value.update
+      delete = timeouts.value.delete
+    }
+  }
 
   depends_on = [
     azurerm_private_endpoint_application_security_group_association.this,
-    azurerm_role_assignment.private_endpoints,
+    azapi_resource.private_endpoint_role_assignments,
   ]
 }

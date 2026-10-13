@@ -1,4 +1,14 @@
 mock_provider "azapi" {
+  mock_data "azapi_resource_list" {
+    defaults = {
+      output = {
+        results = [{
+          id        = "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+          role_name = "Reader"
+        }]
+      }
+    }
+  }
   mock_resource "azapi_resource" {
     defaults = {
       id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-rg/providers/Microsoft.MachineLearningServices/workspaces/unit-workspace"
@@ -20,7 +30,13 @@ mock_provider "azurerm" {
 }
 
 mock_provider "modtm" {}
-mock_provider "random" {}
+mock_provider "random" {
+  mock_resource "random_uuid" {
+    defaults = {
+      result = "00000000-0000-0000-0000-000000000003"
+    }
+  }
+}
 
 variables {
   name                = "unit-workspace"
@@ -85,7 +101,7 @@ run "managed_endpoint_defaults" {
     error_message = "An endpoint without zone IDs must not create a zone group or change its address."
   }
   assert {
-    condition     = length(azurerm_role_assignment.private_endpoints) == 0 && length(azurerm_management_lock.private_endpoints) == 0
+    condition     = length(azapi_resource.private_endpoint_role_assignments) == 0 && length(azapi_resource.private_endpoint_locks) == 0 && length(random_uuid.private_endpoint_role_assignment_name) == 0 && length(data.azapi_resource_list.private_endpoint_role_definitions) == 0
     error_message = "Endpoint role assignments and locks must remain opt-in."
   }
 }
@@ -161,15 +177,25 @@ run "managed_endpoint_extensions" {
     error_message = "The existing application security group association address must scope to the endpoint."
   }
   assert {
-    condition     = azurerm_management_lock.private_endpoints["endpoint"].scope == output.private_endpoints["endpoint"].id && azurerm_management_lock.private_endpoints["endpoint"].name == "endpoint-lock" && azurerm_management_lock.private_endpoints["endpoint"].notes == "Keep this endpoint." && azurerm_management_lock.private_endpoints["endpoint"].lock_level == "CanNotDelete"
+    condition     = azapi_resource.private_endpoint_locks["endpoint"].parent_id == output.private_endpoints["endpoint"].id && azapi_resource.private_endpoint_locks["endpoint"].name == "endpoint-lock" && azapi_resource.private_endpoint_locks["endpoint"].body.properties.notes == "Keep this endpoint." && azapi_resource.private_endpoint_locks["endpoint"].body.properties.level == "CanNotDelete"
     error_message = "Endpoint lock settings must no longer be ignored."
   }
   assert {
-    condition     = azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].scope == output.private_endpoints["endpoint"].id && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].name == var.private_endpoints["endpoint"].role_assignments["reader"].name && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].principal_id == var.private_endpoints["endpoint"].role_assignments["reader"].principal_id && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].role_definition_id == var.private_endpoints["endpoint"].role_assignments["reader"].role_definition_id_or_name
+    condition     = azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].parent_id == output.private_endpoints["endpoint"].id && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].name == var.private_endpoints["endpoint"].role_assignments["reader"].name && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].body.properties.principalId == var.private_endpoints["endpoint"].role_assignments["reader"].principal_id && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].body.properties.roleDefinitionId == var.private_endpoints["endpoint"].role_assignments["reader"].role_definition_id_or_name && length(data.azapi_resource_list.private_endpoint_role_definitions) == 0
     error_message = "Endpoint role assignments must preserve the requested name, principal, role, and endpoint scope."
   }
   assert {
-    condition     = azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].description == "Endpoint reader." && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].principal_type == "ServicePrincipal" && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].skip_service_principal_aad_check && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].condition_version == "2.0" && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].condition == var.private_endpoints["endpoint"].role_assignments["reader"].condition && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].delegated_managed_identity_resource_id == var.private_endpoints["endpoint"].role_assignments["reader"].delegated_managed_identity_resource_id
+    condition = azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].body == {
+      properties = {
+        principalId                        = var.private_endpoints["endpoint"].role_assignments["reader"].principal_id
+        roleDefinitionId                   = var.private_endpoints["endpoint"].role_assignments["reader"].role_definition_id_or_name
+        description                        = "Endpoint reader."
+        principalType                      = "ServicePrincipal"
+        conditionVersion                   = "2.0"
+        condition                          = var.private_endpoints["endpoint"].role_assignments["reader"].condition
+        delegatedManagedIdentityResourceId = var.private_endpoints["endpoint"].role_assignments["reader"].delegated_managed_identity_resource_id
+      }
+    }
     error_message = "Endpoint role assignment metadata and permission conditions must be preserved."
   }
 }
@@ -219,12 +245,16 @@ run "unmanaged_endpoint_extensions" {
     error_message = "Unmanaged DNS must not create a zone group and must honor static IP member names."
   }
   assert {
-    condition     = azurerm_private_endpoint_application_security_group_association.this["endpoint-clients"].private_endpoint_id == output.private_endpoints["endpoint"].id && azurerm_management_lock.private_endpoints["endpoint"].scope == output.private_endpoints["endpoint"].id && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].scope == output.private_endpoints["endpoint"].id && azurerm_role_assignment.private_endpoints["[\"endpoint\",\"reader\"]"].role_definition_name == "Reader"
+    condition     = azurerm_private_endpoint_application_security_group_association.this["endpoint-clients"].private_endpoint_id == output.private_endpoints["endpoint"].id && azapi_resource.private_endpoint_locks["endpoint"].parent_id == output.private_endpoints["endpoint"].id && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].parent_id == output.private_endpoints["endpoint"].id && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].body.properties.roleDefinitionId == data.azapi_resource_list.private_endpoint_role_definitions["[\"endpoint\",\"reader\"]"].output.results[0].id && data.azapi_resource_list.private_endpoint_role_definitions["[\"endpoint\",\"reader\"]"].parent_id == output.private_endpoints["endpoint"].id
     error_message = "All endpoint extensions must work when DNS management is external."
   }
   assert {
-    condition     = azurerm_management_lock.private_endpoints["endpoint"].name == "lock-ReadOnly" && azurerm_management_lock.private_endpoints["endpoint"].notes == "Cannot delete or modify the resource or its child resources."
+    condition     = azapi_resource.private_endpoint_locks["endpoint"].name == "lock-ReadOnly" && azapi_resource.private_endpoint_locks["endpoint"].body.properties.notes == "Cannot delete or modify the resource or its child resources." && azapi_resource.private_endpoint_locks["endpoint"].body.properties.level == "ReadOnly"
     error_message = "Omitted endpoint lock names and notes must receive usable defaults."
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].name == random_uuid.private_endpoint_role_assignment_name["[\"endpoint\",\"reader\"]"].result && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].body.properties.principalType == null && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].body.properties.condition == null
+    error_message = "Omitted assignment names must use a random UUID without inferring principal types or conditions."
   }
 }
 
@@ -314,6 +344,93 @@ run "reject_invalid_subnet" {
     }
   }
   expect_failures = [var.private_endpoints]
+}
+
+run "azapi_extension_controls" {
+  command = apply
+  providers = {
+    azapi   = azapi
+    azurerm = azurerm
+    modtm   = modtm
+    random  = random
+  }
+  variables {
+    resource_types = {
+      authorization_locks                = "Microsoft.Authorization/locks@2017-04-01"
+      authorization_role_assignments     = "Microsoft.Authorization/roleAssignments@2020-04-01-preview"
+      machinelearningservices_workspaces = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
+    }
+    retry = {
+      error_message_regex  = ["ScopeLocked"]
+      interval_seconds     = 15
+      max_interval_seconds = 60
+    }
+    timeouts = {
+      create = "40m"
+      read   = "6m"
+      update = "45m"
+      delete = "35m"
+    }
+    ignore_body_changes = {
+      authorization_locks                = ["properties.notes"]
+      authorization_role_assignments     = ["properties.description"]
+      machinelearningservices_workspaces = ["properties.description"]
+    }
+    private_endpoints = {
+      endpoint = {
+        subnet_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-rg/providers/Microsoft.Network/virtualNetworks/unit-vnet/subnets/endpoints"
+        lock = {
+          kind = "CanNotDelete"
+        }
+        role_assignments = {
+          reader = {
+            role_definition_id_or_name = "Reader"
+            principal_id               = "00000000-0000-0000-0000-000000000002"
+          }
+        }
+      }
+    }
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint_locks["endpoint"].type == var.resource_types.authorization_locks && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].type == var.resource_types.authorization_role_assignments && azapi_resource.this[0].type == var.resource_types.machinelearningservices_workspaces
+    error_message = "Resource type overrides must reach each applicable AzAPI resource."
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint_locks["endpoint"].retry.interval_seconds == 15 && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].retry.max_interval_seconds == 60 && azapi_resource.this[0].retry.error_message_regex == tolist(["ScopeLocked"])
+    error_message = "Retry controls must reach extensions and the existing workspace."
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint_locks["endpoint"].timeouts.delete == "35m" && azapi_resource.private_endpoint_role_assignments["[\"endpoint\",\"reader\"]"].timeouts.create == "40m" && azapi_resource.this[0].timeouts.read == "6m" && azapi_resource.this[0].timeouts.update == "45m"
+    error_message = "All operation timeout controls must reach extensions and the existing workspace."
+  }
+  assert {
+    condition     = azapi_resource.private_endpoint_locks["endpoint"].body.properties.notes == "Cannot delete the resource or its child resources." && azapi_resource.private_endpoint_locks["endpoint"].name == "lock-CanNotDelete"
+    error_message = "CanNotDelete locks must preserve their default name and notes."
+  }
+}
+
+run "reject_unknown_endpoint_role" {
+  command = plan
+  providers = {
+    azapi   = azapi
+    azurerm = azurerm
+    modtm   = modtm
+    random  = random
+  }
+  variables {
+    private_endpoints = {
+      endpoint = {
+        subnet_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/unit-rg/providers/Microsoft.Network/virtualNetworks/unit-vnet/subnets/endpoints"
+        role_assignments = {
+          unknown = {
+            role_definition_id_or_name = "Unknown role"
+            principal_id               = "00000000-0000-0000-0000-000000000002"
+          }
+        }
+      }
+    }
+  }
+  expect_failures = [azapi_resource.private_endpoint_role_assignments]
 }
 
 run "reject_invalid_dns_zone" {

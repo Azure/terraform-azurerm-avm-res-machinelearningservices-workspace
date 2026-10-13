@@ -183,6 +183,7 @@ resource "azapi_resource" "project" {
   replace_triggers_external_values = [
     var.provision_network_now_enabled
   ]
+  tags = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities

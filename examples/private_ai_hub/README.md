@@ -79,9 +79,10 @@ resource "random_string" "name" {
 }
 
 module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  source  = "Azure/avm-utl-naming/azure"
+  version = "0.2.0"
 
+  legacy_mode   = true
   unique-length = 5
   unique-seed   = random_string.name.id
 }
@@ -531,9 +532,9 @@ Version: 0.6.4
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
-Source: Azure/naming/azurerm
+Source: Azure/avm-utl-naming/azure
 
-Version: 0.4.2
+Version: 0.2.0
 
 ### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
 

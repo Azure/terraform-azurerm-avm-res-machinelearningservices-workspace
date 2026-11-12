@@ -37,9 +37,10 @@ resource "random_string" "name" {
 }
 
 module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  source  = "Azure/avm-utl-naming/azure"
+  version = "0.2.0"
 
+  legacy_mode   = true
   unique-length = 5
   unique-seed   = random_string.name.id
 }

@@ -1,4 +1,9 @@
 mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
   mock_data "azapi_resource_list" {
     defaults = {
       output = {
@@ -29,7 +34,6 @@ mock_provider "azurerm" {
   }
 }
 
-mock_provider "modtm" {}
 mock_provider "random" {
   mock_resource "random_uuid" {
     defaults = {
@@ -58,7 +62,6 @@ run "workspace_without_endpoints" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   assert {
@@ -69,6 +72,26 @@ run "workspace_without_endpoints" {
     condition     = azapi_resource.this[0].identity[0].type == "SystemAssigned"
     error_message = "The workspace must retain its system-assigned identity."
   }
+  assert {
+    condition     = length(azapi_resource.telemetry) == 1
+    error_message = "Telemetry must be enabled by default."
+  }
+}
+
+run "telemetry_disabled" {
+  command = apply
+  providers = {
+    azapi   = azapi
+    azurerm = azurerm
+    random  = random
+  }
+  variables {
+    enable_telemetry = false
+  }
+  assert {
+    condition     = length(azapi_resource.telemetry) == 0
+    error_message = "Telemetry must be omitted when disabled."
+  }
 }
 
 run "managed_endpoint_defaults" {
@@ -76,7 +99,6 @@ run "managed_endpoint_defaults" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -111,7 +133,6 @@ run "managed_endpoint_extensions" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -205,7 +226,6 @@ run "unmanaged_endpoint_extensions" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -263,7 +283,6 @@ run "hub_endpoint" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -295,7 +314,6 @@ run "project_endpoint" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -333,7 +351,6 @@ run "reject_invalid_subnet" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -351,7 +368,6 @@ run "azapi_extension_controls" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -414,7 +430,6 @@ run "reject_unknown_endpoint_role" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -438,7 +453,6 @@ run "reject_invalid_dns_zone" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -457,7 +471,6 @@ run "reject_invalid_security_group" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {
@@ -478,7 +491,6 @@ run "reject_invalid_delegated_identity" {
   providers = {
     azapi   = azapi
     azurerm = azurerm
-    modtm   = modtm
     random  = random
   }
   variables {

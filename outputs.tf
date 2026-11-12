@@ -1,6 +1,6 @@
 output "private_endpoints" {
   description = "A map of the private endpoints created."
-  value       = azurerm_private_endpoint.this
+  value       = local.private_endpoints
 }
 
 output "resource_id" {

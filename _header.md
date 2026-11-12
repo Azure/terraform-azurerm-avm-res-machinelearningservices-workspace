@@ -9,6 +9,16 @@ This is an [Azure Verified Module](https://aka.ms/avm) that provisions an Azure 
 
 ## Usage
 
+### Private endpoints
+
+Private endpoints support static IP member names, endpoint-scoped role assignments, locks, and application security group associations. Omitting `member_name` preserves the existing `"default"` member name. Omitting `subresource_name` selects `"amlworkspace"`.
+
+When `private_endpoints_manage_dns_zone_group` is `false`, DNS zone groups must be managed externally. The module does not create a zone group, even when zone IDs are supplied. Both DNS-management modes return endpoints through `private_endpoints` and support application security group associations, role assignments, and locks.
+
+Previously ignored endpoint `role_assignments` and `lock` settings now create the requested resources. Review those settings before upgrading. Existing workspace and endpoint resource addresses are unchanged; changing DNS-management mode still changes the endpoint resource address.
+
+Endpoint locks and role assignments use AzAPI. Role names are resolved at the endpoint scope; omitted assignment names receive a random UUID. AzAPI performs no separate client-side Microsoft Entra ID check, so `skip_service_principal_aad_check` is retained for compatibility but does not change its behavior. Specify `principal_type`, especially for newly created service principals.
+
 ### Example - AML Workspace
 
 This will create a publicly-accessible Azure Machine Learning Workspace.

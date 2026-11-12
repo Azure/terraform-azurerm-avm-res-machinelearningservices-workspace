@@ -65,5 +65,18 @@ locals {
       }
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
+  private_endpoint_role_assignments = { for assignment in flatten([
+    for pe_k, pe_v in var.private_endpoints : [
+      for ra_k, ra_v in pe_v.role_assignments : {
+        pe_key          = pe_k
+        assignment_key  = ra_k
+        role_assignment = ra_v
+      }
+    ]
+  ]) : jsonencode([assignment.pe_key, assignment.assignment_key]) => assignment }
+  private_endpoints = merge(
+    azurerm_private_endpoint.this,
+    azurerm_private_endpoint.this_unmanaged_dns_zone_groups,
+  )
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }

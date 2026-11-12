@@ -4,7 +4,7 @@ resource "azapi_resource" "this" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
+  type      = var.resource_types.machinelearningservices_workspaces
   body = {
     properties = {
       publicNetworkAccess      = local.enable_public_network_access ? "Enabled" : "Disabled"
@@ -40,11 +40,14 @@ resource "azapi_resource" "this" {
     }
     kind = var.kind
   }
-  ignore_casing = true
+  ignore_body_changes = length(var.ignore_body_changes.machinelearningservices_workspaces) > 0 ? var.ignore_body_changes.machinelearningservices_workspaces : null
+  ignore_casing       = true
   replace_triggers_external_values = [
     var.resource_group_name # since this is the value that determines if parent_id changes, require create/destroy if it changes
   ]
-  tags = var.tags
+  response_export_values = []
+  retry                  = var.retry
+  tags                   = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -62,6 +65,7 @@ resource "azapi_resource" "this" {
       create = var.timeouts.create
       delete = var.timeouts.delete
       read   = var.timeouts.read
+      update = var.timeouts.update
     }
   }
 
@@ -79,7 +83,7 @@ resource "azapi_resource" "hub" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
+  type      = var.resource_types.machinelearningservices_workspaces
   body = {
     properties = {
       serverlessComputeSettings = var.serverless_compute != null ? {
@@ -121,12 +125,15 @@ resource "azapi_resource" "hub" {
     }
     kind = var.kind
   }
-  ignore_casing = true
+  ignore_body_changes = length(var.ignore_body_changes.machinelearningservices_workspaces) > 0 ? var.ignore_body_changes.machinelearningservices_workspaces : null
+  ignore_casing       = true
   replace_triggers_external_values = [
     var.resource_group_name, # since this is the value that determines if parent_id changes, require create/destroy if it changes
     var.provision_network_now_enabled
   ]
-  tags = var.tags
+  response_export_values = []
+  retry                  = var.retry
+  tags                   = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -144,6 +151,7 @@ resource "azapi_resource" "hub" {
       create = var.timeouts.create
       delete = var.timeouts.delete
       read   = var.timeouts.read
+      update = var.timeouts.update
     }
   }
 
@@ -162,7 +170,7 @@ resource "azapi_resource" "project" {
   location  = var.location
   name      = var.name
   parent_id = data.azurerm_resource_group.current.id
-  type      = "Microsoft.MachineLearningServices/workspaces@2025-07-01-preview"
+  type      = var.resource_types.machinelearningservices_workspaces
   body = {
     properties = {
       serverlessComputeSettings = var.serverless_compute != null ? {
@@ -180,9 +188,13 @@ resource "azapi_resource" "project" {
     }
     kind = var.kind
   }
+  ignore_body_changes = length(var.ignore_body_changes.machinelearningservices_workspaces) > 0 ? var.ignore_body_changes.machinelearningservices_workspaces : null
   replace_triggers_external_values = [
     var.provision_network_now_enabled
   ]
+  response_export_values = []
+  retry                  = var.retry
+  tags                   = var.tags
 
   dynamic "identity" {
     for_each = local.managed_identities
@@ -200,6 +212,7 @@ resource "azapi_resource" "project" {
       create = var.timeouts.create
       delete = var.timeouts.delete
       read   = var.timeouts.read
+      update = var.timeouts.update
     }
   }
 

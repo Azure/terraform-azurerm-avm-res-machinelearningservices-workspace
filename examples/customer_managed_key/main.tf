@@ -60,11 +60,10 @@ module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
   version = "0.13.1"
 
-  location            = azurerm_resource_group.this.location
-  name                = "${module.naming.key_vault.name_unique}cmk"
-  resource_group_name = azurerm_resource_group.this.name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  enable_telemetry    = var.enable_telemetry
+  location         = azurerm_resource_group.this.location
+  name             = "${module.naming.key_vault.name_unique}cmk"
+  tenant_id        = data.azurerm_client_config.current.tenant_id
+  enable_telemetry = var.enable_telemetry
   network_acls = {
     default_action = "Allow"
   }
@@ -90,6 +89,7 @@ module "avm_res_keyvault_vault" {
   wait_for_rbac_before_key_operations = {
     create = "70s"
   }
+  resource_group_name = azurerm_resource_group.this.name
 }
 
 # create a Customer Managed Key for a Storage Account.
@@ -114,9 +114,8 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.11.0"
 
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.storage_account.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+  location = azurerm_resource_group.this.location
+  name     = module.naming.storage_account.name_unique
   customer_managed_key = {
     key_name              = azurerm_key_vault_key.cmk.name
     key_vault_resource_id = module.avm_res_keyvault_vault.resource_id
@@ -131,6 +130,7 @@ module "avm_res_storage_storageaccount" {
   }
   public_network_access_enabled = true
   tags                          = local.tags
+  resource_group_name           = azurerm_resource_group.this.name
 
   depends_on = [azurerm_key_vault_key.cmk]
 }

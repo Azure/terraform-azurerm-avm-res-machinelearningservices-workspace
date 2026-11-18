@@ -14,7 +14,7 @@ The following resources are included:
 
 ```hcl
 terraform {
-  required_version = ">= 1.9, < 2.0"
+  required_version = ">= 1.16.5, < 2.0"
 
   required_providers {
     azapi = {
@@ -89,13 +89,13 @@ resource "azurerm_role_assignment" "connection_approver" {
 
 module "virtual_network" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.10.0"
+  version = "0.23.0"
 
-  address_space       = ["192.168.0.0/24"]
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  name                = module.naming.virtual_network.name_unique
+  location         = var.location
+  parent_id        = azurerm_resource_group.this.id
+  address_space    = ["192.168.0.0/24"]
+  enable_telemetry = var.enable_telemetry
+  name             = module.naming.virtual_network.name_unique
   subnets = {
     private_endpoints = {
       name                              = "private_endpoints"
@@ -109,12 +109,13 @@ module "virtual_network" {
 
 module "private_dns_aml_api" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.api.azureml.ms"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.api.azureml.ms"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.api.azureml.ms"
@@ -125,12 +126,13 @@ module "private_dns_aml_api" {
 
 module "private_dns_aml_notebooks" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.notebooks.azure.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.notebooks.azure.net"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.notebooks.azureml.ms"
@@ -141,12 +143,13 @@ module "private_dns_aml_notebooks" {
 
 module "private_dns_keyvault_vault" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.vaultcore.azure.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.vaultcore.azure.net"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.notebooks.azureml.ms"
@@ -157,12 +160,13 @@ module "private_dns_keyvault_vault" {
 
 module "private_dns_storageaccount_blob" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.blob.core.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.blob.core.windows.net"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.blob.core.windows.net"
@@ -173,12 +177,13 @@ module "private_dns_storageaccount_blob" {
 
 module "private_dns_storageaccount_file" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.file.core.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.file.core.windows.net"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.file.core.windows.net"
@@ -189,12 +194,13 @@ module "private_dns_storageaccount_file" {
 
 module "private_dns_containerregistry_registry" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.azurecr.io"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.azurecr.io"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.azurecr.io"
@@ -205,12 +211,13 @@ module "private_dns_containerregistry_registry" {
 
 module "private_dns_aisearch" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.5"
+  version = "0.6.0"
 
-  domain_name         = "privatelink.search.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
-  tags                = local.tags
+  domain_name      = "privatelink.search.windows.net"
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
+  location         = var.location
+  tags             = local.tags
   virtual_network_links = {
     dnslink = {
       vnetlinkname = "privatelink.search.windows.net"
@@ -221,7 +228,7 @@ module "private_dns_aisearch" {
 
 module "avm_res_containerregistry_registry" {
   source  = "Azure/avm-res-containerregistry-registry/azurerm"
-  version = "0.4.0"
+  version = "0.9.0"
 
   location            = var.location
   name                = replace(module.naming.container_registry.name_unique, "-", "")
@@ -242,13 +249,13 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "0.10.1"
+  version = "0.13.1"
 
-  location            = var.location
-  name                = module.naming.key_vault.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  enable_telemetry    = var.enable_telemetry
+  location         = var.location
+  name             = module.naming.key_vault.name_unique
+  parent_id        = azurerm_resource_group.this.id
+  tenant_id        = data.azurerm_client_config.current.tenant_id
+  enable_telemetry = var.enable_telemetry
   network_acls = {
     bypass         = "AzureServices"
     default_action = "Deny"
@@ -267,14 +274,14 @@ module "avm_res_keyvault_vault" {
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "0.6.4"
+  version = "0.11.0"
 
-  location            = var.location
-  name                = replace(module.naming.storage_account.name_unique, "-", "")
-  resource_group_name = azurerm_resource_group.this.name
+  location  = var.location
+  name      = replace(module.naming.storage_account.name_unique, "-", "")
+  parent_id = azurerm_resource_group.this.id
   # for idempotency
   blob_properties = {
-    cors_rule = [{
+    cors_rules = [{
       allowed_headers = ["*", ]
       allowed_methods = [
         "GET",
@@ -299,6 +306,32 @@ module "avm_res_storage_storageaccount" {
     }]
   }
   enable_telemetry = var.enable_telemetry
+  # for idempotency
+  file_service_properties = {
+    cors_rules = [{
+      allowed_headers = ["*", ]
+      allowed_methods = [
+        "GET",
+        "HEAD",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "POST",
+        "PATCH",
+      ]
+      allowed_origins = [
+        "https://mlworkspace.azure.ai",
+        "https://ml.azure.com",
+        "https://*.ml.azure.com",
+        "https://ai.azure.com",
+        "https://*.ai.azure.com",
+      ]
+      exposed_headers = [
+        "*",
+      ]
+      max_age_in_seconds = 1800
+    }]
+  }
   managed_identities = {
     system_assigned = true
   }
@@ -323,39 +356,13 @@ module "avm_res_storage_storageaccount" {
     }
   }
   public_network_access_enabled = false
-  # for idempotency
-  share_properties = {
-    cors_rule = [{
-      allowed_headers = ["*", ]
-      allowed_methods = [
-        "GET",
-        "HEAD",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-        "POST",
-        "PATCH",
-      ]
-      allowed_origins = [
-        "https://mlworkspace.azure.ai",
-        "https://ml.azure.com",
-        "https://*.ml.azure.com",
-        "https://ai.azure.com",
-        "https://*.ai.azure.com",
-      ]
-      exposed_headers = [
-        "*",
-      ]
-      max_age_in_seconds = 1800
-    }]
-  }
-  shared_access_key_enabled = true
-  tags                      = local.tags
+  shared_access_key_enabled     = true
+  tags                          = local.tags
 }
 
 module "aisearch" {
   source  = "Azure/avm-res-search-searchservice/azurerm"
-  version = "0.1.5"
+  version = "0.4.0"
 
   location                     = var.location
   name                         = module.naming.search_service.name_unique
@@ -378,12 +385,12 @@ module "aisearch" {
 
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "0.4.2"
+  version = "0.7.0"
 
-  location            = var.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
+  location         = var.location
+  name             = module.naming.log_analytics_workspace.name_unique
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
   log_analytics_workspace_identity = {
     type = "SystemAssigned"
   }
@@ -394,11 +401,11 @@ module "avm_res_log_analytics_workspace" {
 
 module "avm_res_insights_component" {
   source  = "Azure/avm-res-insights-component/azurerm"
-  version = "0.2.0"
+  version = "0.5.0"
 
   location                   = var.location
   name                       = module.naming.application_insights.name_unique
-  resource_group_name        = azurerm_resource_group.this.name
+  parent_id                  = azurerm_resource_group.this.id
   workspace_id               = module.avm_res_log_analytics_workspace.resource_id
   enable_telemetry           = var.enable_telemetry
   internet_ingestion_enabled = true
@@ -472,7 +479,7 @@ resource "azapi_resource" "search_connection" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.16.5, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.6)
 
@@ -531,37 +538,37 @@ The following Modules are called:
 
 Source: Azure/avm-res-search-searchservice/azurerm
 
-Version: 0.1.5
+Version: 0.4.0
 
 ### <a name="module_avm_res_containerregistry_registry"></a> [avm\_res\_containerregistry\_registry](#module\_avm\_res\_containerregistry\_registry)
 
 Source: Azure/avm-res-containerregistry-registry/azurerm
 
-Version: 0.4.0
+Version: 0.9.0
 
 ### <a name="module_avm_res_insights_component"></a> [avm\_res\_insights\_component](#module\_avm\_res\_insights\_component)
 
 Source: Azure/avm-res-insights-component/azurerm
 
-Version: 0.2.0
+Version: 0.5.0
 
 ### <a name="module_avm_res_keyvault_vault"></a> [avm\_res\_keyvault\_vault](#module\_avm\_res\_keyvault\_vault)
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: 0.10.1
+Version: 0.13.1
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 
 Source: Azure/avm-res-operationalinsights-workspace/azurerm
 
-Version: 0.4.2
+Version: 0.7.0
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
 Source: Azure/avm-res-storage-storageaccount/azurerm
 
-Version: 0.6.4
+Version: 0.11.0
 
 ### <a name="module_azureml"></a> [azureml](#module\_azureml)
 
@@ -579,49 +586,49 @@ Version: 0.2.0
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_private_dns_aml_notebooks"></a> [private\_dns\_aml\_notebooks](#module\_private\_dns\_aml\_notebooks)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_private_dns_containerregistry_registry"></a> [private\_dns\_containerregistry\_registry](#module\_private\_dns\_containerregistry\_registry)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_private_dns_keyvault_vault"></a> [private\_dns\_keyvault\_vault](#module\_private\_dns\_keyvault\_vault)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_private_dns_storageaccount_blob"></a> [private\_dns\_storageaccount\_blob](#module\_private\_dns\_storageaccount\_blob)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_private_dns_storageaccount_file"></a> [private\_dns\_storageaccount\_file](#module\_private\_dns\_storageaccount\_file)
 
 Source: Azure/avm-res-network-privatednszone/azurerm
 
-Version: 0.3.5
+Version: 0.6.0
 
 ### <a name="module_virtual_network"></a> [virtual\_network](#module\_virtual\_network)
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: 0.10.0
+Version: 0.23.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

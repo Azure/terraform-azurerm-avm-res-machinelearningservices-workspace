@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.9, < 2.0"
+  required_version = ">= 1.16.5, < 2.0"
 
   required_providers {
     azurerm = {
@@ -24,7 +24,7 @@ provider "azurerm" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "0.3.0"
+  version = "0.2.0"
 
   legacy_mode = true
 }
@@ -49,6 +49,7 @@ module "virtual_network" {
   version = "0.23.0"
 
   location         = var.location
+  parent_id        = azurerm_resource_group.this.id
   address_space    = ["192.168.0.0/24"]
   enable_telemetry = var.enable_telemetry
   name             = module.naming.virtual_network.name_unique
@@ -60,8 +61,7 @@ module "virtual_network" {
       service_endpoints                 = null
     }
   }
-  tags                = local.tags
-  resource_group_name = azurerm_resource_group.this.name
+  tags = local.tags
 }
 
 module "private_dns_aml_api" {
@@ -69,6 +69,7 @@ module "private_dns_aml_api" {
   version = "0.6.0"
 
   domain_name      = "privatelink.api.azureml.ms"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -78,7 +79,6 @@ module "private_dns_aml_api" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -88,6 +88,7 @@ module "private_dns_aml_notebooks" {
   version = "0.6.0"
 
   domain_name      = "privatelink.notebooks.azure.net"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -97,7 +98,6 @@ module "private_dns_aml_notebooks" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -107,6 +107,7 @@ module "private_dns_keyvault_vault" {
   version = "0.6.0"
 
   domain_name      = "privatelink.vaultcore.azure.net"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -116,7 +117,6 @@ module "private_dns_keyvault_vault" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -126,6 +126,7 @@ module "private_dns_storageaccount_blob" {
   version = "0.6.0"
 
   domain_name      = "privatelink.blob.core.windows.net"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -135,7 +136,6 @@ module "private_dns_storageaccount_blob" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -145,6 +145,7 @@ module "private_dns_storageaccount_file" {
   version = "0.6.0"
 
   domain_name      = "privatelink.file.core.windows.net"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -154,7 +155,6 @@ module "private_dns_storageaccount_file" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -164,6 +164,7 @@ module "private_dns_containerregistry_registry" {
   version = "0.6.0"
 
   domain_name      = "privatelink.azurecr.io"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -173,7 +174,6 @@ module "private_dns_containerregistry_registry" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -183,6 +183,7 @@ module "private_dns_monitor" {
   version = "0.6.0"
 
   domain_name      = "privatelink.monitor.azure.com"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -192,7 +193,6 @@ module "private_dns_monitor" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -202,6 +202,7 @@ module "private_dns_oms_opinsights" {
   version = "0.6.0"
 
   domain_name      = "privatelink.oms.opinsights.azure.com"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -211,7 +212,6 @@ module "private_dns_oms_opinsights" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -221,6 +221,7 @@ module "private_dns_ods_opinsights" {
   version = "0.6.0"
 
   domain_name      = "privatelink.ods.opinsights.azure.com"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -230,7 +231,6 @@ module "private_dns_ods_opinsights" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -240,6 +240,7 @@ module "private_dns_agentsvc" {
   version = "0.6.0"
 
   domain_name      = "privatelink.agentsvc.azure-automation.net"
+  parent_id        = azurerm_resource_group.this.id
   enable_telemetry = var.enable_telemetry
   location         = var.location
   tags             = local.tags
@@ -249,7 +250,6 @@ module "private_dns_agentsvc" {
       vnetid       = module.virtual_network.resource_id
     }
   }
-  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [module.virtual_network]
 }
@@ -295,6 +295,7 @@ module "avm_res_keyvault_vault" {
 
   location         = var.location
   name             = module.naming.key_vault.name_unique
+  parent_id        = azurerm_resource_group.this.id
   tenant_id        = data.azurerm_client_config.current.tenant_id
   enable_telemetry = var.enable_telemetry
   network_acls = {
@@ -311,18 +312,18 @@ module "avm_res_keyvault_vault" {
   }
   public_network_access_enabled = false
   tags                          = local.tags
-  resource_group_name           = azurerm_resource_group.this.name
 }
 
 module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.11.0"
 
-  location = var.location
-  name     = replace(module.naming.storage_account.name_unique, "-", "")
+  location  = var.location
+  name      = replace(module.naming.storage_account.name_unique, "-", "")
+  parent_id = azurerm_resource_group.this.id
   # for idempotency
   blob_properties = {
-    cors_rule = [{
+    cors_rules = [{
       allowed_headers = ["*", ]
       allowed_methods = [
         "GET",
@@ -373,17 +374,16 @@ module "avm_res_storage_storageaccount" {
   public_network_access_enabled = false
   shared_access_key_enabled     = true
   tags                          = local.tags
-  resource_group_name           = azurerm_resource_group.this.name
 }
 
 module "avm_res_log_analytics_workspace" {
   source  = "Azure/avm-res-operationalinsights-workspace/azurerm"
-  version = "0.5.1"
+  version = "0.7.0"
 
-  location            = var.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
+  location         = var.location
+  name             = module.naming.log_analytics_workspace.name_unique
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
   log_analytics_workspace_identity = {
     type = "SystemAssigned"
   }
@@ -400,12 +400,12 @@ module "avm_res_insights_component" {
 
   location                   = var.location
   name                       = module.naming.application_insights.name_unique
+  parent_id                  = azurerm_resource_group.this.id
   workspace_id               = module.avm_res_log_analytics_workspace.resource_id
   enable_telemetry           = var.enable_telemetry
   internet_ingestion_enabled = false
   internet_query_enabled     = true
   tags                       = local.tags
-  resource_group_name        = azurerm_resource_group.this.name
 
   depends_on = [module.avm_res_log_analytics_workspace]
 }

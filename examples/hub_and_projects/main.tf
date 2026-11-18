@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.9, < 2.0"
+  required_version = ">= 1.12.0, < 2.0"
 
   required_providers {
     azapi = {
@@ -12,7 +12,7 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.9.1"
+      version = "3.6.2"
     }
   }
 }
@@ -38,7 +38,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "0.3.0"
+  version = "0.2.0"
 
   legacy_mode   = true
   unique-length = 5
@@ -95,13 +95,13 @@ module "ai_services" {
   kind                               = "AIServices"
   location                           = var.location
   name                               = module.naming.cognitive_account.name_unique
+  parent_id                          = azurerm_resource_group.example.id
   sku_name                           = "S0"
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
   outbound_network_access_restricted = false
   public_network_access_enabled      = true
   tags                               = local.tags
-  resource_group_name                = azurerm_resource_group.example.name
 }
 
 # This is the module call 1

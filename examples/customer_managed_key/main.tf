@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.9, < 2.0"
+  required_version = ">= 1.12.0, < 2.0"
 
   required_providers {
     azurerm = {
@@ -24,7 +24,7 @@ provider "azurerm" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "0.3.0"
+  version = "0.2.0"
 
   legacy_mode = true
 }
@@ -62,6 +62,7 @@ module "avm_res_keyvault_vault" {
 
   location         = azurerm_resource_group.this.location
   name             = "${module.naming.key_vault.name_unique}cmk"
+  parent_id        = azurerm_resource_group.this.id
   tenant_id        = data.azurerm_client_config.current.tenant_id
   enable_telemetry = var.enable_telemetry
   network_acls = {
@@ -89,7 +90,6 @@ module "avm_res_keyvault_vault" {
   wait_for_rbac_before_key_operations = {
     create = "70s"
   }
-  resource_group_name = azurerm_resource_group.this.name
 }
 
 # create a Customer Managed Key for a Storage Account.
@@ -114,8 +114,9 @@ module "avm_res_storage_storageaccount" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.11.0"
 
-  location = azurerm_resource_group.this.location
-  name     = module.naming.storage_account.name_unique
+  location  = azurerm_resource_group.this.location
+  name      = module.naming.storage_account.name_unique
+  parent_id = azurerm_resource_group.this.id
   customer_managed_key = {
     key_name              = azurerm_key_vault_key.cmk.name
     key_vault_resource_id = module.avm_res_keyvault_vault.resource_id
@@ -130,7 +131,6 @@ module "avm_res_storage_storageaccount" {
   }
   public_network_access_enabled = true
   tags                          = local.tags
-  resource_group_name           = azurerm_resource_group.this.name
 
   depends_on = [azurerm_key_vault_key.cmk]
 }

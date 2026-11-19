@@ -13,7 +13,7 @@ The following resources are included:
 
 ```hcl
 terraform {
-  required_version = ">= 1.9, < 2.0"
+  required_version = ">= 1.12.0, < 2.0"
 
   required_providers {
     azapi = {
@@ -104,12 +104,12 @@ resource "azurerm_key_vault" "example" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.10.1"
+  version = "0.12.0"
 
   kind                               = "AIServices"
   location                           = var.location
   name                               = module.naming.cognitive_account.name_unique
-  resource_group_name                = azurerm_resource_group.example.name
+  parent_id                          = azurerm_resource_group.example.id
   sku_name                           = "S0"
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true
@@ -171,7 +171,7 @@ resource "azapi_resource" "aiservices_connection" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.12.0, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.6)
 
@@ -236,7 +236,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-cognitiveservices-account/azurerm
 
-Version: 0.10.1
+Version: 0.12.0
 
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 

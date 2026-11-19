@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.9, < 2.0"
+  required_version = ">= 1.12.0, < 2.0"
 
   required_providers {
     azapi = {
@@ -90,12 +90,12 @@ resource "azurerm_key_vault" "example" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.10.1"
+  version = "0.12.0"
 
   kind                               = "AIServices"
   location                           = var.location
   name                               = module.naming.cognitive_account.name_unique
-  resource_group_name                = azurerm_resource_group.example.name
+  parent_id                          = azurerm_resource_group.example.id
   sku_name                           = "S0"
   enable_telemetry                   = var.enable_telemetry
   local_auth_enabled                 = true

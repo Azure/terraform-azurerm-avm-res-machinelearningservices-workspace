@@ -27,7 +27,7 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.6.2"
+      version = "3.9.1"
     }
   }
 }
@@ -53,7 +53,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "0.2.0"
+  version = "0.3.0"
 
   legacy_mode   = true
   unique-length = 5
@@ -249,7 +249,7 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "0.13.1"
+  version = "0.13.2"
 
   location         = var.location
   name             = module.naming.key_vault.name_unique
@@ -485,7 +485,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
-- <a name="requirement_random"></a> [random](#requirement\_random) (3.6.2)
+- <a name="requirement_random"></a> [random](#requirement\_random) (3.9.1)
 
 ## Resources
 
@@ -494,7 +494,7 @@ The following resources are used by this module:
 - [azapi_resource.search_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/string) (resource)
+- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.9.1/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_role_definition.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
 - [azurerm_subscription.primary](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
@@ -556,7 +556,7 @@ Version: 0.5.0
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: 0.13.1
+Version: 0.13.2
 
 ### <a name="module_avm_res_log_analytics_workspace"></a> [avm\_res\_log\_analytics\_workspace](#module\_avm\_res\_log\_analytics\_workspace)
 
@@ -580,7 +580,7 @@ Version:
 
 Source: Azure/avm-utl-naming/azure
 
-Version: 0.2.0
+Version: 0.3.0
 
 ### <a name="module_private_dns_aisearch"></a> [private\_dns\_aisearch](#module\_private\_dns\_aisearch)
 

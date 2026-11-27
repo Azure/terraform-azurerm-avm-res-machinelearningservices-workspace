@@ -54,7 +54,7 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "3.6.2"
+      version = "3.9.1"
     }
   }
 }
@@ -80,7 +80,7 @@ resource "random_string" "name" {
 
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "0.2.0"
+  version = "0.3.0"
 
   legacy_mode   = true
   unique-length = 5
@@ -259,7 +259,7 @@ module "avm_res_containerregistry_registry" {
 
 module "avm_res_keyvault_vault" {
   source  = "Azure/avm-res-keyvault-vault/azurerm"
-  version = "0.13.1"
+  version = "0.13.2"
 
   location         = var.location
   name             = module.naming.key_vault.name_unique
@@ -368,7 +368,7 @@ module "avm_res_storage_storageaccount" {
 
 module "ai_services" {
   source  = "Azure/avm-res-cognitiveservices-account/azurerm"
-  version = "0.12.0"
+  version = "0.13.0"
 
   kind                               = "AIServices"
   location                           = var.location
@@ -457,7 +457,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
-- <a name="requirement_random"></a> [random](#requirement\_random) (3.6.2)
+- <a name="requirement_random"></a> [random](#requirement\_random) (3.9.1)
 
 ## Resources
 
@@ -466,7 +466,7 @@ The following resources are used by this module:
 - [azapi_resource.aiservices_connection](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_role_assignment.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.6.2/docs/resources/string) (resource)
+- [random_string.name](https://registry.terraform.io/providers/hashicorp/random/3.9.1/docs/resources/string) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_role_definition.connection_approver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) (data source)
 - [azurerm_subscription.primary](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
@@ -510,7 +510,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-cognitiveservices-account/azurerm
 
-Version: 0.12.0
+Version: 0.13.0
 
 ### <a name="module_aihub"></a> [aihub](#module\_aihub)
 
@@ -528,7 +528,7 @@ Version: 0.9.0
 
 Source: Azure/avm-res-keyvault-vault/azurerm
 
-Version: 0.13.1
+Version: 0.13.2
 
 ### <a name="module_avm_res_storage_storageaccount"></a> [avm\_res\_storage\_storageaccount](#module\_avm\_res\_storage\_storageaccount)
 
@@ -540,7 +540,7 @@ Version: 0.11.0
 
 Source: Azure/avm-utl-naming/azure
 
-Version: 0.2.0
+Version: 0.3.0
 
 ### <a name="module_private_dns_aml_api"></a> [private\_dns\_aml\_api](#module\_private\_dns\_aml\_api)
 
